@@ -1,6 +1,6 @@
 {
   "name": "oh-my-akitagpb",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Native-first OpenCode bootstrap pack for Akita GPB workflows.",
   "license": "MIT",
   "author": "zuevrs",
@@ -22,7 +22,7 @@
   },
   "type": "module",
   "bin": {
-    "oh-my-akitagpb": "./dist/cli.js"
+    "oh-my-akitagpb": "dist/cli.js"
   },
   "files": [
     "dist",
