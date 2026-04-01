@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "contractId": "akita-write-state",
+  "sharedStateBasePath": ".oma/state/shared/write",
+  "installedTemplateBasePath": ".oma/templates/write",
+  "planPrerequisites": {
+    "contractPath": ".oma/templates/plan/state-contract.json",
+    "sharedStateBasePath": ".oma/state/shared/plan",
+    "requiredStatePaths": [
+      ".oma/state/shared/plan/approved-plan.json",
+      ".oma/state/shared/plan/scenario-capability-matrix.json"
+    ],
+    "writerMustReadFromDisk": true,
+    "description": "akita-write must consume the persisted approved plan and scenario capability matrix from disk before it decides what the supported subset can materialize."
+  },
+  "requiredMachineState": [
+    {
+      "id": "generated-artifacts",
+      "path": ".oma/state/shared/write/generated-artifacts.json",
+      "format": "json",
+      "required": true,
+      "description": "Canonical emitted artifact set for the supported subset only, using repo-relative target paths."
+    },
+    {
+      "id": "provenance-bundle",
+      "path": ".oma/state/shared/write/provenance-bundle.json",
+      "format": "json",
+      "required": true,
+      "description": "Inspectable lineage from each generated artifact back to the approved plan and the manifest-listed capability bundles used to justify it."
+    },
+    {
+      "id": "generation-report",
+      "path": ".oma/state/shared/write/generation-report.json",
+      "format": "json",
+      "required": true,
+      "description": "Write verdict, omissions, ownership blocks, and explicit stop reasons for anything the writer could not materialize."
+    }
+  ],
+  "ownership": {
+    "rulePath": ".oma/instructions/rules/respect-pack-ownership.md",
+    "packManagedStatePaths": [
+      ".oma/state/shared/write/generated-artifacts.json",
+      ".oma/state/shared/write/provenance-bundle.json",
+      ".oma/state/shared/write/generation-report.json"
+    ],
+    "canonicalNewOrPackManagedWritesOnly": true,
+    "allowOverwriteOfPackManagedPathsOnly": true,
+    "forbidOwnershipUncertainWrites": true,
+    "description": "akita-write may update the pack-managed write state paths above and may create new repo artifacts only at approved-plan canonical targets. It must not overwrite non-pack-managed files or publish outside those canonical destinations."
+  },
+  "provenanceRequirements": {
+    "path": ".oma/state/shared/write/provenance-bundle.json",
+    "requiresApprovedPlanReference": true,
+    "requiresCapabilityBundleReferences": true,
+    "requiresGeneratedArtifactReferences": true,
+    "description": "Provenance must tie the generated artifact set to the approved plan snapshot and the shipped capability bundle truth used during generation."
+  },
+  "generationReport": {
+    "path": ".oma/state/shared/write/generation-report.json",
+    "allowedVerdicts": [
+      "ok",
+      "partial",
+      "blocked"
+    ],
+    "recordsGeneratedArtifacts": true,
+    "recordsOmissions": true,
+    "recordsOwnershipBlocks": true,
+    "recordsStopConditions": true,
+    "description": "The generation report is the durable inspection surface for supported-subset omissions, ownership refusals, and explicit stop conditions."
+  },
+  "stopConditions": [
+    {
+      "id": "missing-approved-plan",
+      "classification": "needs-review",
+      "reportIn": "generation-report",
+      "description": "The approved plan snapshot is missing, so generation cannot choose canonical targets safely."
+    },
+    {
+      "id": "missing-scenario-capability-matrix",
+      "classification": "needs-review",
+      "reportIn": "generation-report",
+      "description": "The scenario capability matrix is missing, so the writer cannot prove support coverage before materializing artifacts."
+    },
+    {
+      "id": "missing-capability-bundle-file",
+      "classification": "needs-review",
+      "reportIn": "generation-report",
+      "description": "A manifest-listed capability bundle asset is missing, so the writer must stop instead of inventing unsupported behavior."
+    },
+    {
+      "id": "unsupported-or-partially-supported-output",
+      "classification": "partial",
+      "reportIn": "generation-report",
+      "description": "Requested outputs that are unsupported or only partially supported stay out of the generated artifact set and are recorded with explicit reasons."
+    },
+    {
+      "id": "ownership-uncertain-target",
+      "classification": "blocked",
+      "reportIn": "generation-report",
+      "description": "A target path is not clearly new or pack-managed, so the writer must refuse it instead of overwriting ambiguous ownership."
+    },
+    {
+      "id": "noncanonical-target-path",
+      "classification": "blocked",
+      "reportIn": "generation-report",
+      "description": "A requested output path falls outside the approved-plan canonical destinations, so generation must block it explicitly."
+    }
+  ],
+  "summaryState": {
+    "path": ".oma/state/shared/write/write-summary.md",
+    "templatePath": ".oma/templates/write/write-summary.md",
+    "format": "markdown",
+    "required": false,
+    "canonical": false,
+    "mustBeDerivedFrom": [
+      "generated-artifacts",
+      "provenance-bundle",
+      "generation-report"
+    ],
+    "description": "Human-readable write summary only. Canonical machine state stays in the JSON files above."
+  },
+  "redaction": {
+    "policyPath": ".oma/runtime/shared/data-handling-policy.json",
+    "redactionRequired": true,
+    "markdownIsSummaryOnly": true,
+    "forbiddenSharedData": [
+      "secrets",
+      "tokens",
+      "credentials",
+      "raw auth headers",
+      "raw env values",
+      "machine-local values"
+    ],
+    "allowedSharedData": [
+      "repo-relative artifact paths",
+      "approved plan flow ids",
+      "capability bundle ids and module pins",
+      "omission reasons"
+    ]
+  }
+}

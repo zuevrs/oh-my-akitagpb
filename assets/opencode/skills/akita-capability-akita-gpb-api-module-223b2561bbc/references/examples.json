@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-akita-gpb-api-module-223b2561bbc",
+  "examples": [
+    {
+      "id": "api-parameterized-get-and-jsonpath",
+      "summary": "Send a table-driven GET request, assert the status code, and extract JSON values into scenario variables.",
+      "steps": [
+        "Когда выполнен GET запрос на URL \"${serviceUrl}/posts\" с headers и parameters из таблицы. Полученный ответ сохранен в переменную \"response\"",
+        "Тогда в ответе \"response\" код ответа равен 200",
+        "И из ответа \"response\" значение тела по пути \"$.items[0].id\" сохранено в переменную \"firstId\""
+      ],
+      "table": [
+        [
+          "HEADER",
+          "Accept",
+          "application/json"
+        ],
+        [
+          "PARAMETER",
+          "limit",
+          "10"
+        ]
+      ]
+    },
+    {
+      "id": "api-cookie-and-header-extraction",
+      "summary": "Save a response cookie and header into Akita scenario variables.",
+      "steps": [
+        "И из ответа \"response\" cookie с именем \"SESSION\" сохранен в переменную \"sessionCookie\"",
+        "И из ответа \"response\" header с именем \"X-Request-Id\" сохранен в переменную \"requestId\""
+      ]
+    },
+    {
+      "id": "api-jsonpath-table-assertions",
+      "summary": "Assert that required JSON fields exist and match expected values.",
+      "steps": [
+        "Тогда в ответе \"response\" значения, найденные по jsonpath, равны значениям из таблицы",
+        "И в json строке \"savedBody\" элементы, найденные по jsonpath из таблицы, не существуют"
+      ],
+      "table": [
+        [
+          "$.status",
+          "OK"
+        ],
+        [
+          "$.items.length()",
+          "1"
+        ]
+      ]
+    },
+    {
+      "id": "api-xml-check-and-xsd-validation",
+      "summary": "Validate XML values by XmlPath and then validate the stored XML against an XSD file.",
+      "steps": [
+        "И в xml строке \"responseXml\" значения, найденные по xmlpath, равны значениям из таблицы",
+        "И значения xml \"soapResponse\", соответствует схеме \"schemas/service-response.xsd\""
+      ],
+      "table": [
+        [
+          "//response/code",
+          "200"
+        ],
+        [
+          "//response/status",
+          "SUCCESS"
+        ]
+      ]
+    },
+    {
+      "id": "api-sse-first-event-capture",
+      "summary": "Capture the first available SSE line into a scenario variable and keep the streaming limit explicit.",
+      "steps": [
+        "Когда выполнен GET(SSE) запрос на URL \"${eventsUrl}\". Полученный ответ сохранен в переменную \"eventPayload\""
+      ],
+      "notes": [
+        "This reviewed step captures the first returned line only. It is not a general stream-consumption contract."
+      ]
+    }
+  ]
+}

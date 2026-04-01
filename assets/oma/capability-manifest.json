@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "activeCommandIds": [
+    "akita-scan",
+    "akita-plan",
+    "akita-write",
+    "akita-validate"
+  ],
+  "activeWorkflowSkills": [
+    "akita-scan-workflow",
+    "akita-plan-workflow",
+    "akita-write-workflow",
+    "akita-validate-workflow"
+  ],
+  "activeCapabilityBundles": [
+    {
+      "bundleId": "akita-capability-akita-gpb-core-module-c795936046e",
+      "module": {
+        "id": "akita-gpb-core-module",
+        "pin": "c795936046e"
+      },
+      "skillPath": ".opencode/skills/akita-capability-akita-gpb-core-module-c795936046e/SKILL.md",
+      "references": {
+        "capabilityContract": ".opencode/skills/akita-capability-akita-gpb-core-module-c795936046e/references/capability-contract.json",
+        "unsupportedCases": ".opencode/skills/akita-capability-akita-gpb-core-module-c795936046e/references/unsupported-cases.json",
+        "examples": ".opencode/skills/akita-capability-akita-gpb-core-module-c795936046e/references/examples.json",
+        "provenance": ".opencode/skills/akita-capability-akita-gpb-core-module-c795936046e/references/provenance.json"
+      }
+    },
+    {
+      "bundleId": "akita-capability-akita-gpb-api-module-223b2561bbc",
+      "module": {
+        "id": "akita-gpb-api-module",
+        "pin": "223b2561bbc"
+      },
+      "skillPath": ".opencode/skills/akita-capability-akita-gpb-api-module-223b2561bbc/SKILL.md",
+      "references": {
+        "capabilityContract": ".opencode/skills/akita-capability-akita-gpb-api-module-223b2561bbc/references/capability-contract.json",
+        "unsupportedCases": ".opencode/skills/akita-capability-akita-gpb-api-module-223b2561bbc/references/unsupported-cases.json",
+        "examples": ".opencode/skills/akita-capability-akita-gpb-api-module-223b2561bbc/references/examples.json",
+        "provenance": ".opencode/skills/akita-capability-akita-gpb-api-module-223b2561bbc/references/provenance.json"
+      }
+    }
+  ]
+}

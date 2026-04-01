@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "contractId": "akita-validate-state",
+  "localStateBasePath": ".oma/state/local/validate",
+  "installedTemplateBasePath": ".oma/templates/validate",
+  "writePrerequisites": {
+    "contractPath": ".oma/templates/write/state-contract.json",
+    "sharedStateBasePath": ".oma/state/shared/write",
+    "requiredStatePaths": [
+      ".oma/state/shared/write/generated-artifacts.json",
+      ".oma/state/shared/write/provenance-bundle.json"
+    ],
+    "validatorMustReadFromDisk": true,
+    "description": "akita-validate must consume the persisted generated artifact bundle and provenance bundle from disk before it evaluates capability eligibility."
+  },
+  "requiredMachineState": [
+    {
+      "id": "validation-report",
+      "path": ".oma/state/local/validate/validation-report.json",
+      "format": "json",
+      "required": true,
+      "description": "Inspectable validation verdict, reviewed artifact set, and per-artifact findings for supported, unsupported, or bundle-unknown constructs."
+    }
+  ],
+  "validationReport": {
+    "path": ".oma/state/local/validate/validation-report.json",
+    "requiredFields": [
+      "verdict",
+      "reviewedArtifacts",
+      "findings"
+    ],
+    "allowedVerdicts": [
+      "pass",
+      "fail",
+      "blocked"
+    ],
+    "rejectionReasons": [
+      "unsupported-step",
+      "unsupported-assertion",
+      "bundle-unknown-construct",
+      "lineage-drift",
+      "missing-input-state",
+      "missing-capability-bundle-file"
+    ],
+    "requiresPerArtifactFindings": true,
+    "requiresClearReason": true,
+    "description": "The validation report is the durable inspection surface for verdicts, reviewed artifacts, and explicit rejection reasons."
+  },
+  "stopConditions": [
+    {
+      "id": "missing-generated-artifacts",
+      "classification": "blocked",
+      "reportIn": "validation-report",
+      "description": "The generated artifact bundle is missing, so validation cannot establish what to review."
+    },
+    {
+      "id": "missing-provenance-bundle",
+      "classification": "blocked",
+      "reportIn": "validation-report",
+      "description": "The provenance bundle is missing, so validation cannot confirm lineage back to the approved plan and bundle truth."
+    },
+    {
+      "id": "missing-capability-bundle-file",
+      "classification": "blocked",
+      "reportIn": "validation-report",
+      "description": "A manifest-listed capability bundle asset is missing, so validation must stop instead of guessing rules."
+    },
+    {
+      "id": "unsupported-step-or-assertion",
+      "classification": "fail",
+      "reportIn": "validation-report",
+      "description": "Unsupported steps or assertions must be rejected explicitly with clear findings."
+    },
+    {
+      "id": "bundle-unknown-construct",
+      "classification": "fail",
+      "reportIn": "validation-report",
+      "description": "Any construct that cannot be grounded in manifest-listed bundle truth must fail validation explicitly."
+    },
+    {
+      "id": "lineage-drift",
+      "classification": "fail",
+      "reportIn": "validation-report",
+      "description": "Generated artifacts that diverge from the lineage recorded by akita-write must fail validation instead of passing partial coverage."
+    }
+  ],
+  "summaryState": {
+    "path": ".oma/state/local/validate/validate-summary.md",
+    "templatePath": ".oma/templates/validate/validate-summary.md",
+    "format": "markdown",
+    "required": false,
+    "canonical": false,
+    "mustBeDerivedFrom": [
+      "validation-report"
+    ],
+    "description": "Human-readable validation summary only. Canonical machine state stays in the JSON report above."
+  },
+  "redaction": {
+    "policyPath": ".oma/runtime/shared/data-handling-policy.json",
+    "redactionRequired": true,
+    "markdownIsSummaryOnly": true,
+    "forbiddenLocalData": [
+      "secrets",
+      "tokens",
+      "credentials",
+      "raw auth headers",
+      "raw env values",
+      "machine-local credentials"
+    ],
+    "allowedLocalData": [
+      "repo-relative artifact paths",
+      "property keys",
+      "bundle ids and module pins",
+      "verdicts and rejection reasons"
+    ]
+  }
+}
