@@ -1,34 +1,38 @@
-# Write Summary
+# Сводка записи
 
-This file is **summary-only**. The canonical machine-readable write state lives in the JSON files under `.oma/state/shared/write/`.
+Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние записи живёт в JSON-файлах под `.oma/state/shared/write/`.
 
-## Canonical JSON inputs
+## Канонические JSON-файлы
 
-- `generated-artifacts.json`
-- `provenance-bundle.json`
-- `generation-report.json`
+- `write-report.json`
 
-## Ownership reminders
+## Напоминания про ownership
 
-- Update only pack-managed write state under `.oma/state/shared/write/`.
-- Create generated repo artifacts only at canonical targets approved by the current plan.
-- Do not overwrite ownership-uncertain files.
+- Обновляйте только pack-managed write state под `.oma/state/shared/write/`.
+- Создавайте новые generated артефакты только внутри `.oma/generated/{features,payloads,fixtures}/`.
+- Не считайте generated путь live truth; для копирования в рабочие директории используйте явный `/akita-promote`.
+- Не перезаписывайте файлы с неясным ownership.
 
-## Redaction reminders
+## Напоминания по redaction
 
-Do not include secrets, credentials, tokens, raw auth headers, raw env values, or machine-local values.
+Не включайте секреты, credentials, токены, raw auth headers, raw env values или machine-local values.
 
-## Summary
+## Сводка
 
 ### Generated artifacts
 - 
 
-### Provenance bundle
-- Approved plan reference:
+### Approved plan reference
+- Approved intent references:
+
+### Capability bundles used
+- 
+
+### Provenance and lineage
 - Capability bundles used:
 - Notes:
 
-### Generation report
+### Write report
 - Verdict:
 - Omitted items:
 - Ownership blocks:

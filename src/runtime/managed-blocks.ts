@@ -8,6 +8,7 @@ export const AGENTS_MANAGED_BLOCK_ID = 'oh-my-akitagpb';
 const REQUIRED_OPENCODE_MANAGED_INSTRUCTIONS = [
   'AGENTS.md',
   '.oma/instructions/rules/manifest-first.md',
+  '.oma/instructions/rules/default-language-russian.md',
   '.oma/instructions/rules/never-invent-steps.md',
   '.oma/instructions/rules/redact-shared-state.md',
   '.oma/instructions/rules/prefer-existing-prior-art.md',

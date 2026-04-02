@@ -24,12 +24,7 @@ Read these before reasoning:
 ## Required writes
 
 Persist exactly these shared scan outputs:
-- `.oma/state/shared/scan/contracts.json`
-- `.oma/state/shared/scan/target-candidates.json`
-- `.oma/state/shared/scan/prior-art.json`
-- `.oma/state/shared/scan/service-runtime-profile.json`
-- `.oma/state/shared/scan/flow-candidates.json`
-- `.oma/state/shared/scan/assertion-opportunities.json`
+- `.oma/state/shared/scan/scan-state.json`
 - optional derived summary: `.oma/state/shared/scan/scan-summary.md`
 
 ## Procedure
@@ -38,10 +33,11 @@ Persist exactly these shared scan outputs:
 2. Read `.oma/capability-manifest.json` and resolve every manifest-listed capability bundle plus every manifest-listed `activeCapabilityBundles[*].skillPath` and `references.*` file from disk before reasoning.
 3. Read the shared data-handling policy and the installed rule files before writing shared state.
 4. Inspect the repo for contracts, target candidates, prior art, runtime profile, flow candidates, and assertion opportunities.
-5. If OpenAPI exists, record that evidence in `.oma/state/shared/scan/contracts.json`.
-6. If OpenAPI does not exist, persist `code-first fallback` in `.oma/state/shared/scan/contracts.json` and continue from repo/code evidence instead of crashing.
-7. Persist the exact shared scan outputs listed above.
-8. Keep machine state in JSON. Keep markdown summary output derived and secondary.
+5. Persist those sections together in `.oma/state/shared/scan/scan-state.json`.
+6. If OpenAPI exists, record that evidence in the `contracts` section of `.oma/state/shared/scan/scan-state.json`.
+7. If OpenAPI does not exist, persist `code-first fallback` in the `contracts` section of `.oma/state/shared/scan/scan-state.json` and continue from repo/code evidence instead of crashing.
+8. Persist the exact shared scan outputs listed above.
+9. Keep machine state in JSON. Keep markdown summary output derived and secondary.
 
 ## Stop with `needs-review` when
 

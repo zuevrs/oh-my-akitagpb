@@ -69,13 +69,16 @@ const ASSET_ENTRIES = Object.freeze({
   'commands/akita-plan': 'commands/akita-plan.md',
   'commands/akita-write': 'commands/akita-write.md',
   'commands/akita-validate': 'commands/akita-validate.md',
+  'commands/akita-promote': 'commands/akita-promote.md',
   'opencode/skills/akita-scan-workflow': 'opencode/skills/akita-scan-workflow/SKILL.md',
   'opencode/skills/akita-plan-workflow': 'opencode/skills/akita-plan-workflow/SKILL.md',
   'opencode/skills/akita-write-workflow': 'opencode/skills/akita-write-workflow/SKILL.md',
   'opencode/skills/akita-validate-workflow': 'opencode/skills/akita-validate-workflow/SKILL.md',
+  'opencode/skills/akita-promote-workflow': 'opencode/skills/akita-promote-workflow/SKILL.md',
   'oma/capability-manifest': 'oma/capability-manifest.json',
   'oma/runtime/shared/data-handling-policy': 'oma/runtime/shared/data-handling-policy.json',
   'oma/instructions/rules/manifest-first': 'oma/instructions/rules/manifest-first.md',
+  'oma/instructions/rules/default-language-russian': 'oma/instructions/rules/default-language-russian.md',
   'oma/instructions/rules/never-invent-steps': 'oma/instructions/rules/never-invent-steps.md',
   'oma/instructions/rules/redact-shared-state': 'oma/instructions/rules/redact-shared-state.md',
   'oma/instructions/rules/prefer-existing-prior-art': 'oma/instructions/rules/prefer-existing-prior-art.md',
@@ -97,6 +100,8 @@ const ASSET_ENTRIES = Object.freeze({
   'oma/templates/write/write-summary': 'oma/templates/write/write-summary.md',
   'oma/templates/validate/state-contract': 'oma/templates/validate/state-contract.json',
   'oma/templates/validate/validate-summary': 'oma/templates/validate/validate-summary.md',
+  'oma/templates/promote/state-contract': 'oma/templates/promote/state-contract.json',
+  'oma/templates/promote/promote-summary': 'oma/templates/promote/promote-summary.md',
 } satisfies Record<string, string>);
 
 const CAPABILITY_BUNDLE_PREFIX = 'akita-capability-';

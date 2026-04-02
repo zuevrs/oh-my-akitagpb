@@ -23,10 +23,35 @@ type InstallState = {
 };
 
 type CapabilityManifest = {
+  activeCommandIds: string[];
+  activeWorkflowSkills: string[];
   activeCapabilityBundles: Array<{
     skillPath: string;
     references: Record<string, string>;
   }>;
+};
+
+type WriteStateContract = {
+  generatedArtifactPolicy: {
+    safeOutputBasePath: string;
+    allowedOutputRoots: string[];
+    approvedPlanProvidesArtifactIntentOnly: boolean;
+    writerChoosesSafeOutputPath: boolean;
+    requiredGeneratedArtifactFields: string[];
+  };
+};
+
+type PromoteStateContract = {
+  promotionPolicy: {
+    allowedSourceRoots: string[];
+    explicitDestinationRequired: boolean;
+    destinationMustBeRepoRelative: boolean;
+    forbiddenDestinationRoots: string[];
+    allowOverwriteExistingFiles: boolean;
+    copyInsteadOfMove: boolean;
+    keepGeneratedSourceAfterPromote: boolean;
+    requiredPromotedArtifactFields: string[];
+  };
 };
 
 const fixtures: FixtureRepo[] = [];
@@ -79,20 +104,29 @@ describe('package smoke fixture', () => {
       '.opencode/commands/akita-plan.md',
       '.opencode/commands/akita-write.md',
       '.opencode/commands/akita-validate.md',
+      '.opencode/commands/akita-promote.md',
       '.opencode/skills/akita-scan-workflow/SKILL.md',
       '.opencode/skills/akita-plan-workflow/SKILL.md',
       '.opencode/skills/akita-write-workflow/SKILL.md',
       '.opencode/skills/akita-validate-workflow/SKILL.md',
+      '.opencode/skills/akita-promote-workflow/SKILL.md',
       '.oma/templates/feature/default.feature.md',
       '.oma/templates/feature/with-background.feature.md',
       '.oma/templates/feature/with-omissions-note.feature.md',
       '.oma/templates/payload/json-body.md',
       '.oma/templates/payload/property-file.md',
       '.oma/templates/payload/minimal-fixture.md',
+      '.oma/templates/scan/scan-summary.md',
       '.oma/templates/scan/state-contract.json',
+      '.oma/templates/plan/plan-summary.md',
       '.oma/templates/plan/state-contract.json',
+      '.oma/templates/write/write-summary.md',
       '.oma/templates/write/state-contract.json',
+      '.oma/templates/validate/validate-summary.md',
       '.oma/templates/validate/state-contract.json',
+      '.oma/templates/promote/promote-summary.md',
+      '.oma/templates/promote/state-contract.json',
+      '.oma/instructions/rules/default-language-russian.md',
     ];
 
     expect(installExecution.exitCode).toBe(0);
@@ -113,6 +147,11 @@ describe('package smoke fixture', () => {
     expect(existsSync(path.join(fixture.rootDir, '.oma', 'runtime', 'local', 'project-mode.json'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.oma', 'state', 'local', 'doctor', 'doctor-report.json'))).toBe(true);
     expect(opencodeConfig.ohMyAkitaGpb).toBeUndefined();
+    expect(opencodeConfig.instructions).toEqual(
+      expect.arrayContaining([
+        '.oma/instructions/rules/default-language-russian.md',
+      ]),
+    );
 
     for (const relativePath of requiredInstalledPaths) {
       expect(existsSync(path.join(fixture.rootDir, relativePath)), relativePath).toBe(true);
@@ -124,20 +163,81 @@ describe('package smoke fixture', () => {
       expect(installState.ownedFiles.some((file) => file.relativePath === runtimePath), runtimePath).toBe(true);
     }
 
+    expect(manifest.activeCommandIds).toEqual(
+      expect.arrayContaining(['akita-promote']),
+    );
+    expect(manifest.activeWorkflowSkills).toEqual(
+      expect.arrayContaining(['akita-promote-workflow']),
+    );
+
+    const installedScanCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-scan.md'), 'utf8');
     const installedWriteCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-write.md'), 'utf8');
     const installedValidateCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-validate.md'), 'utf8');
+    const installedPromoteCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-promote.md'), 'utf8');
     const installedWriteWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'akita-write-workflow', 'SKILL.md'), 'utf8');
     const installedValidateWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'akita-validate-workflow', 'SKILL.md'), 'utf8');
+    const installedPromoteWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'akita-promote-workflow', 'SKILL.md'), 'utf8');
+    const installedWriteContract = readJsonFile<WriteStateContract>(
+      path.join(fixture.rootDir, '.oma', 'templates', 'write', 'state-contract.json'),
+    );
+    const installedPromoteContract = readJsonFile<PromoteStateContract>(
+      path.join(fixture.rootDir, '.oma', 'templates', 'promote', 'state-contract.json'),
+    );
 
+    expect(installedScanCommand).toContain('agent: build');
     expect(installedWriteCommand).toContain('.oma/templates/write/state-contract.json');
-    expect(installedWriteCommand).toContain('.oma/state/shared/plan/approved-plan.json');
-    expect(installedWriteWorkflow).toContain('.oma/state/shared/write/generated-artifacts.json');
-    expect(installedWriteWorkflow).toContain('generation-report.json');
+    expect(installedWriteCommand).toContain('.oma/generated/');
+    expect(installedWriteWorkflow).toContain('.oma/state/shared/write/write-report.json');
+    expect(installedWriteWorkflow).toContain('capability bundle references');
+    expect(installedWriteContract.generatedArtifactPolicy).toMatchObject({
+      safeOutputBasePath: '.oma/generated',
+      allowedOutputRoots: [
+        '.oma/generated/features',
+        '.oma/generated/payloads',
+        '.oma/generated/fixtures',
+      ],
+      approvedPlanProvidesArtifactIntentOnly: true,
+      writerChoosesSafeOutputPath: true,
+      requiredGeneratedArtifactFields: [
+        'artifactId',
+        'artifactKind',
+        'approvedPlanRef',
+        'emittedPath',
+      ],
+    });
 
     expect(installedValidateCommand).toContain('.oma/templates/validate/state-contract.json');
-    expect(installedValidateCommand).toContain('.oma/state/shared/write/generated-artifacts.json');
+    expect(installedValidateCommand).toContain('.oma/state/shared/write/write-report.json');
+    expect(installedValidateCommand).toContain('/akita-promote');
     expect(installedValidateWorkflow).toContain('.oma/state/local/validate/validation-report.json');
     expect(installedValidateWorkflow).toContain('lineage-drift');
+    expect(installedValidateWorkflow).toContain('/akita-promote');
+
+    expect(installedPromoteCommand).toContain('.oma/templates/promote/state-contract.json');
+    expect(installedPromoteCommand).toContain('.oma/state/shared/write/write-report.json');
+    expect(installedPromoteCommand).toContain('promote <artifact-id> to <repo-relative-path>');
+    expect(installedPromoteWorkflow).toContain('.oma/state/local/promote/promote-report.json');
+    expect(installedPromoteWorkflow).toContain('copy instead of move');
+    expect(installedPromoteContract.promotionPolicy).toMatchObject({
+      allowedSourceRoots: [
+        '.oma/generated/features',
+        '.oma/generated/payloads',
+        '.oma/generated/fixtures',
+      ],
+      explicitDestinationRequired: true,
+      destinationMustBeRepoRelative: true,
+      forbiddenDestinationRoots: ['.oma/', '.opencode/'],
+      allowOverwriteExistingFiles: false,
+      copyInsteadOfMove: true,
+      keepGeneratedSourceAfterPromote: true,
+      requiredPromotedArtifactFields: [
+        'artifactId',
+        'artifactKind',
+        'sourcePath',
+        'destinationPath',
+        'sourceSha256',
+      ],
+    });
 
     expect(doctorResult.details?.reportPath).toContain('.oma/state/local/doctor/doctor-report.json');
   });

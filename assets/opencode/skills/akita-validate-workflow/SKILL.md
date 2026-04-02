@@ -16,8 +16,7 @@ Use this skill only for the installed `/akita-validate` flow.
 Read these before reasoning:
 - `.oma/templates/validate/state-contract.json`
 - `.oma/templates/write/state-contract.json`
-- `.oma/state/shared/write/generated-artifacts.json`
-- `.oma/state/shared/write/provenance-bundle.json`
+- `.oma/state/shared/write/write-report.json`
 - `.oma/capability-manifest.json`
 - `.oma/runtime/shared/data-handling-policy.json`
 - `.oma/instructions/rules/explicit-unsupported.md`
@@ -36,16 +35,15 @@ Persist exactly these local validate outputs:
 2. Read the write-state prerequisites from disk before validating any artifact.
 3. Read the manifest-listed capability bundle surfaces and references from disk before evaluating support coverage. Resolve every manifest-listed `activeCapabilityBundles[*].skillPath` and every required `references.*` file before continuing.
 4. Read the explicit-unsupported rule and the data-handling policy before writing local validation state.
-5. Validate only the artifact set recorded in `.oma/state/shared/write/generated-artifacts.json`. Do not validate artifacts outside that bundle or invent missing coverage.
-6. Compare that artifact set against `.oma/state/shared/write/provenance-bundle.json` and the active capability truth.
+5. Validate only the artifact set recorded in `.oma/state/shared/write/write-report.json`. Do not validate artifacts outside that bundle or invent missing coverage.
+6. Compare that artifact set against the lineage and capability references recorded in `.oma/state/shared/write/write-report.json` and the active capability truth.
 7. Persist `.oma/state/local/validate/validation-report.json` with explicit `verdict` `pass`, `fail`, or `blocked`; `reviewedArtifacts`; and `findings`.
 8. Reject unsupported steps, unsupported assertions, and bundle-unknown constructs explicitly, and fail with a `lineage-drift` finding when provenance and artifact contents diverge, instead of silently passing partial coverage.
 
 ## Stop with `blocked` or `needs-review` when
 
 Stop instead of guessing if:
-- `.oma/state/shared/write/generated-artifacts.json` is missing
-- `.oma/state/shared/write/provenance-bundle.json` is missing
+- `.oma/state/shared/write/write-report.json` is missing
 - any manifest-listed bundle file is missing
 - the write-state artifact set is incomplete or cannot be reconciled to provenance
 
@@ -60,5 +58,5 @@ Use `needs-review` only when the validation request itself is ambiguous and the 
 
 ## Handoff
 
-- If validation passes, tell the user the generated artifact bundle is structurally/capability-valid and name the runtime verification command if one exists.
+- If validation passes, tell the user the generated artifact bundle is structurally/capability-valid, name the runtime verification command if one exists, and say the explicit publish step is `/akita-promote`.
 - If validation fails or blocks, stop with the exact rejection reason and do not overclaim readiness.

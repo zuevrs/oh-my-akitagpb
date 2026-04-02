@@ -1,15 +1,10 @@
-# Plan Summary
+# Сводка plan
 
-This file is **summary-only**. The canonical machine-readable plan state lives in the JSON files under `.oma/state/shared/plan/`.
+Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние plan живёт в JSON-файлах под `.oma/state/shared/plan/`.
 
-## Canonical JSON inputs
+## Канонические JSON-файлы
 
-- `active-target.json`
-- `current-plan.json`
-- `flow-scorecards.json`
-- `scenario-capability-matrix.json`
-- `decision-log.json`
-- `approval-state.json`
+- `plan-state.json`
 - `approved-plan.json` *(only after explicit approve)*
 
 ## Review actions
@@ -21,16 +16,19 @@ This file is **summary-only**. The canonical machine-readable plan state lives i
 - `change target`
 - `regenerate shortlist`
 
-## Redaction reminders
+## Напоминания по redaction
 
-Do not include secrets, credentials, tokens, raw auth headers, or machine-local values.
+Не включайте секреты, credentials, токены, raw auth headers или machine-local values.
 
-## Summary
+## Сводка
 
 ### Active target
 - 
 
 ### Shortlist (`3-7` flows)
+- 
+
+### Backlog
 - 
 
 ### Capability matrix notes
@@ -43,6 +41,9 @@ Do not include secrets, credentials, tokens, raw auth headers, or machine-local 
 - Status:
 - Last explicit action:
 - Approved snapshot present:
+
+### Unresolved
+- 
 
 ### Approved plan snapshot
 - Approved flow ids:

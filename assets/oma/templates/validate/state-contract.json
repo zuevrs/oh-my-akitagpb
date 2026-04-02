@@ -7,11 +7,10 @@
     "contractPath": ".oma/templates/write/state-contract.json",
     "sharedStateBasePath": ".oma/state/shared/write",
     "requiredStatePaths": [
-      ".oma/state/shared/write/generated-artifacts.json",
-      ".oma/state/shared/write/provenance-bundle.json"
+      ".oma/state/shared/write/write-report.json"
     ],
     "validatorMustReadFromDisk": true,
-    "description": "akita-validate must consume the persisted generated artifact bundle and provenance bundle from disk before it evaluates capability eligibility."
+    "description": "akita-validate must consume the persisted write report from disk before it evaluates capability eligibility."
   },
   "requiredMachineState": [
     {
@@ -48,16 +47,10 @@
   },
   "stopConditions": [
     {
-      "id": "missing-generated-artifacts",
+      "id": "missing-write-report",
       "classification": "blocked",
       "reportIn": "validation-report",
-      "description": "The generated artifact bundle is missing, so validation cannot establish what to review."
-    },
-    {
-      "id": "missing-provenance-bundle",
-      "classification": "blocked",
-      "reportIn": "validation-report",
-      "description": "The provenance bundle is missing, so validation cannot confirm lineage back to the approved plan and bundle truth."
+      "description": "The write report is missing, so validation cannot establish what to review."
     },
     {
       "id": "missing-capability-bundle-file",

@@ -15,28 +15,17 @@ Before you start:
 6. If scan state is missing, stop and send the user to `/akita-scan` instead of inventing context.
 
 Required scan prerequisites:
-- `.oma/state/shared/scan/contracts.json`
-- `.oma/state/shared/scan/target-candidates.json`
-- `.oma/state/shared/scan/prior-art.json`
-- `.oma/state/shared/scan/service-runtime-profile.json`
-- `.oma/state/shared/scan/flow-candidates.json`
-- `.oma/state/shared/scan/assertion-opportunities.json`
+- `.oma/state/shared/scan/scan-state.json`
 
 Required shared plan outputs:
-- `.oma/state/shared/plan/active-target.json`
-- `.oma/state/shared/plan/current-plan.json`
-- `.oma/state/shared/plan/flow-scorecards.json`
-- `.oma/state/shared/plan/scenario-capability-matrix.json`
-- `.oma/state/shared/plan/decision-log.json` (append-only)
-- `.oma/state/shared/plan/approval-state.json`
-- `.oma/state/shared/plan/unresolved.json`
+- `.oma/state/shared/plan/plan-state.json`
 - optional approved snapshot: `.oma/state/shared/plan/approved-plan.json`
 - optional derived summary: `.oma/state/shared/plan/plan-summary.md`
 
 Then:
 - produce a reviewable shortlist of 3-7 high-value candidate flows when that many viable flows actually exist
 - preserve overflow candidates in backlog state instead of expanding the shortlist past seven items
-- if fewer than 3 viable flows exist, do **not** pad the shortlist; persist the honest candidate set, record the shortage in `.oma/state/shared/plan/unresolved.json`, set the approval state to `needs-review`, and stop with an explicit shortage verdict
+- if fewer than 3 viable flows exist, do **not** pad the shortlist; persist the honest candidate set in `.oma/state/shared/plan/plan-state.json`, record the shortage there, set the embedded approval state to `needs-review`, and stop with an explicit shortage verdict
 - keep shared JSON and markdown redaction-first per `.oma/runtime/shared/data-handling-policy.json`; never persist secrets, credentials, tokens, raw auth headers, or machine-local values
 - keep the plan grounded in repo facts and shipped capability evidence, not chat memory or README-only claims
 - list these discuss actions verbatim for review: `approve all`, `approve <ids>`, `reject <ids>`, `adjust <id>: <instruction>`, `change target`, `regenerate shortlist`
