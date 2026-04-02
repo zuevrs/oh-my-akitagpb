@@ -22,13 +22,10 @@
         "activeTarget",
         "shortlist",
         "backlog",
-        "scorecards",
-        "capabilityMatrix",
-        "decisionLog",
-        "approvalState",
+        "reviewStatus",
         "unresolved"
       ],
-      "description": "Canonical plan review packet. It must keep the active target, shortlist, backlog, scorecards, capability matrix, decision log, approval state, and unresolved blockers in one durable JSON file."
+      "description": "Canonical plan review packet. It must keep the active target, shortlist, backlog, lightweight review status, and unresolved blockers in one durable JSON file."
     },
     {
       "id": "approved-plan",
@@ -39,11 +36,10 @@
       "requiredTopLevelFields": [
         "approvedTarget",
         "approvedFlows",
-        "capabilityMatrix",
         "approvedAt",
         "approvedByAction"
       ],
-      "description": "Frozen approved snapshot that may be written only after an explicit approve action. It must contain enough approved intent and capability detail for akita-write to materialize safely without reopening plan-state."
+      "description": "Frozen approved snapshot that may be written only after an explicit approve action. It must keep approved intent plus minimal audit metadata, not duplicate manifest or bundle truth."
     }
   ],
   "shortlistPolicy": {
@@ -53,7 +49,7 @@
     "backlogStoredIn": "plan-state",
     "doNotPadShortlist": true,
     "allowShortageNeedsReview": true,
-    "shortageRecordedIn": "plan-state",
+    "reviewStatusOnShortage": "needs-review",
     "description": "akita-plan aims for a human-reviewable shortlist of three to seven flows, but if fewer than three viable flows honestly exist it must record the shortage and stop with needs-review instead of padding the shortlist."
   },
   "reviewActions": [
@@ -100,96 +96,20 @@
       "description": "Re-rank and regenerate the shortlist from persisted scan state."
     }
   ],
-  "approvalState": {
+  "reviewStatus": {
     "path": ".oma/state/shared/plan/plan-state.json",
-    "section": "approvalState",
-    "initialStatus": "draft",
-    "reviewStatus": "in_review",
+    "section": "reviewStatus",
+    "initialStatus": "in_review",
     "allowedStatuses": [
-      "draft",
       "in_review",
       "approved",
-      "rejected",
-      "superseded",
-      "needs-review"
-    ],
-    "approvedPlanPath": ".oma/state/shared/plan/approved-plan.json",
-    "approvedPlanDefaultExists": false,
-    "approvedPlanRequiresExplicitAction": true,
-    "transitions": [
-      {
-        "from": "draft",
-        "action": "generate shortlist",
-        "to": "in_review",
-        "writesApprovedPlan": false
-      },
-      {
-        "from": "draft",
-        "action": "shortage detected",
-        "to": "needs-review",
-        "writesApprovedPlan": false
-      },
-      {
-        "from": "rejected",
-        "action": "regenerate shortlist",
-        "to": "draft",
-        "writesApprovedPlan": false
-      },
-      {
-        "from": "needs-review",
-        "action": "regenerate shortlist",
-        "to": "draft",
-        "writesApprovedPlan": false
-      },
-      {
-        "from": "in_review",
-        "action": "approve all",
-        "to": "approved",
-        "writesApprovedPlan": true
-      },
-      {
-        "from": "in_review",
-        "action": "approve <ids>",
-        "to": "approved",
-        "writesApprovedPlan": true
-      },
-      {
-        "from": "in_review",
-        "action": "reject <ids>",
-        "to": "rejected",
-        "writesApprovedPlan": false
-      },
-      {
-        "from": "in_review",
-        "action": "adjust <id>: <instruction>",
-        "to": "draft",
-        "writesApprovedPlan": false
-      },
-      {
-        "from": "in_review",
-        "action": "change target",
-        "to": "draft",
-        "writesApprovedPlan": false
-      },
-      {
-        "from": "in_review",
-        "action": "regenerate shortlist",
-        "to": "draft",
-        "writesApprovedPlan": false
-      },
-      {
-        "from": "approved",
-        "action": "change target",
-        "to": "superseded",
-        "writesApprovedPlan": false
-      },
-      {
-        "from": "approved",
-        "action": "regenerate shortlist",
-        "to": "superseded",
-        "writesApprovedPlan": false
-      }
+      "needs-review",
+      "superseded"
     ]
+    ,
+    "approvedPlanPath": ".oma/state/shared/plan/approved-plan.json",
+    "approvedPlanRequiresExplicitAction": true,
+    "description": "Lightweight review status only. Keep the current review state and the last explicit human action, not a transition table."
   },
   "stopConditions": [
     {
@@ -242,10 +162,9 @@
     ],
     "allowedSharedData": [
       "target bindings",
-      "flow rankings",
-      "capability evidence",
+      "shortlist notes",
+      "bundle-backed capability notes",
       "review decisions",
-      "observation notes",
       "shortage reasons"
     ]
   }

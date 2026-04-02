@@ -44,7 +44,7 @@ Persist exactly these shared write outputs:
 3. Read the installed feature and payload template assets from disk before generating artifacts.
 4. Read the manifest-listed capability bundle surfaces and references before selecting any steps. Resolve every manifest-listed `activeCapabilityBundles[*].skillPath` and every required `references.*` file from disk before continuing.
 5. Read the data-handling policy plus the ownership and never-invent rules before writing state or repo artifacts.
-6. Materialize only the supported subset grounded in the approved plan, the capability matrix, the active bundle truth, and the installed feature/payload templates.
+6. Materialize only the supported subset grounded in the approved plan, the active bundle truth, and the installed feature/payload templates.
 7. Use `.oma/templates/write/state-contract.json` as the only source of truth for allowed generated output paths under `.oma/generated/`.
 8. Persist the exact shared write outputs listed above.
 9. Keep `.oma/state/shared/write/write-report.json` explicit about both the approved artifact intent and the emitted repo-relative path for each generated file.
@@ -72,5 +72,6 @@ When you stop, say `needs-review`, name the exact missing or blocked surface, an
 
 ## Handoff
 
-- If write succeeds or partially succeeds, tell the user which artifacts were materialized, the next command is `/akita-validate`, and generated files remain under `.oma/generated/**` until an explicit `/akita-promote`.
-- If write blocks, do not hand off to `/akita-validate` until the blocker is resolved.
+- If write succeeds or partially succeeds, tell the user which artifacts were materialized, the next command is `/akita-accept`, and generated files remain under `.oma/generated/**` until an explicit accept copies them into live repo paths.
+- During the transition, `/akita-validate` and `/akita-promote` may still exist as compatibility aliases, but the canonical handoff is `/akita-accept`.
+- If write blocks, do not hand off to `/akita-accept` until the blocker is resolved.

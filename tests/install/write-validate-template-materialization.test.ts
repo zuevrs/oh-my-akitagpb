@@ -39,14 +39,14 @@ afterEach(() => {
   }
 });
 
-describe('write and validate template materialization', () => {
-  it('keeps the shipped write and validate template assets registered in the package asset catalog', () => {
+describe('write and accept template materialization', () => {
+  it('keeps the shipped write and accept template assets registered in the package asset catalog', () => {
     const catalog = createAssetCatalog(repoRoot);
     const expectedAssetEntries = {
       'oma/templates/write/state-contract': path.join(repoRoot, 'assets', 'oma', 'templates', 'write', 'state-contract.json'),
       'oma/templates/write/write-summary': path.join(repoRoot, 'assets', 'oma', 'templates', 'write', 'write-summary.md'),
-      'oma/templates/validate/state-contract': path.join(repoRoot, 'assets', 'oma', 'templates', 'validate', 'state-contract.json'),
-      'oma/templates/validate/validate-summary': path.join(repoRoot, 'assets', 'oma', 'templates', 'validate', 'validate-summary.md'),
+      'oma/templates/accept/state-contract': path.join(repoRoot, 'assets', 'oma', 'templates', 'accept', 'state-contract.json'),
+      'oma/templates/accept/accept-summary': path.join(repoRoot, 'assets', 'oma', 'templates', 'accept', 'accept-summary.md'),
     } as const;
 
     for (const [assetKey, expectedPath] of Object.entries(expectedAssetEntries)) {
@@ -56,7 +56,7 @@ describe('write and validate template materialization', () => {
     }
   });
 
-  it('materializes the write and validate contract templates on fresh install without claiming unrelated template files', () => {
+  it('materializes the write and accept contract templates on fresh install without claiming unrelated template files', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
     const userTemplatePath = path.join(fixture.rootDir, '.oma', 'templates', 'user-notes', 'README.md');
     mkdirSync(path.dirname(userTemplatePath), { recursive: true });
@@ -77,8 +77,8 @@ describe('write and validate template materialization', () => {
     for (const relativePath of [
       '.oma/templates/write/state-contract.json',
       '.oma/templates/write/write-summary.md',
-      '.oma/templates/validate/state-contract.json',
-      '.oma/templates/validate/validate-summary.md',
+      '.oma/templates/accept/state-contract.json',
+      '.oma/templates/accept/accept-summary.md',
     ]) {
       expect(existsSync(path.join(fixture.rootDir, relativePath)), relativePath).toBe(true);
       expect(installState.ownedFiles.some((file) => file.relativePath === relativePath), relativePath).toBe(true);

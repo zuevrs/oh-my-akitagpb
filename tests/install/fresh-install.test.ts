@@ -82,18 +82,25 @@ describe('fresh install', () => {
     expect(existsSync(path.join(fixture.rootDir, '.oma', 'runtime', 'shared', 'data-handling-policy.json'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.oma', 'instructions', 'rules', 'default-language-russian.md'))).toBe(true);
 
-    for (const commandId of ['akita-scan', 'akita-plan', 'akita-write', 'akita-validate', 'akita-promote']) {
+    for (const commandId of ['akita-scan', 'akita-plan', 'akita-write', 'akita-accept']) {
       expect(existsSync(path.join(fixture.rootDir, '.opencode', 'commands', `${commandId}.md`))).toBe(true);
+    }
+
+    for (const legacyAliasCommandId of ['akita-validate', 'akita-promote']) {
+      expect(existsSync(path.join(fixture.rootDir, '.opencode', 'commands', `${legacyAliasCommandId}.md`))).toBe(true);
     }
 
     for (const workflowId of [
       'akita-scan-workflow',
       'akita-plan-workflow',
       'akita-write-workflow',
-      'akita-validate-workflow',
-      'akita-promote-workflow',
+      'akita-accept-workflow',
     ]) {
       expect(existsSync(path.join(fixture.rootDir, '.opencode', 'skills', workflowId, 'SKILL.md'))).toBe(true);
+    }
+
+    for (const legacyAliasWorkflowId of ['akita-validate-workflow', 'akita-promote-workflow']) {
+      expect(existsSync(path.join(fixture.rootDir, '.opencode', 'skills', legacyAliasWorkflowId, 'SKILL.md'))).toBe(true);
     }
 
     const installState = readJsonFile<InstallState>(installStatePath);
@@ -115,7 +122,8 @@ describe('fresh install', () => {
     const installedScanCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-scan.md'), 'utf8');
     expect(agentsContent).toContain('<!-- oh-my-akitagpb:begin -->');
     expect(agentsContent).toContain('/akita-scan');
-    expect(agentsContent).toContain('/akita-promote');
+    expect(agentsContent).toContain('/akita-accept');
+    expect(agentsContent).not.toContain('/akita-promote');
     expect(installedScanCommand).toContain('agent: build');
 
     const opencodeConfig = readJsonFile<Record<string, unknown>>(opencodeConfigPath);

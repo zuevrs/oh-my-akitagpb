@@ -31,13 +31,10 @@
 ### Backlog
 - 
 
-### Capability matrix notes
+### Capability notes
 - 
 
-### Decisions
-- 
-
-### Approval state
+### Review status
 - Status:
 - Last explicit action:
 - Approved snapshot present:

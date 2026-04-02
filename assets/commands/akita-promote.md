@@ -1,5 +1,5 @@
 ---
-description: Explicitly accept generated Akita artifacts and copy them into live repo paths.
+description: Compatibility alias that redirects legacy promote users to /akita-accept.
 agent: build
 subtask: false
 ---
@@ -7,23 +7,10 @@ subtask: false
 Use the `akita-promote-workflow` skill from `.opencode/skills/akita-promote-workflow/SKILL.md`.
 
 Before you start:
-1. Read `.oma/templates/promote/state-contract.json` and treat it as the canonical promote persistence contract.
-2. Read `.oma/templates/write/state-contract.json` and `.oma/state/shared/write/write-report.json` from disk before promoting any artifact.
-3. Read `.oma/runtime/shared/data-handling-policy.json` and `.oma/instructions/rules/respect-pack-ownership.md`.
-4. If `.oma/state/shared/write/write-report.json` is missing, stop and send the user to `/akita-write` instead of guessing a source bundle.
-5. If the user does not name explicit artifact ids and explicit repo-relative destinations, stop and ask for them instead of inventing live target paths.
+1. Read `.oma/templates/promote/state-contract.json` and `.oma/templates/accept/state-contract.json`.
+2. Treat `/akita-promote` as a deprecated compatibility alias.
+3. Explain that `/akita-accept` now owns the final validation and live-path copy.
+4. If the user already supplied explicit artifact ids and explicit repo-relative destinations, tell them to rerun the same request with `/akita-accept`.
+5. If the user did not supply explicit artifact ids and explicit repo-relative destinations, stop and tell them `/akita-accept` requires both.
 
-Required local promote outputs:
-- `.oma/state/local/promote/promote-report.json`
-- optional derived summary: `.oma/state/local/promote/promote-summary.md`
-
-Then:
-- accept only generated artifacts that are explicitly listed in `.oma/state/shared/write/write-report.json`
-- require one explicit repo-relative destination per accepted artifact, for example `promote <artifact-id> to <repo-relative-path>` or `accept <artifact-id> as <repo-relative-path>`
-- copy accepted artifacts from `.oma/generated/**` into the explicit live destination; do not move or delete the generated source file
-- never infer live target paths from `.oma/state/shared/plan/approved-plan.json`, filenames, or repo conventions; the user must choose the destination explicitly
-- never overwrite existing files, never copy into `.oma/` or `.opencode/`, and never promote an artifact whose emitted path falls outside the contract-defined generated namespace
-- persist `.oma/state/local/promote/promote-report.json` with `verdict`, `requestedPromotions`, `promotedArtifacts`, and `findings`, including the copied source path, destination path, and source hash for every accepted artifact
-- keep local JSON and markdown redaction-first per `.oma/runtime/shared/data-handling-policy.json`; never persist secrets, credentials, tokens, raw auth headers, raw env values, or machine-local values
-
-If promotion succeeds or partially succeeds, report the copied live paths and keep the generated source paths for traceability. If promotion blocks, stop with the exact reason.
+Do not create a separate promote report here. The canonical command is `/akita-accept`.

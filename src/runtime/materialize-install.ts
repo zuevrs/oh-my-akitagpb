@@ -29,11 +29,15 @@ export interface MaterializedInstall {
   managedSurfaces: readonly ManagedSurfaceRecord[];
 }
 
-export const COMMAND_IDS = ['akita-scan', 'akita-plan', 'akita-write', 'akita-validate', 'akita-promote'] as const;
+export const COMMAND_IDS = ['akita-scan', 'akita-plan', 'akita-write', 'akita-accept'] as const;
+export const LEGACY_COMMAND_ALIAS_IDS = ['akita-validate', 'akita-promote'] as const;
 export const WORKFLOW_SKILL_IDS = [
   'akita-scan-workflow',
   'akita-plan-workflow',
   'akita-write-workflow',
+  'akita-accept-workflow',
+] as const;
+export const LEGACY_WORKFLOW_SKILL_IDS = [
   'akita-validate-workflow',
   'akita-promote-workflow',
 ] as const;
@@ -227,6 +231,18 @@ export function planMaterializedFiles(
       assetKey: 'oma/templates/write/write-summary',
     },
     {
+      relativePath: '.oma/templates/accept/state-contract.json',
+      content: loadAssetText(catalog, 'oma/templates/accept/state-contract'),
+      generatedBy: 'asset',
+      assetKey: 'oma/templates/accept/state-contract',
+    },
+    {
+      relativePath: '.oma/templates/accept/accept-summary.md',
+      content: loadAssetText(catalog, 'oma/templates/accept/accept-summary'),
+      generatedBy: 'asset',
+      assetKey: 'oma/templates/accept/accept-summary',
+    },
+    {
       relativePath: '.oma/templates/validate/state-contract.json',
       content: loadAssetText(catalog, 'oma/templates/validate/state-contract'),
       generatedBy: 'asset',
@@ -276,7 +292,27 @@ export function planMaterializedFiles(
     });
   }
 
+  for (const commandId of LEGACY_COMMAND_ALIAS_IDS) {
+    const assetKey = `commands/${commandId}`;
+    plannedFiles.push({
+      relativePath: `.opencode/commands/${commandId}.md`,
+      content: loadAssetText(catalog, assetKey),
+      generatedBy: 'asset',
+      assetKey,
+    });
+  }
+
   for (const workflowSkillId of WORKFLOW_SKILL_IDS) {
+    const assetKey = `opencode/skills/${workflowSkillId}`;
+    plannedFiles.push({
+      relativePath: `.opencode/skills/${workflowSkillId}/SKILL.md`,
+      content: loadAssetText(catalog, assetKey),
+      generatedBy: 'asset',
+      assetKey,
+    });
+  }
+
+  for (const workflowSkillId of LEGACY_WORKFLOW_SKILL_IDS) {
     const assetKey = `opencode/skills/${workflowSkillId}`;
     plannedFiles.push({
       relativePath: `.opencode/skills/${workflowSkillId}/SKILL.md`,

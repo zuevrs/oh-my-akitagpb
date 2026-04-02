@@ -19,7 +19,7 @@ Before you start:
 4. Read `.oma/capability-manifest.json`.
 5. Resolve every manifest-listed `activeCapabilityBundles[*].skillPath` and every required `references.*` file before selecting implementation steps.
 6. Read `.oma/runtime/shared/data-handling-policy.json`, `.oma/instructions/rules/respect-pack-ownership.md`, and `.oma/instructions/rules/never-invent-steps.md`.
-7. If the approved plan, scenario capability matrix, manifest-listed bundle truth, template surface, or ownership boundary is missing or unclear, stop instead of guessing.
+7. If the approved plan, manifest-listed bundle truth, template surface, or ownership boundary is missing or unclear, stop instead of guessing.
 
 Required shared write outputs:
 - `.oma/state/shared/write/write-report.json`
@@ -35,4 +35,4 @@ Then:
 - keep shared JSON and markdown redaction-first per `.oma/runtime/shared/data-handling-policy.json`; never persist secrets, credentials, tokens, raw auth headers, raw env values, or machine-local values
 - stop with `needs-review` guidance if a manifest-listed bundle file is missing, a needed step is unsupported, no installed template matches the needed artifact shape honestly, or an emitted path falls outside the contract-defined generated namespace or pack-managed locations
 
-If write succeeds or partially succeeds, say the next command is `/akita-validate` and generated artifacts stay under `.oma/generated/**` until an explicit `/akita-promote` copies them into live repo paths.
+If write succeeds or partially succeeds, say the next command is `/akita-accept` and generated artifacts stay under `.oma/generated/**` until an explicit accept copies them into live repo paths. During the transition, `/akita-validate` and `/akita-promote` may still exist as compatibility aliases, but they are not the canonical handoff.

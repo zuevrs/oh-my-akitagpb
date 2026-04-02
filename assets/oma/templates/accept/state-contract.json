@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "contractId": "akita-accept-state",
+  "localStateBasePath": ".oma/state/local/accept",
+  "installedTemplateBasePath": ".oma/templates/accept",
+  "writePrerequisites": {
+    "contractPath": ".oma/templates/write/state-contract.json",
+    "sharedStateBasePath": ".oma/state/shared/write",
+    "requiredStatePaths": [
+      ".oma/state/shared/write/write-report.json"
+    ],
+    "acceptorMustReadFromDisk": true,
+    "description": "akita-accept must consume the persisted write report above and stop when it is missing instead of guessing which generated artifacts are eligible for live acceptance."
+  },
+  "requiredMachineState": [
+    {
+      "id": "accept-report",
+      "path": ".oma/state/local/accept/accept-report.json",
+      "format": "json",
+      "required": true,
+      "requiredTopLevelFields": [
+        "verdict",
+        "requestedAccepts",
+        "acceptedArtifacts",
+        "findings"
+      ],
+      "description": "Canonical local accept trace. It must record the explicit accept request, the validation findings, each copied live destination, and every blocker or refusal in one durable JSON file."
+    }
+  ],
+  "validationPolicy": {
+    "sourceWriteReportPath": ".oma/state/shared/write/write-report.json",
+    "requiresManifestTruth": true,
+    "rejectionReasons": [
+      "unsupported-step",
+      "unsupported-assertion",
+      "bundle-unknown-construct",
+      "lineage-drift",
+      "missing-capability-bundle-file"
+    ],
+    "description": "akita-accept must validate the selected generated artifacts against manifest-listed capability truth and the lineage recorded by akita-write before it copies anything into live repo paths."
+  },
+  "acceptancePolicy": {
+    "sourceBasePath": ".oma/generated",
+    "allowedSourceRoots": [
+      ".oma/generated/features",
+      ".oma/generated/payloads",
+      ".oma/generated/fixtures"
+    ],
+    "explicitDestinationRequired": true,
+    "destinationMustBeRepoRelative": true,
+    "forbiddenDestinationRoots": [
+      ".oma/",
+      ".opencode/"
+    ],
+    "allowOverwriteExistingFiles": false,
+    "copyInsteadOfMove": true,
+    "keepGeneratedSourceAfterAccept": true,
+    "requiredAcceptedArtifactFields": [
+      "artifactId",
+      "artifactKind",
+      "sourcePath",
+      "destinationPath",
+      "sourceSha256",
+      "validationVerdict"
+    ],
+    "description": "akita-accept must treat write-report as the source-of-truth artifact bundle, require explicit human-chosen live destinations, validate before copy, copy instead of move, and refuse overwrites or pack-managed destinations."
+  },
+  "stopConditions": [
+    {
+      "id": "missing-write-report",
+      "classification": "blocked",
+      "reportIn": "accept-report",
+      "description": "The write report is missing, so accept cannot know which generated artifact bundle is eligible."
+    },
+    {
+      "id": "missing-capability-bundle-file",
+      "classification": "blocked",
+      "reportIn": "accept-report",
+      "description": "A manifest-listed capability bundle asset is missing, so accept must stop instead of guessing validation rules."
+    },
+    {
+      "id": "unknown-artifact-id",
+      "classification": "needs-review",
+      "reportIn": "accept-report",
+      "description": "The request names an artifact id that is not present in the current write report."
+    },
+    {
+      "id": "missing-explicit-destination",
+      "classification": "needs-review",
+      "reportIn": "accept-report",
+      "description": "Accept requires an explicit repo-relative destination for each selected artifact."
+    },
+    {
+      "id": "missing-generated-source",
+      "classification": "blocked",
+      "reportIn": "accept-report",
+      "description": "The generated source file recorded in write-report is missing on disk."
+    },
+    {
+      "id": "source-outside-generated-namespace",
+      "classification": "blocked",
+      "reportIn": "accept-report",
+      "description": "The emitted source path falls outside the contract-defined generated namespace."
+    },
+    {
+      "id": "invalid-destination-path",
+      "classification": "blocked",
+      "reportIn": "accept-report",
+      "description": "The requested destination is not a safe repo-relative path."
+    },
+    {
+      "id": "destination-under-pack-managed-root",
+      "classification": "blocked",
+      "reportIn": "accept-report",
+      "description": "Accept must not publish into `.oma/` or `.opencode/`."
+    },
+    {
+      "id": "destination-conflict",
+      "classification": "blocked",
+      "reportIn": "accept-report",
+      "description": "The destination already exists, so accept must stop instead of overwriting it."
+    },
+    {
+      "id": "unsupported-step-or-assertion",
+      "classification": "blocked",
+      "reportIn": "accept-report",
+      "description": "Unsupported steps or assertions must block accept explicitly with clear findings."
+    },
+    {
+      "id": "bundle-unknown-construct",
+      "classification": "blocked",
+      "reportIn": "accept-report",
+      "description": "Any construct that cannot be grounded in manifest-listed bundle truth must block accept explicitly."
+    },
+    {
+      "id": "lineage-drift",
+      "classification": "blocked",
+      "reportIn": "accept-report",
+      "description": "Generated artifacts that diverge from the lineage recorded by akita-write must block accept explicitly."
+    }
+  ],
+  "summaryState": {
+    "path": ".oma/state/local/accept/accept-summary.md",
+    "templatePath": ".oma/templates/accept/accept-summary.md",
+    "format": "markdown",
+    "required": false,
+    "canonical": false,
+    "mustBeDerivedFrom": [
+      "accept-report"
+    ],
+    "description": "Human-readable accept summary only. Canonical machine state stays in the JSON file above."
+  },
+  "redaction": {
+    "policyPath": ".oma/runtime/shared/data-handling-policy.json",
+    "redactionRequired": true,
+    "markdownIsSummaryOnly": true,
+    "forbiddenSharedData": [
+      "secrets",
+      "tokens",
+      "credentials",
+      "raw auth headers",
+      "machine-local values"
+    ],
+    "allowedSharedData": [
+      "artifact ids",
+      "artifact kinds",
+      "repo-relative source paths",
+      "repo-relative destination paths",
+      "validation findings",
+      "acceptance findings"
+    ]
+  }
+}

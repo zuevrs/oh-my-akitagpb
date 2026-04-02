@@ -35,10 +35,11 @@ Persist exactly these shared plan outputs:
 3. Read the persisted scan state from disk, not from chat memory.
 4. Select only high-value candidate flows grounded in scan evidence and active capability truth.
 5. If three to seven viable flows exist, produce a reviewable shortlist in that range and keep overflow candidates in backlog state.
-6. If fewer than three viable flows exist, do **not** pad the shortlist. Persist the honest candidate set in `.oma/state/shared/plan/plan-state.json`, record the shortage there, set the embedded `approvalState` to `needs-review`, and stop with an explicit shortage verdict.
+6. If fewer than three viable flows exist, do **not** pad the shortlist. Persist the honest candidate set in `.oma/state/shared/plan/plan-state.json`, record the shortage there, set `reviewStatus` to `needs-review`, and stop with an explicit shortage verdict.
 7. Persist the exact shared plan outputs listed above.
 8. Present these review actions verbatim: `approve all`, `approve <ids>`, `reject <ids>`, `adjust <id>: <instruction>`, `change target`, `regenerate shortlist`.
 9. Do not create `.oma/state/shared/plan/approved-plan.json` unless the user explicitly chooses `approve all` or `approve <ids>`.
+10. Keep capability notes lightweight inside shortlist items, backlog items, or unresolved notes instead of duplicating manifest truth into a second plan database.
 
 ## Stop with `needs-review` when
 

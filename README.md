@@ -4,13 +4,14 @@ Native-first OpenCode bootstrap pack for Akita GPB workflows.
 
 `oh-my-akitagpb` installs a managed `.oma/` and `.opencode/` surface into a Java
 service repository so an OpenCode agent can scan the repo, plan high-value
-integration flows, write Akita-grounded artifacts, and validate them against
-shipped capability bundles.
+integration flows, write Akita-grounded artifacts into a safe generated
+namespace, and explicitly accept selected artifacts into live repo paths.
 
 ## What it ships
 
 - CLI lifecycle commands: `install`, `update`, `doctor`
-- OpenCode commands: `/akita-scan`, `/akita-plan`, `/akita-write`, `/akita-validate`
+- Primary OpenCode commands: `/akita-scan`, `/akita-plan`, `/akita-write`, `/akita-accept`
+- Compatibility aliases during the transition: `/akita-validate`, `/akita-promote`
 - Curated capability bundles for:
   - `akita-gpb-core-module-trunk@c795936046e`
   - `akita-gpb-api-module-trunk@223b2561bbc`
@@ -32,6 +33,12 @@ After install, open the target repo in OpenCode and start with:
 
 ```text
 /akita-scan
+```
+
+Primary daily flow:
+
+```text
+/akita-scan -> /akita-plan -> /akita-write -> /akita-accept
 ```
 
 ## CLI commands
@@ -59,6 +66,9 @@ The package materializes these top-level surfaces in a target repository:
 - `.opencode/commands/akita-*.md`
 - `.opencode/skills/akita-*-workflow/**`
 - `.opencode/skills/akita-capability-*/**`
+
+Generated artifacts stay under `.oma/generated/**` until an explicit
+`/akita-accept` copies selected files into live repo-relative paths.
 
 Ownership is strict. The pack does not silently overwrite user-owned `AGENTS.md`,
 `opencode.json`, or unrelated `.opencode/*`.

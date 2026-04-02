@@ -1,5 +1,5 @@
 ---
-description: Validate generated Akita artifacts against structural and capability rules.
+description: Compatibility alias that redirects legacy validate users to /akita-accept.
 agent: build
 subtask: false
 ---
@@ -7,23 +7,10 @@ subtask: false
 Use the `akita-validate-workflow` skill from `.opencode/skills/akita-validate-workflow/SKILL.md`.
 
 Before you start:
-1. Read `.oma/templates/validate/state-contract.json` and treat it as the canonical validate persistence contract.
-2. Read `.oma/templates/write/state-contract.json` and `.oma/state/shared/write/write-report.json` from disk before evaluating any artifact.
-3. Read `.oma/capability-manifest.json`.
-4. Resolve every manifest-listed `activeCapabilityBundles[*].skillPath` and every required `references.*` file before validating support coverage.
-5. Read `.oma/runtime/shared/data-handling-policy.json` and `.oma/instructions/rules/explicit-unsupported.md`.
-6. If the generated artifact bundle, provenance bundle, manifest-listed bundle truth, or required capability bundle file is missing, stop explicitly instead of guessing or downgrading the validation rules.
+1. Read `.oma/templates/validate/state-contract.json` and `.oma/templates/accept/state-contract.json`.
+2. Treat `/akita-validate` as a deprecated compatibility alias.
+3. Explain that `/akita-accept` now performs the final capability/lineage check and live-path copy in one step.
+4. If the user already supplied explicit artifact ids and explicit repo-relative destinations, tell them to rerun the same request with `/akita-accept`.
+5. If the user did not supply explicit artifact ids and explicit repo-relative destinations, stop and tell them `/akita-accept` requires both.
 
-Required local validate outputs:
-- `.oma/state/local/validate/validation-report.json`
-- optional derived summary: `.oma/state/local/validate/validate-summary.md`
-
-Then:
-- validate only the reviewed artifact set recorded in `.oma/state/shared/write/write-report.json` against manifest-listed bundle truth
-- persist `.oma/state/local/validate/validation-report.json` with `verdict`, `reviewedArtifacts`, and `findings`; each finding must keep a clear per-artifact reason
-- reject `unsupported-step`, `unsupported-assertion`, `bundle-unknown-construct`, and `lineage-drift` explicitly instead of silently passing partial coverage
-- if the generated artifact set diverges from the lineage recorded in `.oma/state/shared/write/write-report.json`, fail validation with a clear `lineage-drift` finding instead of treating it as a warning
-- if a manifest-listed capability bundle file or required write-state input is missing, stop with `blocked` guidance and record `missing-input-state` or `missing-capability-bundle-file` in `.oma/state/local/validate/validation-report.json`
-- keep local JSON and markdown redaction-first per `.oma/runtime/shared/data-handling-policy.json`; never persist secrets, credentials, tokens, raw auth headers, raw env values, or machine-local credentials
-
-If validation passes, report the validated artifact bundle, name the runtime proof command if one exists, and say the explicit publish step is `/akita-promote`. If validation fails or blocks, stop with the exact reason.
+Do not create a separate validation report or invent an audit-only path here. The canonical command is `/akita-accept`.

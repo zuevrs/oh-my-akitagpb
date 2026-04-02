@@ -1,31 +1,11 @@
 # Сводка promote
 
-Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние promote живёт в JSON-файлах под `.oma/state/local/promote/`.
+`/akita-promote` это legacy alias.
 
-## Канонические JSON-файлы
+Канонический publish gate теперь живёт в `/akita-accept`, который:
 
-- `promote-report.json`
+- валидирует выбранные generated artifacts
+- проверяет lineage и capability truth
+- потом копирует артефакт в live repo path
 
-## Напоминания по promotion
-
-- Продвигайте только generated артефакты, перечисленные в `write-report.json`.
-- Для каждого артефакта указывайте явный `repo-relative` destination.
-- Копируйте, а не перемещайте: source в `.oma/generated/**` остаётся для traceability.
-- Не публикуйте в `.oma/`, `.opencode/` и не перезаписывайте существующие файлы.
-
-## Напоминания по redaction
-
-Не включайте секреты, credentials, токены, raw auth headers, raw env values или machine-local values.
-
-## Сводка
-
-### Requested promotions
-- 
-
-### Promoted artifacts
-- 
-
-### Findings
-- Verdict:
-- Blockers:
-- Follow-up:
+Если вы всё ещё видите этот файл, используйте `/akita-accept`.

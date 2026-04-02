@@ -10,7 +10,7 @@
 
 - Обновляйте только pack-managed write state под `.oma/state/shared/write/`.
 - Создавайте новые generated артефакты только внутри `.oma/generated/{features,payloads,fixtures}/`.
-- Не считайте generated путь live truth; для копирования в рабочие директории используйте явный `/akita-promote`.
+- Не считайте generated путь live truth; для копирования в рабочие директории используйте явный `/akita-accept`.
 - Не перезаписывайте файлы с неясным ownership.
 
 ## Напоминания по redaction

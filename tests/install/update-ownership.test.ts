@@ -55,13 +55,12 @@ const summaryRuntimePaths = [
   '.oma/templates/scan/scan-summary.md',
   '.oma/templates/plan/plan-summary.md',
   '.oma/templates/write/write-summary.md',
-  '.oma/templates/validate/validate-summary.md',
 ] as const;
-const promoteRuntimePaths = [
-  '.opencode/commands/akita-promote.md',
-  '.opencode/skills/akita-promote-workflow/SKILL.md',
-  '.oma/templates/promote/state-contract.json',
-  '.oma/templates/promote/promote-summary.md',
+const acceptRuntimePaths = [
+  '.opencode/commands/akita-accept.md',
+  '.opencode/skills/akita-accept-workflow/SKILL.md',
+  '.oma/templates/accept/state-contract.json',
+  '.oma/templates/accept/accept-summary.md',
 ] as const;
 
 afterEach(() => {
@@ -133,14 +132,14 @@ describe('update ownership', () => {
     expect(readFileSync(customCommandPath, 'utf8')).toBe('user-owned command\n');
   });
 
-  it('backfills newly shipped language, summary, and promote assets during update when an older install ledger does not record them yet', () => {
+  it('backfills newly shipped language, summary, and accept assets during update when an older install ledger does not record them yet', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
     const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
 
     const installState = readJsonFile<InstallState>(installStatePath);
-    const backfillRuntimePaths = [languageRuleRuntimePath, ...summaryRuntimePaths, ...promoteRuntimePaths];
+    const backfillRuntimePaths = [languageRuleRuntimePath, ...summaryRuntimePaths, ...acceptRuntimePaths];
     installState.ownedFiles = installState.ownedFiles.filter(
       (file) => !backfillRuntimePaths.includes(file.relativePath as (typeof backfillRuntimePaths)[number]),
     );

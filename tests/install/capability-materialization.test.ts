@@ -176,7 +176,7 @@ describe('workflow capability loading instructions', () => {
       'akita-scan-workflow',
       'akita-plan-workflow',
       'akita-write-workflow',
-      'akita-validate-workflow',
+      'akita-accept-workflow',
     ] as const) {
       const skill = readWorkflowSkill(workflowId);
       expect(skill, workflowId).toContain('.oma/capability-manifest.json');
