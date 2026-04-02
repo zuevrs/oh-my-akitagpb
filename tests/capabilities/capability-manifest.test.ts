@@ -69,12 +69,13 @@ describe('capability manifest', () => {
 
     expect(manifest).toMatchObject({
       schemaVersion: 1,
-      activeCommandIds: ['akita-scan', 'akita-plan', 'akita-write', 'akita-validate'],
+      activeCommandIds: ['akita-scan', 'akita-plan', 'akita-write', 'akita-validate', 'akita-promote'],
       activeWorkflowSkills: [
         'akita-scan-workflow',
         'akita-plan-workflow',
         'akita-write-workflow',
         'akita-validate-workflow',
+        'akita-promote-workflow',
       ],
     });
     expect(manifest.activeCapabilityBundles.map((bundle) => bundle.bundleId)).toEqual(expectedBundleIds);

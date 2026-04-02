@@ -29,16 +29,18 @@ export interface MaterializedInstall {
   managedSurfaces: readonly ManagedSurfaceRecord[];
 }
 
-export const COMMAND_IDS = ['akita-scan', 'akita-plan', 'akita-write', 'akita-validate'] as const;
+export const COMMAND_IDS = ['akita-scan', 'akita-plan', 'akita-write', 'akita-validate', 'akita-promote'] as const;
 export const WORKFLOW_SKILL_IDS = [
   'akita-scan-workflow',
   'akita-plan-workflow',
   'akita-write-workflow',
   'akita-validate-workflow',
+  'akita-promote-workflow',
 ] as const;
 export const MANAGED_INSTRUCTION_PATHS = [
   'AGENTS.md',
   '.oma/instructions/rules/manifest-first.md',
+  '.oma/instructions/rules/default-language-russian.md',
   '.oma/instructions/rules/never-invent-steps.md',
   '.oma/instructions/rules/redact-shared-state.md',
   '.oma/instructions/rules/prefer-existing-prior-art.md',
@@ -103,6 +105,12 @@ export function planMaterializedFiles(
       content: loadAssetText(catalog, 'oma/instructions/rules/manifest-first'),
       generatedBy: 'asset',
       assetKey: 'oma/instructions/rules/manifest-first',
+    },
+    {
+      relativePath: '.oma/instructions/rules/default-language-russian.md',
+      content: loadAssetText(catalog, 'oma/instructions/rules/default-language-russian'),
+      generatedBy: 'asset',
+      assetKey: 'oma/instructions/rules/default-language-russian',
     },
     {
       relativePath: '.oma/instructions/rules/never-invent-steps.md',
@@ -229,6 +237,18 @@ export function planMaterializedFiles(
       content: loadAssetText(catalog, 'oma/templates/validate/validate-summary'),
       generatedBy: 'asset',
       assetKey: 'oma/templates/validate/validate-summary',
+    },
+    {
+      relativePath: '.oma/templates/promote/state-contract.json',
+      content: loadAssetText(catalog, 'oma/templates/promote/state-contract'),
+      generatedBy: 'asset',
+      assetKey: 'oma/templates/promote/state-contract',
+    },
+    {
+      relativePath: '.oma/templates/promote/promote-summary.md',
+      content: loadAssetText(catalog, 'oma/templates/promote/promote-summary'),
+      generatedBy: 'asset',
+      assetKey: 'oma/templates/promote/promote-summary',
     },
     {
       relativePath: '.oma/runtime/shared/version.json',

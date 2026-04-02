@@ -1,21 +1,16 @@
-# Scan Summary
+# Сводка scan
 
-This file is **summary-only**. The canonical machine-readable scan state lives in the JSON files under `.oma/state/shared/scan/`.
+Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние scan живёт в JSON-файлах под `.oma/state/shared/scan/`.
 
-## Canonical JSON inputs
+## Канонические JSON-файлы
 
-- `contracts.json`
-- `target-candidates.json`
-- `prior-art.json`
-- `service-runtime-profile.json`
-- `flow-candidates.json`
-- `assertion-opportunities.json`
+- `scan-state.json`
 
-## Redaction reminders
+## Напоминания по redaction
 
-Do not include secrets, credentials, tokens, raw auth headers, or machine-local values.
+Не включайте секреты, credentials, токены, raw auth headers или machine-local values.
 
-## Summary
+## Сводка
 
 ### Contracts
 - OpenAPI present:

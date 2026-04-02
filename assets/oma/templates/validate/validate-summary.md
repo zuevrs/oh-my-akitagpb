@@ -1,26 +1,26 @@
-# Validate Summary
+# Сводка validate
 
-This file is **summary-only**. The canonical machine-readable validate state lives in the JSON files under `.oma/state/local/validate/`.
+Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние validate живёт в JSON-файлах под `.oma/state/local/validate/`.
 
-## Canonical JSON inputs
+## Канонические JSON-файлы
 
 - `validation-report.json`
 
-## Validation reminders
+## Напоминания по validation
 
-- Validate only the generated artifact bundle recorded by `akita-write`.
-- Reject unsupported or bundle-unknown constructs explicitly.
-- Preserve clear lineage-drift findings instead of silently passing partial coverage.
+- Проверяйте только generated artifact bundle, записанный в `write-report.json`.
+- Явно отклоняйте unsupported и bundle-unknown constructs.
+- Сохраняйте явные lineage-drift findings вместо молчаливого partial pass.
 
-## Redaction reminders
+## Напоминания по redaction
 
-Do not include secrets, credentials, tokens, raw auth headers, raw env values, or machine-local credentials.
+Не включайте секреты, credentials, токены, raw auth headers, raw env values или machine-local credentials.
 
-## Summary
+## Сводка
 
 ### Validation report
 - Verdict:
 - Reviewed artifacts:
 - Rejection reasons:
 - Lineage notes:
-- Follow-up:
+- Follow-up: после успешной ручной проверки используйте явный `/akita-promote`.

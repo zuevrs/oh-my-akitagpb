@@ -50,6 +50,20 @@ function listBundleRuntimePaths(manifest: CapabilityManifest): string[] {
   return manifest.activeCapabilityBundles.flatMap((bundle) => [bundle.skillPath, ...Object.values(bundle.references)]);
 }
 
+const languageRuleRuntimePath = '.oma/instructions/rules/default-language-russian.md';
+const summaryRuntimePaths = [
+  '.oma/templates/scan/scan-summary.md',
+  '.oma/templates/plan/plan-summary.md',
+  '.oma/templates/write/write-summary.md',
+  '.oma/templates/validate/validate-summary.md',
+] as const;
+const promoteRuntimePaths = [
+  '.opencode/commands/akita-promote.md',
+  '.opencode/skills/akita-promote-workflow/SKILL.md',
+  '.oma/templates/promote/state-contract.json',
+  '.oma/templates/promote/promote-summary.md',
+] as const;
+
 afterEach(() => {
   while (fixtures.length > 0) {
     fixtures.pop()?.cleanup();
@@ -78,7 +92,11 @@ describe('update ownership', () => {
     const instructions = Array.isArray(opencodeConfig.instructions)
       ? opencodeConfig.instructions.filter((entry): entry is string => typeof entry === 'string')
       : [];
-    opencodeConfig.instructions = instructions.filter((entry) => entry !== '.oma/instructions/rules/respect-pack-ownership.md');
+    opencodeConfig.instructions = instructions.filter(
+      (entry) =>
+        entry !== '.oma/instructions/rules/respect-pack-ownership.md' &&
+        entry !== '.oma/instructions/rules/default-language-russian.md',
+    );
     opencodeConfig.customSetting = 'keep-me';
     writeFileSync(opencodePath, `${JSON.stringify(opencodeConfig, null, 2)}\n`, 'utf8');
 
@@ -107,9 +125,50 @@ describe('update ownership', () => {
       }),
     );
     expect(readJsonFile<Record<string, unknown>>(opencodePath).instructions).toEqual(
-      expect.arrayContaining(['.oma/instructions/rules/respect-pack-ownership.md']),
+      expect.arrayContaining([
+        '.oma/instructions/rules/respect-pack-ownership.md',
+        '.oma/instructions/rules/default-language-russian.md',
+      ]),
     );
     expect(readFileSync(customCommandPath, 'utf8')).toBe('user-owned command\n');
+  });
+
+  it('backfills newly shipped language, summary, and promote assets during update when an older install ledger does not record them yet', () => {
+    const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+
+    parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
+
+    const installState = readJsonFile<InstallState>(installStatePath);
+    const backfillRuntimePaths = [languageRuleRuntimePath, ...summaryRuntimePaths, ...promoteRuntimePaths];
+    installState.ownedFiles = installState.ownedFiles.filter(
+      (file) => !backfillRuntimePaths.includes(file.relativePath as (typeof backfillRuntimePaths)[number]),
+    );
+    writeFileSync(installStatePath, `${JSON.stringify(installState, null, 2)}\n`, 'utf8');
+
+    for (const runtimePath of backfillRuntimePaths) {
+      rmSync(path.join(fixture.rootDir, runtimePath));
+    }
+
+    const execution = invokeInstalledCli(fixture.rootDir, ['update']);
+    const result = parseJsonOutput<CliResult>(execution);
+    const updatedInstallState = readJsonFile<InstallState>(installStatePath);
+
+    expect(execution.exitCode).toBe(0);
+    expect(result).toMatchObject({
+      subcommand: 'update',
+      status: 'ok',
+      reason: 'update-complete',
+      details: expect.objectContaining({
+        refusedCount: '0',
+      }),
+    });
+
+    for (const runtimePath of backfillRuntimePaths) {
+      expect(existsSync(path.join(fixture.rootDir, runtimePath)), runtimePath).toBe(true);
+      expect(updatedInstallState.ownedFiles.some((file) => file.relativePath === runtimePath), runtimePath).toBe(true);
+      expect(result.details?.changedPaths ?? '').toContain(runtimePath);
+    }
   });
 
   it('adds manifest-listed capability bundle files during update when an older install ledger does not record them yet', () => {

@@ -152,14 +152,17 @@ function main() {
     '.opencode/commands/akita-plan.md',
     '.opencode/commands/akita-write.md',
     '.opencode/commands/akita-validate.md',
+    '.opencode/commands/akita-promote.md',
     '.opencode/skills/akita-scan-workflow/SKILL.md',
     '.opencode/skills/akita-plan-workflow/SKILL.md',
     '.opencode/skills/akita-write-workflow/SKILL.md',
     '.opencode/skills/akita-validate-workflow/SKILL.md',
+    '.opencode/skills/akita-promote-workflow/SKILL.md',
     '.oma/templates/scan/state-contract.json',
     '.oma/templates/plan/state-contract.json',
     '.oma/templates/write/state-contract.json',
     '.oma/templates/validate/state-contract.json',
+    '.oma/templates/promote/state-contract.json',
   ];
 
   assertFileExists(path.join(fixtureRoot, 'pom.xml'));
@@ -215,11 +218,16 @@ function main() {
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-write.md'), '.oma/templates/write/state-contract.json');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-write.md'), '.oma/state/shared/plan/approved-plan.json');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-validate.md'), '.oma/templates/validate/state-contract.json');
-  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-validate.md'), '.oma/state/shared/write/generated-artifacts.json');
-  assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'akita-write-workflow', 'SKILL.md'), '.oma/state/shared/write/generated-artifacts.json');
-  assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'akita-write-workflow', 'SKILL.md'), 'generation-report.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-validate.md'), '.oma/state/shared/write/write-report.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-validate.md'), '/akita-promote');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-promote.md'), '.oma/templates/promote/state-contract.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-promote.md'), '.oma/state/shared/write/write-report.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'akita-write-workflow', 'SKILL.md'), '.oma/state/shared/write/write-report.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'akita-write-workflow', 'SKILL.md'), '.oma/generated/**');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'akita-validate-workflow', 'SKILL.md'), '.oma/state/local/validate/validation-report.json');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'akita-validate-workflow', 'SKILL.md'), 'lineage-drift');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'akita-promote-workflow', 'SKILL.md'), '.oma/state/local/promote/promote-report.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'akita-promote-workflow', 'SKILL.md'), 'copy instead of move');
 
   const summary = {
     status: 'ok',

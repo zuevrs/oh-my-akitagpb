@@ -13,7 +13,7 @@ Do not treat them as capability truth.
 
 ## Rules
 
-- Choose the template that matches the approved canonical target path.
+- Choose the template that matches the approved artifact intent and the contract-defined generated namespace.
 - Keep values grounded in approved inputs, prior art, and active capability support.
 - Do not invent new transport semantics or unsupported payload behavior.
 - If no shipped payload template matches the approved output honestly, stop with `needs-review`.

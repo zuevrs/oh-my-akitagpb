@@ -7,66 +7,28 @@
     "contractPath": ".oma/templates/scan/state-contract.json",
     "sharedStateBasePath": ".oma/state/shared/scan",
     "requiredStatePaths": [
-      ".oma/state/shared/scan/contracts.json",
-      ".oma/state/shared/scan/target-candidates.json",
-      ".oma/state/shared/scan/prior-art.json",
-      ".oma/state/shared/scan/service-runtime-profile.json",
-      ".oma/state/shared/scan/flow-candidates.json",
-      ".oma/state/shared/scan/assertion-opportunities.json"
+      ".oma/state/shared/scan/scan-state.json"
     ],
     "plannerMustReadFromDisk": true,
-    "description": "akita-plan must consume the persisted scan outputs above and stop when they are missing instead of reconstructing repo facts from chat memory."
+    "description": "akita-plan must consume the persisted scan snapshot above and stop when it is missing instead of reconstructing repo facts from chat memory."
   },
   "requiredMachineState": [
     {
-      "id": "active-target",
-      "path": ".oma/state/shared/plan/active-target.json",
+      "id": "plan-state",
+      "path": ".oma/state/shared/plan/plan-state.json",
       "format": "json",
       "required": true,
-      "description": "The currently selected target for the shortlisted plan flows."
-    },
-    {
-      "id": "current-plan",
-      "path": ".oma/state/shared/plan/current-plan.json",
-      "format": "json",
-      "required": true,
-      "description": "The current shortlist plus backlog candidates grounded in persisted scan state."
-    },
-    {
-      "id": "flow-scorecards",
-      "path": ".oma/state/shared/plan/flow-scorecards.json",
-      "format": "json",
-      "required": true,
-      "description": "Explainable ranking data for the shortlisted and backlog flows."
-    },
-    {
-      "id": "scenario-capability-matrix",
-      "path": ".oma/state/shared/plan/scenario-capability-matrix.json",
-      "format": "json",
-      "required": true,
-      "description": "Support status, capability evidence, and notable gaps for each candidate flow."
-    },
-    {
-      "id": "decision-log",
-      "path": ".oma/state/shared/plan/decision-log.json",
-      "format": "json",
-      "required": true,
-      "appendOnly": true,
-      "description": "Append-only semantic decision history for shortlist revisions and human review decisions."
-    },
-    {
-      "id": "approval-state",
-      "path": ".oma/state/shared/plan/approval-state.json",
-      "format": "json",
-      "required": true,
-      "description": "Current approval status for the active shortlist and the latest explicit review action."
-    },
-    {
-      "id": "unresolved",
-      "path": ".oma/state/shared/plan/unresolved.json",
-      "format": "json",
-      "required": true,
-      "description": "Explicit unresolved blockers, shortages, and needs-review reasons that prevent an honest approved plan."
+      "requiredTopLevelFields": [
+        "activeTarget",
+        "shortlist",
+        "backlog",
+        "scorecards",
+        "capabilityMatrix",
+        "decisionLog",
+        "approvalState",
+        "unresolved"
+      ],
+      "description": "Canonical plan review packet. It must keep the active target, shortlist, backlog, scorecards, capability matrix, decision log, approval state, and unresolved blockers in one durable JSON file."
     },
     {
       "id": "approved-plan",
@@ -74,17 +36,24 @@
       "format": "json",
       "required": false,
       "creationGate": "explicit-approve",
-      "description": "Frozen approved snapshot that may be written only after an explicit approve action."
+      "requiredTopLevelFields": [
+        "approvedTarget",
+        "approvedFlows",
+        "capabilityMatrix",
+        "approvedAt",
+        "approvedByAction"
+      ],
+      "description": "Frozen approved snapshot that may be written only after an explicit approve action. It must contain enough approved intent and capability detail for akita-write to materialize safely without reopening plan-state."
     }
   ],
   "shortlistPolicy": {
     "targetMinItems": 3,
     "maxItems": 7,
-    "shortlistStoredIn": "current-plan",
-    "backlogStoredIn": "current-plan",
+    "shortlistStoredIn": "plan-state",
+    "backlogStoredIn": "plan-state",
     "doNotPadShortlist": true,
     "allowShortageNeedsReview": true,
-    "shortageRecordedIn": "unresolved",
+    "shortageRecordedIn": "plan-state",
     "description": "akita-plan aims for a human-reviewable shortlist of three to seven flows, but if fewer than three viable flows honestly exist it must record the shortage and stop with needs-review instead of padding the shortlist."
   },
   "reviewActions": [
@@ -132,7 +101,8 @@
     }
   ],
   "approvalState": {
-    "path": ".oma/state/shared/plan/approval-state.json",
+    "path": ".oma/state/shared/plan/plan-state.json",
+    "section": "approvalState",
     "initialStatus": "draft",
     "reviewStatus": "in_review",
     "allowedStatuses": [
@@ -225,25 +195,25 @@
     {
       "id": "missing-scan-state",
       "classification": "needs-review",
-      "reportIn": "unresolved",
+      "reportIn": "plan-state",
       "description": "Required persisted scan state is missing, so planning cannot proceed honestly."
     },
     {
       "id": "missing-capability-bundle-file",
       "classification": "needs-review",
-      "reportIn": "unresolved",
+      "reportIn": "plan-state",
       "description": "A manifest-listed capability bundle asset is missing, so planning must stop instead of guessing capability coverage."
     },
     {
       "id": "insufficient-viable-flows",
       "classification": "needs-review",
-      "reportIn": "unresolved",
+      "reportIn": "plan-state",
       "description": "Fewer than three viable flows exist for the active target, so the shortlist must not be padded."
     },
     {
       "id": "ambiguous-target-binding",
       "classification": "needs-review",
-      "reportIn": "unresolved",
+      "reportIn": "plan-state",
       "description": "The active target cannot be selected honestly from persisted scan state."
     }
   ],
@@ -254,16 +224,10 @@
     "required": false,
     "canonical": false,
     "mustBeDerivedFrom": [
-      "active-target",
-      "current-plan",
-      "flow-scorecards",
-      "scenario-capability-matrix",
-      "decision-log",
-      "approval-state",
-      "unresolved",
+      "plan-state",
       "approved-plan"
     ],
-    "description": "Human-readable review packet only. Canonical machine state stays in the JSON files above."
+    "description": "Human-readable review packet only. Canonical machine state stays in the two JSON files above."
   },
   "redaction": {
     "policyPath": ".oma/runtime/shared/data-handling-policy.json",

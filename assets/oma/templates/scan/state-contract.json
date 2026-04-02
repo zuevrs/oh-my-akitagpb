@@ -5,46 +5,19 @@
   "installedTemplateBasePath": ".oma/templates/scan",
   "requiredMachineState": [
     {
-      "id": "contracts",
-      "path": ".oma/state/shared/scan/contracts.json",
+      "id": "scan-state",
+      "path": ".oma/state/shared/scan/scan-state.json",
       "format": "json",
       "required": true,
-      "description": "Discovered contract surfaces for the target repo, including OpenAPI inputs when present and code-first contract notes when OpenAPI is absent."
-    },
-    {
-      "id": "target-candidates",
-      "path": ".oma/state/shared/scan/target-candidates.json",
-      "format": "json",
-      "required": true,
-      "description": "High-value target areas, endpoints, or entry points that later planning can choose from."
-    },
-    {
-      "id": "prior-art",
-      "path": ".oma/state/shared/scan/prior-art.json",
-      "format": "json",
-      "required": true,
-      "description": "Repo-local prior art that may inform layout or style without widening capability truth."
-    },
-    {
-      "id": "service-runtime-profile",
-      "path": ".oma/state/shared/scan/service-runtime-profile.json",
-      "format": "json",
-      "required": true,
-      "description": "Runtime characteristics, framework facts, and execution constraints relevant to flow design."
-    },
-    {
-      "id": "flow-candidates",
-      "path": ".oma/state/shared/scan/flow-candidates.json",
-      "format": "json",
-      "required": true,
-      "description": "Candidate integration flows grounded in repo facts and manifest-listed capability truth."
-    },
-    {
-      "id": "assertion-opportunities",
-      "path": ".oma/state/shared/scan/assertion-opportunities.json",
-      "format": "json",
-      "required": true,
-      "description": "Assertion surfaces and observable checkpoints that later slices can reuse for plan and validation work."
+      "requiredTopLevelFields": [
+        "contracts",
+        "targetCandidates",
+        "priorArt",
+        "serviceRuntimeProfile",
+        "flowCandidates",
+        "assertionOpportunities"
+      ],
+      "description": "Canonical persisted scan snapshot for the target repo. It must keep contracts, target candidates, prior art, runtime profile, flow candidates, and assertion opportunities in one durable JSON file."
     }
   ],
   "summaryState": {
@@ -54,14 +27,9 @@
     "required": false,
     "canonical": false,
     "mustBeDerivedFrom": [
-      "contracts",
-      "target-candidates",
-      "prior-art",
-      "service-runtime-profile",
-      "flow-candidates",
-      "assertion-opportunities"
+      "scan-state"
     ],
-    "description": "Human-readable summary only. Canonical machine state stays in the JSON files above."
+    "description": "Human-readable summary only. Canonical machine state stays in the single JSON file above."
   },
   "redaction": {
     "policyPath": ".oma/runtime/shared/data-handling-policy.json",

@@ -80,8 +80,9 @@ describe('fresh install', () => {
     expect(existsSync(path.join(fixture.rootDir, '.oma', 'capability-manifest.json'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.oma', 'runtime', 'shared', 'version.json'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.oma', 'runtime', 'shared', 'data-handling-policy.json'))).toBe(true);
+    expect(existsSync(path.join(fixture.rootDir, '.oma', 'instructions', 'rules', 'default-language-russian.md'))).toBe(true);
 
-    for (const commandId of ['akita-scan', 'akita-plan', 'akita-write', 'akita-validate']) {
+    for (const commandId of ['akita-scan', 'akita-plan', 'akita-write', 'akita-validate', 'akita-promote']) {
       expect(existsSync(path.join(fixture.rootDir, '.opencode', 'commands', `${commandId}.md`))).toBe(true);
     }
 
@@ -90,6 +91,7 @@ describe('fresh install', () => {
       'akita-plan-workflow',
       'akita-write-workflow',
       'akita-validate-workflow',
+      'akita-promote-workflow',
     ]) {
       expect(existsSync(path.join(fixture.rootDir, '.opencode', 'skills', workflowId, 'SKILL.md'))).toBe(true);
     }
@@ -110,14 +112,18 @@ describe('fresh install', () => {
     expect(projectMode.reasons).toEqual([]);
 
     const agentsContent = readFileSync(agentsPath, 'utf8');
+    const installedScanCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-scan.md'), 'utf8');
     expect(agentsContent).toContain('<!-- oh-my-akitagpb:begin -->');
     expect(agentsContent).toContain('/akita-scan');
+    expect(agentsContent).toContain('/akita-promote');
+    expect(installedScanCommand).toContain('agent: build');
 
     const opencodeConfig = readJsonFile<Record<string, unknown>>(opencodeConfigPath);
     expect(opencodeConfig.instructions).toEqual(
       expect.arrayContaining([
         'AGENTS.md',
         '.oma/instructions/rules/manifest-first.md',
+        '.oma/instructions/rules/default-language-russian.md',
         '.oma/instructions/rules/respect-pack-ownership.md',
       ]),
     );
