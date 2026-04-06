@@ -45,6 +45,24 @@ const bundles = [
       'database-generic-collection-export-not-promised',
     ],
   },
+  {
+    bundleId: 'akita-capability-akita-gpb-kafka-mq-module-ff56f175d8c',
+    moduleId: 'akita-gpb-kafka-mq-module',
+    pin: 'ff56f175d8c',
+    expectedStepSourceSuffix: 'Steps.java',
+    expectedUnsupportedIds: [
+      'kafkamq.helper-and-hook-internals-not-standalone-capabilities',
+      'kafkamq.readme-claims-do-not-expand-runtime-truth',
+      'kafkamq.generic-broker-administration-not-promised',
+      'kafkamq-delivery-guarantees-and-ordering-not-promised',
+      'kafkamq-arbitrary-streaming-semantics-not-promised',
+      'kafkamq.kafka-generic-transport-parity-not-promised',
+      'kafkamq.ibm-mq-selector-queue-surface-only',
+      'kafkamq.artemis-topic-requires-reviewed-subscription-flow',
+      'kafkamq.artemis-browse-is-nondestructive-only',
+      'kafkamq.message-format-inference-beyond-reviewed-steps-not-promised',
+    ],
+  },
 ] as const;
 
 type CapabilityContract = {
