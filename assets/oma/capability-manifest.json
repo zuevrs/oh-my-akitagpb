@@ -58,6 +58,20 @@
       }
     },
     {
+      "bundleId": "akita-capability-ccl-files-module-05e1cf4d5e7",
+      "module": {
+        "id": "ccl-files-module",
+        "pin": "05e1cf4d5e7"
+      },
+      "skillPath": ".opencode/skills/akita-capability-ccl-files-module-05e1cf4d5e7/SKILL.md",
+      "references": {
+        "capabilityContract": ".opencode/skills/akita-capability-ccl-files-module-05e1cf4d5e7/references/capability-contract.json",
+        "unsupportedCases": ".opencode/skills/akita-capability-ccl-files-module-05e1cf4d5e7/references/unsupported-cases.json",
+        "examples": ".opencode/skills/akita-capability-ccl-files-module-05e1cf4d5e7/references/examples.json",
+        "provenance": ".opencode/skills/akita-capability-ccl-files-module-05e1cf4d5e7/references/provenance.json"
+      }
+    },
+    {
       "bundleId": "akita-capability-akita-gpb-kafka-mq-module-ff56f175d8c",
       "module": {
         "id": "akita-gpb-kafka-mq-module",

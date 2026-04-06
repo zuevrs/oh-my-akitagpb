@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-ccl-files-module-05e1cf4d5e7",
+  "examples": [
+    {
+      "id": "files-read-and-preserve-a-local-file",
+      "summary": "Load one file as text and one file as a File object when later reviewed steps need different representations.",
+      "steps": [
+        "Когда содержимое файла ресурсов \"sample/request.json\" сохраняем в переменную сценария \"requestBody\"",
+        "И сохранить файл \"${test.data.base.path}/attachments/report.pdf\" в переменную сценария \"reportPdf\""
+      ],
+      "notes": [
+        "Use text loading when a later reviewed step expects string content.",
+        "Use file-object loading when a later reviewed file/document step expects a File variable."
+      ]
+    },
+    {
+      "id": "files-zip-unpack-and-select-one-file",
+      "summary": "Unpack one reviewed ZIP archive, assert the expected filenames are present, and save one extracted file for downstream checks.",
+      "steps": [
+        "Когда распаковать архив \"${archiveFile}\" и сохранить список разархивированных файлов в переменную \"unzippedFiles\"",
+        "И список файлов \"unzippedFiles\" содержит файлы с именами:",
+        "И из списка файлов \"unzippedFiles\" сохранить файл с именем \"statement.*\\.pdf\" в переменную \"statementPdf\""
+      ],
+      "table": [
+        [
+          "statement.*\\.pdf"
+        ],
+        [
+          "metadata.json"
+        ]
+      ],
+      "notes": [
+        "Keep archive handling local to the reviewed unzip/list/select flow.",
+        "Do not generalize this into arbitrary archive orchestration beyond ZIP extraction and file-list checks."
+      ]
+    },
+    {
+      "id": "docx-template-and-content-check",
+      "summary": "Fill a DOCX template from a table and then compare or extract the reviewed text content only.",
+      "steps": [
+        "Когда в DOCX-шаблон \"templates/offer-template.docx\" подставить переменные из таблицы, сохранив результат в файл \"offerDocx\"",
+        "И содержимое DOCX-файла \"templates/offer-template.docx\" сохранено в переменную \"templateText\""
+      ],
+      "table": [
+        [
+          "${customerName}",
+          "Иван Петров"
+        ],
+        [
+          "${amount}",
+          "150000"
+        ]
+      ],
+      "notes": [
+        "This bundle promises reviewed DOCX text extraction and simple placeholder replacement only.",
+        "Do not infer full Word authoring or layout semantics."
+      ]
+    },
+    {
+      "id": "excel-row-selection-and-json-export",
+      "summary": "Select one Excel row by reviewed conditions, extract only the needed cells, and export workbook content to JSON text when downstream logic truly needs serialized spreadsheet data.",
+      "steps": [
+        "Когда из excel-файла \"${reportFile}\" со страницы \"Лист1\" строка с параметрами из таблицы сохранена в переменную \"reportRow\"",
+        "И из excel-строки \"${reportRow}\" значения столбцов сохранены в переменные:",
+        "И содержимое excel-файла \"${reportFile}\" сохраняем в виде json в переменную \"reportJson\""
+      ],
+      "table": [
+        [
+          "Столбец",
+          "Формат",
+          "Значение"
+        ],
+        [
+          "A",
+          "да",
+          "10034"
+        ],
+        [
+          "C",
+          "нет",
+          "7722620599"
+        ]
+      ],
+      "notes": [
+        "Prefer the smallest reviewed Excel flow that proves what the scenario needs.",
+        "The JSON export step yields JSON text, not a generic spreadsheet object model."
+      ]
+    },
+    {
+      "id": "html-element-extraction",
+      "summary": "Parse an HTML string, keep one element, then read only its own text or one attribute value.",
+      "steps": [
+        "Когда из HTML-строки \"${emailBody}\" получить элемент по xpath \"//a\" и сохранить в переменную \"hyperlink\"",
+        "И из HTML-элемента \"hyperlink\" сохранить внутренний текст в переменную \"hyperlinkText\"",
+        "И из HTML-элемента \"hyperlink\" сохранить значение атрибута \"href\" в переменную \"hyperlinkHref\""
+      ],
+      "notes": [
+        "This is HTML-string parsing only. It is not browser automation."
+      ]
+    },
+    {
+      "id": "image-load-and-compare",
+      "summary": "Load a baseline image from disk and compare it to another stored image with the reviewed diff step.",
+      "steps": [
+        "Когда получить изображение по пути \"${baselineImagePath}\" и сохранить в переменную \"expectedImage\"",
+        "И сравнить изображение \"actualImage\" с \"expectedImage\""
+      ],
+      "notes": [
+        "Use this only when another reviewed step already produced the actual image variable.",
+        "Do not treat it as a full visual-regression platform with configurable tolerances."
+      ]
+    },
+    {
+      "id": "json-assert-extract-and-transform",
+      "summary": "Use the reviewed JSON family to assert selected JsonPath values, save one array result, and apply a bounded transformation flow.",
+      "steps": [
+        "Когда в json строке \"${payloadJson}\" значения, найденные по JsonPath, равны значениям из таблицы",
+        "И значения из json строки \"${payloadJson}\", найденные по JsonPath из таблицы, сохранены в виде массива в переменные",
+        "И в json строке \"${payloadJson}\" выполнено преобразование и результат сохранён в переменную \"updatedJson\""
+      ],
+      "table": [
+        [
+          "$.data.id",
+          "${expectedId}"
+        ],
+        [
+          "$.data.status",
+          "ACTIVE"
+        ]
+      ],
+      "notes": [
+        "Keep JSON usage inside the reviewed JsonPath/GPath/assert/transform surface.",
+        "Do not infer schema validation or generic document-database semantics."
+      ]
+    },
+    {
+      "id": "pdf-text-and-table-checks",
+      "summary": "Assert one reviewed PDF text condition and one reviewed table family without turning the scenario into a generic PDF-analysis flow.",
+      "steps": [
+        "Когда в PDF файле \"reportPdf\" содержится текст \"Итоговый отчёт\"",
+        "И в PDF файле \"reportPdf\" таблица, найденная после текста \"Детализация\", содержит строки:"
+      ],
+      "table": [
+        [
+          "Показатель",
+          "Значение"
+        ],
+        [
+          "Статус",
+          "Успешно"
+        ]
+      ],
+      "notes": [
+        "Choose the exact reviewed PDF table family you need: after-anchor text, by table index, or by page-specific table index.",
+        "Do not generalize this into arbitrary layout extraction or OCR."
+      ]
+    },
+    {
+      "id": "xml-tag-node-and-array-extraction",
+      "summary": "Extract one XML tag value, keep a filtered node, and collect repeated xmlpath results into an array variable.",
+      "steps": [
+        "Когда из XML файла \"${responseXmlFile}\" получить значение тэга \"Status\" и сохранить в переменную \"statusValue\"",
+        "И из XML файла \"${responseXmlFile}\" получить тэг по имени \"Item\" с атрибутами из таблицы и сохранить в переменную \"itemNode\"",
+        "И значения из xml файла \"${responseXmlFile}\", найденные по xmlpath \"//Item/@code\", сохранены в виде массива в переменную \"itemCodes\""
+      ],
+      "table": [
+        [
+          "type",
+          "primary"
+        ]
+      ],
+      "notes": [
+        "Use the XML family for reviewed tag/attribute/node/xmlpath extraction only.",
+        "Do not infer XSD validation or generic XML transformation support."
+      ]
+    }
+  ]
+}
