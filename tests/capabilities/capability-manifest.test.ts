@@ -10,6 +10,7 @@ const expectedBundleIds = [
   'akita-capability-akita-gpb-core-module-c795936046e',
   'akita-capability-akita-gpb-api-module-223b2561bbc',
   'akita-capability-ccl-database-module-bb0d27eda3e',
+  'akita-capability-ccl-files-module-05e1cf4d5e7',
   'akita-capability-akita-gpb-kafka-mq-module-ff56f175d8c',
 ] as const;
 

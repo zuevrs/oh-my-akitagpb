@@ -10,7 +10,7 @@ const bundles = [
     bundleId: 'akita-capability-akita-gpb-core-module-c795936046e',
     moduleId: 'akita-gpb-core-module',
     pin: 'c795936046e',
-    expectedStepSourceSuffix: 'CommonSteps.java',
+    expectedStepSourceSuffixes: ['CommonSteps.java'],
     expectedUnsupportedIds: [
       'core.helper-only-methods-not-promised',
       'core.hook-behavior-not-step-addressable',
@@ -22,7 +22,7 @@ const bundles = [
     bundleId: 'akita-capability-akita-gpb-api-module-223b2561bbc',
     moduleId: 'akita-gpb-api-module',
     pin: '223b2561bbc',
-    expectedStepSourceSuffix: 'ApiSteps.java',
+    expectedStepSourceSuffixes: ['ApiSteps.java'],
     expectedUnsupportedIds: [
       'api.full-sse-stream-consumption-not-promised',
       'api.domain-endpoint-contracts-not-claimed',
@@ -35,7 +35,7 @@ const bundles = [
     bundleId: 'akita-capability-ccl-database-module-bb0d27eda3e',
     moduleId: 'ccl-database-module',
     pin: 'bb0d27eda3e',
-    expectedStepSourceSuffix: 'CCLDataBaseSteps.java',
+    expectedStepSourceSuffixes: ['CCLDataBaseSteps.java'],
     expectedUnsupportedIds: [
       'database.helper-and-config-internals-not-standalone-capabilities',
       'database.readme-claims-do-not-expand-runtime-truth',
@@ -46,10 +46,39 @@ const bundles = [
     ],
   },
   {
+    bundleId: 'akita-capability-ccl-files-module-05e1cf4d5e7',
+    moduleId: 'ccl-files-module',
+    pin: '05e1cf4d5e7',
+    expectedStepSourceSuffixes: [
+      'FileSteps.java',
+      'DocxSteps.java',
+      'ExcelSteps.java',
+      'HtmlSteps.java',
+      'ImageSteps.java',
+      'JsonSteps.java',
+      'PDFSteps.java',
+      'XMLSteps.java',
+    ],
+    expectedUnsupportedIds: [
+      'files.helper-and-parser-internals-not-standalone-capabilities',
+      'files.readme-claims-do-not-expand-runtime-truth',
+      'files.universal-file-format-support-not-promised',
+      'files.arbitrary-filesystem-orchestration-not-promised',
+      'files.browser-download-automation-not-generic',
+      'files.docx-word-processing-beyond-reviewed-steps-not-promised',
+      'files.excel-spreadsheet-editing-platform-not-promised',
+      'files.html-dom-browser-semantics-not-promised',
+      'files.image-visual-testing-platform-not-promised',
+      'files.json-generic-document-or-api-platform-not-promised',
+      'files.pdf-document-semantics-beyond-reviewed-text-and-table-families-not-promised',
+      'files.xml-generic-transformation-and-schema-semantics-not-promised',
+    ],
+  },
+  {
     bundleId: 'akita-capability-akita-gpb-kafka-mq-module-ff56f175d8c',
     moduleId: 'akita-gpb-kafka-mq-module',
     pin: 'ff56f175d8c',
-    expectedStepSourceSuffix: 'Steps.java',
+    expectedStepSourceSuffixes: ['Steps.java'],
     expectedUnsupportedIds: [
       'kafkamq.helper-and-hook-internals-not-standalone-capabilities',
       'kafkamq.readme-claims-do-not-expand-runtime-truth',
@@ -162,8 +191,16 @@ describe('capability bundle assets', () => {
       expect(contract.supportedCapabilities.length).toBeGreaterThan(0);
       expect(contract.supportedCapabilities.some((capability) => capability.status === 'partial')).toBe(true);
       expect(
-        contract.supportedCapabilities.every((capability) => capability.sourcePath.endsWith(bundle.expectedStepSourceSuffix)),
+        contract.supportedCapabilities.every((capability) =>
+          bundle.expectedStepSourceSuffixes.some((suffix) => capability.sourcePath.endsWith(suffix)),
+        ),
       ).toBe(true);
+      for (const expectedSuffix of bundle.expectedStepSourceSuffixes) {
+        expect(
+          contract.supportedCapabilities.some((capability) => capability.sourcePath.endsWith(expectedSuffix)),
+          `${bundle.bundleId}:${expectedSuffix}`,
+        ).toBe(true);
+      }
     }
   });
 
