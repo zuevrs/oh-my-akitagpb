@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-ccl-additional-steps-module-95eda279aa4",
+  "cases": [
+    {
+      "id": "additional.helper-and-dependency-internals-not-standalone-capabilities",
+      "status": "unsupported",
+      "summary": "Helper behavior, dependency-module internals, and non-annotated implementation details are not standalone shipped capabilities.",
+      "reason": "The reviewed runtime contract is curated from public annotated step methods in the three additional step classes only. Dependency helpers and underlying module internals may influence behavior, but they are not promoted as independently callable capability surface here.",
+      "evidencePaths": [
+        "gpb-manifest.json",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/ArraySteps.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CircleSteps.java"
+      ]
+    },
+    {
+      "id": "additional.readme-claims-do-not-expand-runtime-truth",
+      "status": "unsupported",
+      "summary": "README descriptions and broad utility language do not expand the shipped capability contract.",
+      "reason": "The reviewed README is contextual only and already differs from the exact annotated surface. Runtime truth remains limited to public annotated methods in the reviewed step classes.",
+      "evidencePaths": [
+        "README.md",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/ArraySteps.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CircleSteps.java"
+      ]
+    },
+    {
+      "id": "additional.generic-scripting-and-expression-language-not-promised",
+      "status": "unsupported",
+      "summary": "The bundle does not promise a generic scripting language or arbitrary programmable evaluator.",
+      "reason": "The reviewed source exposes one expression-evaluation step and several helper-backed utility transformations, but not a general-purpose scripting runtime or user-defined control-flow language.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java"
+      ]
+    },
+    {
+      "id": "additional.generic-orchestration-framework-not-promised",
+      "status": "unsupported",
+      "summary": "This module is not a generic workflow engine or orchestration framework.",
+      "reason": "The reviewed steps provide bounded utility/support operations only: value storage, formatting, assertions, byte conversion, multipart assembly, list handling, fixed wait, and one narrow polling request loop.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/ArraySteps.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CircleSteps.java"
+      ]
+    },
+    {
+      "id": "additional.arbitrary-polling-retry-eventual-consistency-engine-not-promised",
+      "status": "unsupported",
+      "summary": "Polling support must not be generalized into an arbitrary retry, eventual-consistency, or event-wait engine.",
+      "reason": "The reviewed polling step hardcodes a 60-second timeout, 2-second interval, one HTTP request path, one JsonPath extraction, and equality against one expected JSON-stringified value.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CircleSteps.java"
+      ]
+    },
+    {
+      "id": "additional.universal-data-transformation-semantics-not-promised",
+      "status": "unsupported",
+      "summary": "The bundle does not promise universal string, date, number, array, or binary-transformation semantics.",
+      "reason": "Reviewed support is limited to the exact annotated step families and their narrow helper-backed behavior, such as regex extraction, reviewed date-table operations, reviewed number formatting/spellout flows, Base64 decoding, and byte-array extraction.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/ArraySteps.java"
+      ]
+    },
+    {
+      "id": "additional.generic-multipart-request-construction-platform-not-promised",
+      "status": "unsupported",
+      "summary": "Multipart support is limited to the reviewed byte-array body assembly step and must not be treated as a universal request-construction platform.",
+      "reason": "The reviewed implementation builds one multipart byte payload from a table, distinguishes file versus non-file parts, generates one boundary string, and stores the results in scenario variables. It does not expose arbitrary transport, streaming, nested multipart, or advanced content-disposition control.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java"
+      ]
+    },
+    {
+      "id": "additional.cross-module-api-capabilities-not-re-exported",
+      "status": "unsupported",
+      "summary": "Dependencies on API or helper modules do not re-export those modules as full capability bundles here.",
+      "reason": "The reviewed source calls into existing API/helper paths for specific annotated steps, but this additional-steps bundle only ships the reviewed utility/support surface exposed by its own public step methods.",
+      "evidencePaths": [
+        "README.md",
+        "gpb-manifest.json",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CircleSteps.java"
+      ]
+    }
+  ]
+}
