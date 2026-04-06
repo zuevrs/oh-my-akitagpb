@@ -42,6 +42,20 @@
         "examples": ".opencode/skills/akita-capability-akita-gpb-api-module-223b2561bbc/references/examples.json",
         "provenance": ".opencode/skills/akita-capability-akita-gpb-api-module-223b2561bbc/references/provenance.json"
       }
+    },
+    {
+      "bundleId": "akita-capability-ccl-database-module-bb0d27eda3e",
+      "module": {
+        "id": "ccl-database-module",
+        "pin": "bb0d27eda3e"
+      },
+      "skillPath": ".opencode/skills/akita-capability-ccl-database-module-bb0d27eda3e/SKILL.md",
+      "references": {
+        "capabilityContract": ".opencode/skills/akita-capability-ccl-database-module-bb0d27eda3e/references/capability-contract.json",
+        "unsupportedCases": ".opencode/skills/akita-capability-ccl-database-module-bb0d27eda3e/references/unsupported-cases.json",
+        "examples": ".opencode/skills/akita-capability-ccl-database-module-bb0d27eda3e/references/examples.json",
+        "provenance": ".opencode/skills/akita-capability-ccl-database-module-bb0d27eda3e/references/provenance.json"
+      }
     }
   ]
 }

@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-ccl-database-module-bb0d27eda3e",
+  "module": {
+    "id": "ccl-database-module",
+    "pin": "bb0d27eda3e"
+  },
+  "supportPolicy": {
+    "onlyAnnotatedStepMethods": true,
+    "helperOnlyBehaviorIsUnsupported": true,
+    "readmeClaimsDoNotExpandRuntimeTruth": true
+  },
+  "supportedCapabilities": [
+    {
+      "id": "database.execute-query-with-parameters",
+      "status": "supported",
+      "summary": "Execute a DB query using scenario-prepared parameters.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос \"(.+)\" с параметрами"
+      ],
+      "method": "executeQueryWithParameters",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "The step delegates to DataBaseMethods.queryInDatabase and does not save the result in a named scenario variable."
+      ]
+    },
+    {
+      "id": "database.execute-query-with-table-parameters",
+      "status": "partial",
+      "summary": "Execute a DB query after creating scenario variables from a parameter table, with optional restoration of previous variables.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос \"(.+)\" с параметрами из таблицы( без перезаписи переменных)?"
+      ],
+      "method": "executeQueryWithParameters",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "Table values are resolved through scenario-variable substitution before execution.",
+        "When the optional 'без перезаписи переменных' suffix is present, the implementation restores the previous scenario variables after the query."
+      ]
+    },
+    {
+      "id": "database.execute-query-save-result",
+      "status": "supported",
+      "summary": "Execute a DB query using scenario-prepared parameters and save the row-list result in a scenario variable.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос \"(.+)\" с параметрами и сохраняем результат в \"(.+)\""
+      ],
+      "method": "executeQueryWithParametersAndSave",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java"
+    },
+    {
+      "id": "database.execute-query-with-table-parameters-save-result",
+      "status": "partial",
+      "summary": "Execute a DB query with table-provided parameters and save the row-list result in a scenario variable, with optional restoration of previous variables.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос \"(.+)\" с параметрами из таблицы( без перезаписи переменных)? и сохраняем результат в \"(.+)\""
+      ],
+      "method": "executeQueryWithParametersAndSave",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "The saved value is the List<Map<String,Object>> result returned by DataBaseMethods.queryInDatabase.",
+        "When the optional 'без перезаписи переменных' suffix is present, previously existing scenario variables are restored after the query."
+      ]
+    },
+    {
+      "id": "database.assert-empty-query-result",
+      "status": "supported",
+      "summary": "Execute a DB query and assert that the result is empty.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос \"(.+)\" и получаем пустой ответ"
+      ],
+      "method": "executePreparedNullQuery",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "On failure, the thrown exception message includes the resolved query text from DataBaseMethods.getQuery."
+      ]
+    },
+    {
+      "id": "database.wait-for-non-empty-query-result",
+      "status": "partial",
+      "summary": "Execute a DB query with table-provided parameters and wait until the result becomes non-empty.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос \"(.+)\" с параметрами из таблицы и ждём пока придёт непустой ответ"
+      ],
+      "method": "executePreparedNullQuery2",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "The reviewed implementation polls in the same thread every 1 second for up to 60 seconds.",
+        "Timeout handling is limited to converting Awaitility timeout into the fixed message 'Время ожидания истекло'."
+      ]
+    },
+    {
+      "id": "database.assert-first-row-fields",
+      "status": "partial",
+      "summary": "Assert expected column values against the first row of a stored DB result.",
+      "stepPatterns": [
+        "в ответе от БД \"(.+)\", проверяем значения полей"
+      ],
+      "method": "checkDataFromDb",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "The implementation reads only resultList.get(0), so this step does not assert all rows.",
+        "Expected values support the reviewed sentinel values 'null' and 'not_null'."
+      ]
+    },
+    {
+      "id": "database.assert-ordered-rows",
+      "status": "supported",
+      "summary": "Assert stored DB rows against an expected table while preserving row order.",
+      "stepPatterns": [
+        "в ответе от БД \"(.+)\" проверяем значения полей с учётом порядка строк:?"
+      ],
+      "method": "checkOrderedRowsFromDb",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "The implementation compares rows pairwise and separately asserts that actual and expected row counts match."
+      ]
+    },
+    {
+      "id": "database.assert-unordered-rows",
+      "status": "partial",
+      "summary": "Assert stored DB rows against an expected table without requiring row order.",
+      "stepPatterns": [
+        "в ответе от БД \"(.+)\" проверяем значения полей без учёта порядка строк:?"
+      ],
+      "method": "checkUnorderedRowsFromDb",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "Row matching uses helper comparison logic that resolves expected values without property lookup.",
+        "The step also asserts that actual and expected row counts match."
+      ]
+    },
+    {
+      "id": "database.extract-first-row-column",
+      "status": "partial",
+      "summary": "Save the first available value from a named DB result column as text or object in a scenario variable.",
+      "stepPatterns": [
+        "из ответа от БД \"(.*)\" значение столбца \"(.*)\" сохранено как ?(текст|объект) в переменную \"(.*)\""
+      ],
+      "method": "saveValueFromDbAnswerToVariable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "The implementation streams over rows and takes findFirst(), so it saves the first available column value only.",
+        "For 'текст' the stored value is value.toString(); for 'объект' the original object is stored."
+      ]
+    },
+    {
+      "id": "database.extract-column-list-as-formatted-string",
+      "status": "partial",
+      "summary": "Save all values from a named DB result column as one formatted string in a scenario variable.",
+      "stepPatterns": [
+        "из ответа от БД \"(.*)\" значение столбца \"(.*)\" сохранено как массив строк формата \"(.*)\" в переменную \"(.*)\""
+      ],
+      "method": "saveValueListFromDbAnswerToVariable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "The implementation converts column values to strings and then delegates formatting to prepareStringFromList(format).",
+        "This bundle does not claim arbitrary collection serialization semantics beyond that reviewed formatting helper call."
+      ]
+    },
+    {
+      "id": "database.execute-query-save-json-string",
+      "status": "supported",
+      "summary": "Execute a DB query and save the result as a JSON string in a scenario variable.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос \"(.+)\" с параметрами и сохраняем результат в переменную \"(.+)\" в виде json строки"
+      ],
+      "method": "executeQueryAndSaveJsonString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "The JSON conversion is delegated to StringHelper.objectToJsonString on the row-list query result."
+      ]
+    },
+    {
+      "id": "database.execute-update-query",
+      "status": "supported",
+      "summary": "Execute an update/delete/insert-style DB query and return the affected row count.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос (?:обновления|удаления|добавления) \"(.+)\""
+      ],
+      "method": "executeUpdateQuery",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java",
+      "notes": [
+        "The implementation logs the affected row count but does not itself assert a minimum row count."
+      ]
+    },
+    {
+      "id": "database.execute-update-query-with-table-parameters",
+      "status": "supported",
+      "summary": "Execute an update/delete/insert-style DB query after creating scenario variables from a parameter table.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос (?:обновления|удаления|добавления) \"(.+)\" с параметрами из таблицы"
+      ],
+      "method": "executeUpdateQueryWithParameters",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java"
+    },
+    {
+      "id": "database.execute-update-query-and-assert-positive-row-count",
+      "status": "supported",
+      "summary": "Execute an update/delete/insert-style DB query and assert that more than zero rows were affected.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос (?:обновления|удаления|добавления) \"(.+)\" и проверяем полученный ответ"
+      ],
+      "method": "executeUpdateQueryAndCheckResponse",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java"
+    },
+    {
+      "id": "database.execute-update-query-with-table-parameters-and-assert-positive-row-count",
+      "status": "supported",
+      "summary": "Execute an update/delete/insert-style DB query with table-provided parameters and assert that more than zero rows were affected.",
+      "stepPatterns": [
+        "в БД \"(.+)\" выполняем запрос (?:обновления|удаления|добавления) \"(.+)\" с параметрами из таблицы и проверяем полученный ответ"
+      ],
+      "method": "executeUpdateQueryWithParametersAndCheckResponse",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java"
+    }
+  ]
+}

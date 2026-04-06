@@ -9,6 +9,7 @@ const manifestPath = path.join(repoRoot, 'assets', 'oma', 'capability-manifest.j
 const expectedBundleIds = [
   'akita-capability-akita-gpb-core-module-c795936046e',
   'akita-capability-akita-gpb-api-module-223b2561bbc',
+  'akita-capability-ccl-database-module-bb0d27eda3e',
 ] as const;
 
 type CapabilityManifest = {
