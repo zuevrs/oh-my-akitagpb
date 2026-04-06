@@ -1,0 +1,553 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-akita-gpb-kafka-mq-module-ff56f175d8c",
+  "module": {
+    "id": "akita-gpb-kafka-mq-module",
+    "pin": "ff56f175d8c"
+  },
+  "supportPolicy": {
+    "onlyAnnotatedStepMethods": true,
+    "helperOnlyBehaviorIsUnsupported": true,
+    "readmeClaimsDoNotExpandRuntimeTruth": true
+  },
+  "supportedCapabilities": [
+    {
+      "id": "kafkamq.generate-uuid-to-variable",
+      "status": "supported",
+      "summary": "Generate a UUID without dashes and save it into an Akita scenario variable.",
+      "stepPatterns": [
+        "сгенерировать UUID и сохранить в переменную \"(.*)\""
+      ],
+      "method": "generateUuidAndSave",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java"
+    },
+    {
+      "id": "kafkamq.kafka-send-message-from-table",
+      "status": "partial",
+      "summary": "Send a Kafka message using the reviewed table-driven request parameter types and save the send timestamp in scenario state.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и отправлено сообщение с параметрами из таблицы"
+      ],
+      "method": "connectKafkaAndSendMessage",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java",
+      "notes": [
+        "The reviewed step handles BODY, TOPIC, KEY, VAR, HEADER, HEADER_LONG, and HEADER_HEX rows only.",
+        "The produced record uses partition 0 and stores the send time in scenario variable 'timestamp'.",
+        "This bundle does not claim generic Kafka producer configuration or arbitrary record-construction semantics beyond the reviewed row types."
+      ]
+    },
+    {
+      "id": "kafkamq.kafka-assert-message-by-json-table",
+      "status": "partial",
+      "summary": "Poll a Kafka topic from the reviewed test start time and assert that a message body matches all table-provided JSONPath expectations.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и полученно сообщение из топика \"(.*)\" равно значениям из таблицы"
+      ],
+      "method": "connectKafkaAndGetMessage",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java",
+      "notes": [
+        "The implementation uses JsonPath reads against the message body and a reviewed 2-second polling window.",
+        "The step is narrower than its wording: it is JSONPath-oriented and does not promise generic non-JSON message matching."
+      ]
+    },
+    {
+      "id": "kafkamq.kafka-save-header-from-last-message",
+      "status": "partial",
+      "summary": "Read the latest Kafka message by timestamp and save a named header into a scenario variable, optionally converting header bytes to a UUID string.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и из последнего сообщения из топика \"(.*)\" header \"(.*)\" сохранен( в формате UUID)? в переменную \"(.*)\""
+      ],
+      "method": "saveHeaderFromLastMassage",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java",
+      "notes": [
+        "The optional UUID mode uses UUID.nameUUIDFromBytes on the raw header bytes.",
+        "The reviewed behavior targets the last message only; it is not a generic header scan across arbitrary history."
+      ]
+    },
+    {
+      "id": "kafkamq.kafka-save-body-from-last-message",
+      "status": "partial",
+      "summary": "Read the latest Kafka message body from a topic and save it into a scenario variable.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и из последнего сообщения из топика \"(.*)\" тело сообщения сохранено в переменную \"(.*)\""
+      ],
+      "method": "saveValueFromLastMassage",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java",
+      "notes": [
+        "The reviewed implementation uses a 4-second polling window and selects the message with the highest timestamp."
+      ]
+    },
+    {
+      "id": "kafkamq.kafka-save-matching-body-by-json-table",
+      "status": "supported",
+      "summary": "Find a Kafka message whose JSON body matches all table-provided conditions and save the full body into a scenario variable.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и из сообщения из топика \"(.*)\" тело сообщения сохранено в переменную \"(.*)\" и соответствует параметрам из таблицы"
+      ],
+      "method": "saveValueFromLastMessageWithParams",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java"
+    },
+    {
+      "id": "kafkamq.kafka-get-message-by-type-and-conditions",
+      "status": "partial",
+      "summary": "Find a Kafka message in a topic whose body matches reviewed JSON, XML, or TEXT conditions and save it into a scenario variable.",
+      "stepPatterns": [
+        "получить сообщение из топика \"(.+)\", с типом (JSON|XML|TEXT) соответствующее параметрам из таблицы, и сохранить в переменную \"(.+)\""
+      ],
+      "method": "getMessageFromTopicAndSave",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java",
+      "notes": [
+        "Matching uses the reviewed internal condition conversion and message processor pipeline for the declared message type.",
+        "This bundle does not generalize those type semantics beyond the annotated step families."
+      ]
+    },
+    {
+      "id": "kafkamq.kafka-assert-message-absence-by-type-and-conditions",
+      "status": "partial",
+      "summary": "Assert that no Kafka message matching the reviewed JSON, XML, or TEXT conditions appears in the topic during the reviewed polling window.",
+      "stepPatterns": [
+        "отсутствует сообщение в топике \"(.+)\", с типом (JSON|XML|TEXT) соответствующее параметрам из таблицы"
+      ],
+      "method": "messageIsAbsenceInTopic",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java",
+      "notes": [
+        "The reviewed implementation is tied to scenario/test start time handling and negative-all matching strategy.",
+        "This is not a generic long-running absence guarantee."
+      ]
+    },
+    {
+      "id": "kafkamq.kafka-save-hex-header-by-header-match",
+      "status": "supported",
+      "summary": "Find a Kafka message by header key and hex-encoded header value and save the matched header value into a scenario variable.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и из сообщения из топика \"(.*)\" header \"(.*)\" со значением \"(.*)\" сохранен в переменную \"(.*)\""
+      ],
+      "method": "saveHaderFromTopic",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java"
+    },
+    {
+      "id": "kafkamq.kafka-save-body-by-key",
+      "status": "supported",
+      "summary": "Find a Kafka message by message key and save its body into a scenario variable.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и из сообщения по ключу \"(.*)\" из топика \"(.*)\" тело запроса сохранен в переменную \"(.*)\""
+      ],
+      "method": "findMessageToKeyAndSaveValue",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java"
+    },
+    {
+      "id": "kafkamq.kafka-assert-header-and-jsonpath-match",
+      "status": "supported",
+      "summary": "Find a Kafka message by hex-encoded header match and JSONPath value match, then assert its presence.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и поиск сообщения в topic \"(.*)\" header \"(.*)\" с значением \"(.*)\" и jsonpath \"(.*)\" со значением \"(.*)\""
+      ],
+      "method": "searchMessageWithHeaderAndValue",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java"
+    },
+    {
+      "id": "kafkamq.kafka-save-record-by-header-match",
+      "status": "partial",
+      "summary": "Find a Kafka message by hex-encoded header match and save the whole ConsumerRecord into a scenario variable for later header extraction.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и сообщение из топика \"(.*)\" header \"(.*)\" со значением \"(.*)\" сохранен в переменную \"(.*)\""
+      ],
+      "method": "saveMessageFromTopic",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java",
+      "notes": [
+        "The saved value is a Kafka ConsumerRecord object, not just the message body string."
+      ]
+    },
+    {
+      "id": "kafkamq.kafka-save-header-from-saved-record",
+      "status": "partial",
+      "summary": "Read a header from a previously saved Kafka ConsumerRecord and save it as plain text or as a hex string depending on the step argument.",
+      "stepPatterns": [
+        "из сообщения от kafka \"(.*)\" header \"(.*)\" сохранен в переменную \"(.*)\""
+      ],
+      "method": "fromTheMessageWithHeaderSaveValue",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java",
+      "notes": [
+        "HEX mode is enabled by including 'HEX' in the header argument string."
+      ]
+    },
+    {
+      "id": "kafkamq.kafka-save-body-by-jsonpath-match",
+      "status": "supported",
+      "summary": "Find a Kafka message by JSONPath value match and save its body into a scenario variable.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и поиск сообщения в topic \"(.*)\" и jsonpath \"(.*)\" со значением \"(.*)\" сохранено в переменную \"(.*)\""
+      ],
+      "method": "searchMessageValueAndSave",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java"
+    },
+    {
+      "id": "kafkamq.kafka-assert-jsonpath-absence",
+      "status": "partial",
+      "summary": "Assert that no Kafka message exists whose JSONPath value equals the requested value.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и поиск сообщения в topic \"(.*)\" и jsonpath \"(.*)\" со значением \"(.*)\" не существует"
+      ],
+      "method": "searchMessageAndDoesNotExists",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java",
+      "notes": [
+        "The reviewed step is JSONPath-specific and should not be generalized into arbitrary absence semantics."
+      ]
+    },
+    {
+      "id": "kafkamq.kafka-save-body-by-mixed-table-match",
+      "status": "supported",
+      "summary": "Find a Kafka message by a reviewed mix of JSONPath and header criteria from a table and save the body into a scenario variable.",
+      "stepPatterns": [
+        "выполнено подключение к kafka и поиск сообщения в topic \"(.*)\" c параметрами из таблицы сохранено в переменную \"(.*)\""
+      ],
+      "method": "searchMessageInKafka",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/kafka/KafkaSteps.java"
+    },
+    {
+      "id": "kafkamq.ibm-mq-create-connection",
+      "status": "partial",
+      "summary": "Create an IBM MQ queue connection from reviewed table-driven connection parameters and save it into a scenario variable.",
+      "stepPatterns": [
+        "создано подключение к mq, с данными из таблицы. Результат сохранен в переменную \"(.*)\""
+      ],
+      "method": "createMqConnection",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/ibm/MqSteps.java",
+      "notes": [
+        "The reviewed table surface includes host, port, queue manager, channel, user, password, SSL-related values, and connection-name handling only."
+      ]
+    },
+    {
+      "id": "kafkamq.ibm-mq-send-message",
+      "status": "supported",
+      "summary": "Send a text message through a saved IBM MQ connection using reviewed BODY, HEADER, and VAR table rows.",
+      "stepPatterns": [
+        "отправлено сообщение в очередь \"(.*)\" через MQ соединение \"(.*)\", с параметрами из таблицы"
+      ],
+      "method": "sendMessageToMq",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/ibm/MqSteps.java"
+    },
+    {
+      "id": "kafkamq.ibm-mq-send-message-save-id",
+      "status": "supported",
+      "summary": "Send a text message through a saved IBM MQ connection and save the JMSMessageID into a scenario variable.",
+      "stepPatterns": [
+        "отправлено сообщение в очередь \"(.*)\" через MQ соединение \"(.*)\", с параметрами из таблицы и MessageID сохранен в переменную \"(.*)\""
+      ],
+      "method": "sendMessageToMqAndSaveId",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/ibm/MqSteps.java"
+    },
+    {
+      "id": "kafkamq.ibm-mq-read-message-by-selector",
+      "status": "partial",
+      "summary": "Read a text message from an IBM MQ queue by selector through a saved connection and store the message body in a scenario variable.",
+      "stepPatterns": [
+        "прочитать сообщение из очереди \"(.*)\" по селектору \"(.*)\", через MQ соединение \"(.*)\". Результат сохранен в переменную \"(.*)\""
+      ],
+      "method": "getMessageFromMq",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/ibm/MqSteps.java",
+      "notes": [
+        "The reviewed receive timeout is 60 seconds and the step stores text-body content only."
+      ]
+    },
+    {
+      "id": "kafkamq.ibm-mq-close-connection",
+      "status": "supported",
+      "summary": "Close a previously saved IBM MQ connection.",
+      "stepPatterns": [
+        "закрыть соединение \"(.*)\""
+      ],
+      "method": "closeConnection",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/ibm/MqSteps.java"
+    },
+    {
+      "id": "kafkamq.ibm-mq-assert-message-contains-text",
+      "status": "supported",
+      "summary": "Assert that a stored IBM MQ message body contains the requested text.",
+      "stepPatterns": [
+        "в сообщении \"(.*)\", содержится текст \"(.*)\""
+      ],
+      "method": "checkMessageFromMq",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/ibm/MqSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-create-connection",
+      "status": "partial",
+      "summary": "Create an Artemis connection from reviewed properties, assign a generated client id, and store the connection in scenario state.",
+      "stepPatterns": [
+        "создано подключение к artemis"
+      ],
+      "method": "createArtemisConnection",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisConnectionSteps.java",
+      "notes": [
+        "The reviewed step depends on Artemis properties and optional SSL system-property setup from the module configuration surface.",
+        "This bundle does not promise arbitrary connection orchestration beyond that step."
+      ]
+    },
+    {
+      "id": "kafkamq.artemis-close-connection",
+      "status": "supported",
+      "summary": "Close the saved Artemis connection and clear it from scenario state.",
+      "stepPatterns": [
+        "закрыть artemis соединение"
+      ],
+      "method": "closeArtemisConnection",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisConnectionSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-send-queue-message",
+      "status": "partial",
+      "summary": "Send an Artemis queue message using reviewed PROPERTY, BODY, and VAR table rows.",
+      "stepPatterns": [
+        "отправлено сообщение в очередь \"(.*)\" с параметрами из таблицы"
+      ],
+      "method": "sendToQueue",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisQueueSteps.java",
+      "notes": [
+        "The reviewed step warns when no PROPERTY row is present but still sends the message."
+      ]
+    },
+    {
+      "id": "kafkamq.artemis-send-queue-message-save-id",
+      "status": "supported",
+      "summary": "Send an Artemis queue message and save its JMS MessageID into a scenario variable.",
+      "stepPatterns": [
+        "отправлено сообщение в очередь \"(.*)\" с параметрами из таблицы. MessageID сохранен в переменную \"(.*)\""
+      ],
+      "method": "sendToQueueSaveId",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisQueueSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-read-first-queue-message",
+      "status": "partial",
+      "summary": "Read the first Artemis queue message and save its text body into a scenario variable.",
+      "stepPatterns": [
+        "прочитано первое сообщение из очереди \"([^\"]+)\". Результат сохранен в переменную \"([^\"]+)\""
+      ],
+      "method": "readFirstFromQueue",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisQueueSteps.java",
+      "notes": [
+        "The reviewed guidance marks this as safe only when queue state is already controlled."
+      ]
+    },
+    {
+      "id": "kafkamq.artemis-read-queue-message-by-property",
+      "status": "supported",
+      "summary": "Read an Artemis queue message by a single property selector and save its text body into a scenario variable.",
+      "stepPatterns": [
+        "прочитано сообщение из очереди \"(.*)\" по property \"(.*)\" равному \"(.*)\". Результат сохранен в переменную \"(.*)\""
+      ],
+      "method": "readFromQueueByProperty",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisQueueSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-read-queue-message-by-property-table",
+      "status": "supported",
+      "summary": "Read an Artemis queue message by a table of property selectors combined with AND semantics and save its text body into a scenario variable.",
+      "stepPatterns": [
+        "прочитано сообщение из очереди \"(.*)\" по property таблице"
+      ],
+      "method": "readFromQueueByPropertyTable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisQueueSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-read-queue-message-by-selector",
+      "status": "supported",
+      "summary": "Read an Artemis queue message by an explicit selector string and save its text body into a scenario variable.",
+      "stepPatterns": [
+        "прочитано сообщение из очереди \"(.*)\" по селектору \"(.*)\". Результат сохранен в переменную \"(.*)\""
+      ],
+      "method": "readFromQueueBySelector",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisQueueSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-browse-first-queue-message",
+      "status": "partial",
+      "summary": "Browse the first Artemis queue message without removing it and save its text body into a scenario variable.",
+      "stepPatterns": [
+        "просмотрено первое сообщение из очереди \"([^\"]+)\". Результат сохранен в переменную \"([^\"]+)\""
+      ],
+      "method": "browseFirstFromQueue",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisQueueSteps.java",
+      "notes": [
+        "The reviewed semantics are explicitly non-destructive browse semantics, not normal receive semantics."
+      ]
+    },
+    {
+      "id": "kafkamq.artemis-browse-queue-message-by-property",
+      "status": "supported",
+      "summary": "Browse an Artemis queue message by a single property selector without removing it.",
+      "stepPatterns": [
+        "просмотрено сообщение из очереди \"(.*)\" по property \"(.*)\" равному \"(.*)\". Результат сохранен в переменную \"(.*)\""
+      ],
+      "method": "browseFromQueueByProperty",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisQueueSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-browse-queue-message-by-property-table",
+      "status": "supported",
+      "summary": "Browse an Artemis queue message by a table of property selectors combined with AND semantics without removing it.",
+      "stepPatterns": [
+        "просмотрено сообщение из очереди \"(.*)\" по property таблице"
+      ],
+      "method": "browseFromQueueByPropertyTable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisQueueSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-browse-queue-message-by-selector",
+      "status": "supported",
+      "summary": "Browse an Artemis queue message by an explicit selector string without removing it.",
+      "stepPatterns": [
+        "просмотрено сообщение из очереди \"(.*)\" по селектору \"(.*)\". Результат сохранен в переменную \"(.*)\""
+      ],
+      "method": "browseFromQueueBySelector",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisQueueSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-send-topic-message",
+      "status": "supported",
+      "summary": "Send an Artemis topic message using reviewed PROPERTY, BODY, and VAR table rows.",
+      "stepPatterns": [
+        "отправлено сообщение в топик \"(.*)\" с параметрами из таблицы"
+      ],
+      "method": "sendToTopic",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisTopicSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-create-topic-subscription",
+      "status": "partial",
+      "summary": "Create a durable Artemis topic subscription without a selector.",
+      "stepPatterns": [
+        "создана подписка на топик \"([^\"]+)\" с именем \"([^\"]+)\""
+      ],
+      "method": "createTopicSubscription",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisTopicSteps.java",
+      "notes": [
+        "The reviewed implementation creates durable subscriptions and stores the subscriber in scenario state."
+      ]
+    },
+    {
+      "id": "kafkamq.artemis-create-topic-subscription-by-property",
+      "status": "supported",
+      "summary": "Create a durable Artemis topic subscription filtered by a single property selector.",
+      "stepPatterns": [
+        "создана подписка на топик \"(.*)\" с именем \"(.*)\" по property \"(.*)\" равному \"(.*)\""
+      ],
+      "method": "createTopicSubscriptionWithProperty",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisTopicSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-create-topic-subscription-by-property-table",
+      "status": "supported",
+      "summary": "Create a durable Artemis topic subscription filtered by a table of property selectors combined with AND semantics.",
+      "stepPatterns": [
+        "создана подписка на топик \"(.*)\" с именем \"(.*)\" с property таблицей"
+      ],
+      "method": "createTopicSubscriptionWithPropertyTable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisTopicSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-read-topic-message",
+      "status": "partial",
+      "summary": "Read the next message from a previously created Artemis durable subscription and save its text body into a scenario variable.",
+      "stepPatterns": [
+        "прочитано сообщение из топика по подписке \"([^\"]+)\". Результат сохранен в переменную \"([^\"]+)\""
+      ],
+      "method": "readFromTopic",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisTopicSteps.java",
+      "notes": [
+        "The step depends on an existing stored subscription and Artemis receive-timeout configuration."
+      ]
+    },
+    {
+      "id": "kafkamq.artemis-remove-topic-subscription",
+      "status": "supported",
+      "summary": "Remove a durable Artemis topic subscription and clear its scenario-state handles.",
+      "stepPatterns": [
+        "удалена подписка на топик с именем \"(.*)\""
+      ],
+      "method": "removeTopicSubscription",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisTopicSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-assert-message-contains-text",
+      "status": "supported",
+      "summary": "Assert that a stored Artemis message body contains the requested text.",
+      "stepPatterns": [
+        "сообщение \"(.*)\" содержит текст \"(.*)\""
+      ],
+      "method": "checkMessageContainsText",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisMessageSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-assert-message-headers",
+      "status": "supported",
+      "summary": "Assert stored Artemis message headers against a table of expected values.",
+      "stepPatterns": [
+        "заголовки сообщения \"(.*)\" соответствуют таблице"
+      ],
+      "method": "checkMessageHeaders",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisMessageSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-assert-json-message-by-table",
+      "status": "supported",
+      "summary": "Assert JSON fields in a stored Artemis message body using JSONPath expectations from a table.",
+      "stepPatterns": [
+        "json сообщение \"(.*)\" соответствует таблице"
+      ],
+      "method": "checkJsonMessageByTable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisMessageSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-assert-json-message-by-file",
+      "status": "supported",
+      "summary": "Compare a stored Artemis JSON message body against a file while ignoring table-specified JSON paths.",
+      "stepPatterns": [
+        "json сообщение \"(.*)\" соответствует файлу \"(.*)\" игнорируя поля"
+      ],
+      "method": "checkJsonMessageByFile",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisMessageSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-save-json-value",
+      "status": "supported",
+      "summary": "Extract a JSONPath value from a stored Artemis JSON message body into a scenario variable.",
+      "stepPatterns": [
+        "из json сообщения \"(.*)\" сохранено значение \"(.*)\" в переменную \"(.*)\""
+      ],
+      "method": "saveValueFromJson",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisMessageSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-assert-xml-message-by-table",
+      "status": "supported",
+      "summary": "Assert XML fields in a stored Artemis message body using XPath expectations from a table.",
+      "stepPatterns": [
+        "xml сообщение \"(.*)\" соответствует таблице"
+      ],
+      "method": "checkXmlMessageByTable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisMessageSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-assert-xml-message-by-file",
+      "status": "supported",
+      "summary": "Compare a stored Artemis XML message body against a file while ignoring table-specified XPath nodes.",
+      "stepPatterns": [
+        "xml сообщение \"(.*)\" соответствует файлу \"(.*)\" игнорируя поля"
+      ],
+      "method": "checkXmlMessageByFile",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisMessageSteps.java"
+    },
+    {
+      "id": "kafkamq.artemis-save-xml-value",
+      "status": "supported",
+      "summary": "Extract an XPath value from a stored Artemis XML message body into a scenario variable.",
+      "stepPatterns": [
+        "из xml сообщения \"(.*)\" сохранено значение \"(.*)\" в переменную \"(.*)\""
+      ],
+      "method": "saveValueFromXml",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/kafkamq/steps/artemis/ArtemisMessageSteps.java"
+    }
+  ]
+}
