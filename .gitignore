@@ -10,6 +10,8 @@ opencode.json
 
 .agents/
 docs/
+.gsd/
+.bg-shell/
 
 .DS_Store
 npm-debug.log*
