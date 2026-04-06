@@ -31,6 +31,20 @@ const bundles = [
       'api.generic-soap-envelope-normalization-needs-review',
     ],
   },
+  {
+    bundleId: 'akita-capability-ccl-database-module-bb0d27eda3e',
+    moduleId: 'ccl-database-module',
+    pin: 'bb0d27eda3e',
+    expectedStepSourceSuffix: 'CCLDataBaseSteps.java',
+    expectedUnsupportedIds: [
+      'database.helper-and-config-internals-not-standalone-capabilities',
+      'database.readme-claims-do-not-expand-runtime-truth',
+      'database-vendor-neutral-admin-and-schema-semantics-not-promised',
+      'database-arbitrary-query-orchestration-not-promised',
+      'database-generic-wait-semantics-not-promised',
+      'database-generic-collection-export-not-promised',
+    ],
+  },
 ] as const;
 
 type CapabilityContract = {
