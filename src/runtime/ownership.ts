@@ -12,6 +12,12 @@ import {
   renderManagedAgentsFileContent,
   renderManagedOpencodeContent,
 } from './managed-blocks.js';
+import {
+  applyManagedGitignoreBlock,
+  inspectGitignoreFile,
+  renderManagedGitignoreBlock,
+  renderManagedGitignoreFileContent,
+} from './gitignore-block.js';
 import { type InstallState, type ManagedSurfaceRecord, type OwnedFileRecord } from './install-state.js';
 import {
   COMMAND_IDS,
@@ -160,6 +166,15 @@ function createOpencodeManagedRecord(expectedContent: string): ManagedSurfaceRec
   };
 }
 
+function createGitignoreManagedRecord(): ManagedSurfaceRecord {
+  return {
+    kind: 'managed-surface',
+    relativePath: '.gitignore',
+    manager: 'gitignore-block',
+    sha256: hashContent(renderManagedGitignoreBlock()),
+  };
+}
+
 function stageManagedSurfaceWrite(
   projectRoot: string,
   packageSurface: PackageSurface,
@@ -219,6 +234,38 @@ function stageManagedSurfaceWrite(
     const expectedContent = renderManagedOpencodeContent(inspection.content, createManagedPayload(packageSurface));
     const nextRecord = createOpencodeManagedRecord(expectedContent);
     if (inspection.content === expectedContent) {
+      unchangedPaths.push(record.relativePath);
+      return {
+        status: 'unchanged',
+        nextRecord,
+      };
+    }
+
+    changedPaths.push(record.relativePath);
+    return {
+      status: 'changed',
+      nextRecord,
+      stagedWrite: {
+        absolutePath,
+      },
+    };
+  }
+
+  if (record.relativePath === '.gitignore') {
+    const inspection = inspectGitignoreFile(absolutePath);
+    if (inspection.state === 'symlink' || inspection.state === 'malformed') {
+      refusedPaths.push(record.relativePath);
+      return {
+        status: 'refused',
+        nextRecord: createGitignoreManagedRecord(),
+      };
+    }
+
+    const expectedContent = inspection.state === 'missing'
+      ? renderManagedGitignoreBlock()
+      : renderManagedGitignoreFileContent(inspection.content ?? '');
+    const nextRecord = createGitignoreManagedRecord();
+    if (inspection.state === 'managed' && inspection.content === expectedContent) {
       unchangedPaths.push(record.relativePath);
       return {
         status: 'unchanged',
@@ -326,7 +373,12 @@ export function applyOwnershipSafeUpdate(
       continue;
     }
 
-    applyManagedOpencodeConfig(stagedWrite.absolutePath, createManagedPayload(packageSurface));
+    if (stagedWrite.relativePath === 'opencode.json') {
+      applyManagedOpencodeConfig(stagedWrite.absolutePath, createManagedPayload(packageSurface));
+      continue;
+    }
+
+    applyManagedGitignoreBlock(stagedWrite.absolutePath);
   }
 
   return {
