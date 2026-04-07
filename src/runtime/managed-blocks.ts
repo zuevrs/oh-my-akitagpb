@@ -36,7 +36,7 @@ export interface ManagedSurfaceInspection {
 export interface ManagedSurfaceWriteResult {
   relativePath: string;
   sha256: string;
-  manager: 'agents-markdown' | 'opencode-json';
+  manager: 'agents-markdown' | 'opencode-json' | 'gitignore-block';
 }
 
 export interface ManagedOpencodePayload {

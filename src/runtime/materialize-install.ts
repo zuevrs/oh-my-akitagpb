@@ -14,6 +14,7 @@ import {
   hashContent,
   type ManagedSurfaceWriteResult,
 } from './managed-blocks.js';
+import { applyManagedGitignoreBlock } from './gitignore-block.js';
 import { type ManagedSurfaceRecord, type OwnedFileRecord } from './install-state.js';
 import { createProjectModeRecord, readProjectModeRecord, type ProjectModeClassification } from './project-mode.js';
 
@@ -356,6 +357,7 @@ export function materializeFreshInstall(
       commands: COMMAND_IDS.map((commandId) => `.opencode/commands/${commandId}.md`),
       skills: WORKFLOW_SKILL_IDS.map((workflowSkillId) => `.opencode/skills/${workflowSkillId}/SKILL.md`),
     }),
+    applyManagedGitignoreBlock(path.join(projectRoot, '.gitignore')),
   ].map((result) => toManagedSurfaceRecord(result));
 
   return {

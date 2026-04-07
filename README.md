@@ -58,12 +58,14 @@ After install, open the target repo in OpenCode and start with:
 ### `install`
 
 Bootstrap-only install. Materializes the managed pack surface into the current
-repository and records ownership in `.oma/install-state.json`.
+repository, records local install ownership in `.oma/install-state.json`, and
+updates a pack-managed `.gitignore` block for local/runtime/generated surfaces.
 
 ### `update`
 
 Explicit refresh path. Rewrites only pack-owned artifacts recorded in
-`install-state`.
+`install-state` and refreshes the pack-managed `.gitignore` block without
+claiming user-owned ignore rules outside that block.
 
 ### `doctor`
 
@@ -80,7 +82,54 @@ The package materializes these top-level surfaces in a target repository:
 - `.opencode/skills/akita-capability-*/**`
 
 Ownership is strict. The pack does not silently overwrite user-owned `AGENTS.md`,
-`opencode.json`, or unrelated `.opencode/*`.
+`opencode.json`, unrelated `.opencode/*`, or user-owned `.gitignore` rules
+outside the pack-managed block.
+
+## VCS policy for installed repos
+
+After install, the pack-managed `.gitignore` block keeps this split explicit.
+
+### Commit-worthy durable pack surface
+
+These files are meant to live in git and be shared across the team:
+
+- `AGENTS.md`
+- `opencode.json`
+- `.opencode/commands/akita-*.md`
+- `.opencode/skills/akita-*/**`
+- `.oma/capability-manifest.json`
+- `.oma/instructions/**`
+- `.oma/templates/**`
+- `.oma/runtime/shared/**`
+- `.oma/state/shared/**`
+
+This includes shared workflow state such as scan, plan, and write outputs.
+Those files are the durable handoff surface between commands and between
+teammates; they are not treated as local scratch state.
+
+### Local-only runtime surface
+
+These files stay local and are ignored by the managed `.gitignore` block:
+
+- `.oma/install-state.json`
+- `.oma/runtime/local/**`
+- `.oma/state/local/**`
+
+`install-state.json` is intentionally local because it contains machine-specific
+install bookkeeping such as the recorded project root and install path. It is
+required for safe `update`, but it is not shareable repo truth.
+
+### Generated staging surface
+
+These files are also ignored:
+
+- `.oma/generated/features/**`
+- `.oma/generated/payloads/**`
+- `.oma/generated/fixtures/**`
+
+`/akita-write` stages artifacts there on purpose. They are not final live repo
+outputs. `/akita-promote` is the explicit publish step that copies accepted
+artifacts into real repo paths chosen by the user.
 
 ## Development
 

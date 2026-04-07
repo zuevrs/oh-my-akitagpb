@@ -14,7 +14,7 @@ export interface OwnedFileRecord {
 export interface ManagedSurfaceRecord {
   kind: 'managed-surface';
   relativePath: string;
-  manager: 'agents-markdown' | 'opencode-json';
+  manager: 'agents-markdown' | 'opencode-json' | 'gitignore-block';
   sha256: string;
 }
 
@@ -80,7 +80,7 @@ function isManagedSurfaceRecord(value: unknown): value is ManagedSurfaceRecord {
     record.relativePath.length > 0 &&
     typeof record.sha256 === 'string' &&
     record.sha256.length > 0 &&
-    (record.manager === 'agents-markdown' || record.manager === 'opencode-json')
+    (record.manager === 'agents-markdown' || record.manager === 'opencode-json' || record.manager === 'gitignore-block')
   );
 }
 

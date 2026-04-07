@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import type { PackageSurface } from './asset-catalog.js';
 import { hashContent, extractManagedAgentsBlock, inspectAgentsFile, inspectOpencodeConfig, type ManagedSurfaceState } from './managed-blocks.js';
+import { extractManagedGitignoreBlock, inspectGitignoreFile } from './gitignore-block.js';
 import { readInstallState, resolveInstallStatePath, type InstallState } from './install-state.js';
 import { classifyProjectMode, readProjectModeRecord, resolveProjectModePath } from './project-mode.js';
 
@@ -169,6 +170,36 @@ function inspectManagedSurface(
 
     return {
       kind: hashContent(inspection.content) === record.sha256 ? 'ok' : 'modified',
+      ownershipState: inspection.state,
+    };
+  }
+
+  if (record.relativePath === '.gitignore') {
+    const inspection = inspectGitignoreFile(absolutePath);
+    if (inspection.state === 'symlink' || inspection.state === 'malformed') {
+      return {
+        kind: 'conflict',
+        ownershipState: inspection.state,
+      };
+    }
+
+    if (inspection.state !== 'managed' || inspection.content === undefined) {
+      return {
+        kind: 'modified',
+        ownershipState: inspection.state,
+      };
+    }
+
+    const block = extractManagedGitignoreBlock(inspection.content);
+    if (!block) {
+      return {
+        kind: 'conflict',
+        ownershipState: 'malformed',
+      };
+    }
+
+    return {
+      kind: hashContent(block) === record.sha256 ? 'ok' : 'modified',
       ownershipState: inspection.state,
     };
   }
