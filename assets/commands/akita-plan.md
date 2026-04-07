@@ -25,9 +25,12 @@ Required shared plan outputs:
 Then:
 - produce a reviewable shortlist of 3-7 high-value candidate flows when that many viable flows actually exist
 - preserve overflow candidates in backlog state instead of expanding the shortlist past seven items
+- build the shortlist from persisted scan evidence: target candidates, flow candidates, assertion opportunities, runtime profile, prior art, and contract evidence
+- weigh each shortlisted flow against active capability bundles and reviewed references from the manifest instead of assuming REST/OpenAPI primacy
 - if fewer than 3 viable flows exist, do **not** pad the shortlist; persist the honest candidate set in `.oma/state/shared/plan/plan-state.json`, record the shortage there, set the embedded approval state to `needs-review`, and stop with an explicit shortage verdict
 - keep shared JSON and markdown redaction-first per `.oma/runtime/shared/data-handling-policy.json`; never persist secrets, credentials, tokens, raw auth headers, or machine-local values
-- keep the plan grounded in repo facts and shipped capability evidence, not chat memory or README-only claims
+- keep the plan grounded in persisted repo evidence and shipped capability truth, not chat memory or README-only claims
+- do not turn plan into a catalog of pre-approved scenario patterns; shortlist only the highest-value meaningful proofs the evidence actually supports
 - list these discuss actions verbatim for review: `approve all`, `approve <ids>`, `reject <ids>`, `adjust <id>: <instruction>`, `change target`, `regenerate shortlist`
 - do not create `.oma/state/shared/plan/approved-plan.json` until the user explicitly chooses `approve all` or `approve <ids>`
 - if scan state is missing, a manifest-listed bundle file is missing, or the needed capability is explicitly unsupported, stop with `needs-review` guidance instead of guessing

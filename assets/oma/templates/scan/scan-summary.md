@@ -12,15 +12,21 @@
 
 ## Сводка
 
-### Contracts
-- OpenAPI present:
-- Code-first fallback required:
+### Trigger surfaces
+- REST / HTTP:
+- Messaging / broker:
+- Schedulers / batch / CLI entrypoints:
+- Files / documents / exports:
+- Other test-significant entrypoints:
+
+### Contract evidence
+- OpenAPI:
+- AsyncAPI:
+- Code-first contracts / schemas / DTOs:
+- Existing tests / feature files / prior art:
 - Notes:
 
 ### Target candidates
-- 
-
-### Prior art
 - 
 
 ### Runtime profile
@@ -30,4 +36,6 @@
 - 
 
 ### Assertion opportunities
-- 
+- Strongest evidence surfaces:
+- Capability-fit notes:
+- Gaps / blockers:

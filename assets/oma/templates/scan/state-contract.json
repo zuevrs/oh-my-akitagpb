@@ -17,7 +17,7 @@
         "flowCandidates",
         "assertionOpportunities"
       ],
-      "description": "Canonical persisted scan snapshot for the target repo. It must keep contracts, target candidates, prior art, runtime profile, flow candidates, and assertion opportunities in one durable JSON file."
+      "description": "Canonical persisted scan snapshot for the target repo as a system under test. It must keep contract evidence, target candidates, prior art, runtime profile, candidate flows, and assertion opportunities together in one durable JSON file so later phases can reason from persisted repo evidence instead of chat memory."
     }
   ],
   "summaryState": {
@@ -29,7 +29,7 @@
     "mustBeDerivedFrom": [
       "scan-state"
     ],
-    "description": "Human-readable summary only. Canonical machine state stays in the single JSON file above."
+    "description": "Human-readable summary only. Canonical machine state stays in the single JSON file above. The summary should help a human understand trigger surfaces, contract evidence sources, candidate flows, strong assertion surfaces, and capability gaps without becoming the source of truth."
   },
   "redaction": {
     "policyPath": ".oma/runtime/shared/data-handling-policy.json",
@@ -44,8 +44,11 @@
     ],
     "allowedSharedData": [
       "repo structure",
-      "route hints",
+      "trigger surface hints",
+      "contract evidence",
       "prior-art paths",
+      "runtime profile observations",
+      "side-effect and evidence surfaces",
       "capability evidence"
     ]
   }

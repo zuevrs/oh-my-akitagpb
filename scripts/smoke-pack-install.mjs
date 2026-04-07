@@ -214,7 +214,12 @@ function main() {
 
   assertOpencodeConfigValid(opencodeConfigPath);
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-scan.md'), '.oma/templates/scan/state-contract.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-scan.md'), 'system under test');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-scan.md'), 'OpenAPI and AsyncAPI');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-plan.md'), '.oma/templates/plan/state-contract.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-plan.md'), 'persisted scan evidence');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'akita-scan-workflow', 'SKILL.md'), 'machine-readable evidence map');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'akita-plan-workflow', 'SKILL.md'), 'OpenAPI or AsyncAPI evidence may strengthen a candidate');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-write.md'), '.oma/templates/write/state-contract.json');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-write.md'), '.oma/state/shared/plan/approved-plan.json');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'akita-validate.md'), '.oma/templates/validate/state-contract.json');

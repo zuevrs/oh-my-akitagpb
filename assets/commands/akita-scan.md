@@ -1,5 +1,5 @@
 ---
-description: Discover the current service, capture repo facts, and persist shared scan state.
+description: Discover the current system under test, capture repo facts, and persist shared scan state.
 agent: build
 subtask: false
 ---
@@ -19,10 +19,12 @@ Required shared scan outputs:
 - optional derived summary: `.oma/state/shared/scan/scan-summary.md`
 
 Then:
-- inspect the Java/OpenAPI service as it exists today
-- identify target candidates, contracts, prior art, runtime profile, flow candidates, and assertion opportunities grounded in repo evidence
-- if OpenAPI is present, record that contract evidence in `.oma/state/shared/scan/scan-state.json`
-- if OpenAPI is absent, do not crash or invent one; persist `code-first fallback` in the scan-state contract findings and continue scanning from code and repo structure
+- inspect the target repo as a system under test instead of assuming a REST/OpenAPI-centered service model
+- identify trigger surfaces, contract evidence, target candidates, prior art, runtime profile, flow candidates, and assertion opportunities grounded in repo evidence
+- treat OpenAPI and AsyncAPI as first-class contract evidence when they are present, alongside code-first contracts, DTO or event schemas, and existing tests or feature files
+- if OpenAPI or AsyncAPI is absent, do not crash or invent one; continue honestly from code and repo evidence and record the available contract evidence in `.oma/state/shared/scan/scan-state.json`
+- trace side-effect and evidence surfaces such as DB, broker, files, documents, exports, response payloads, and async state transitions when the repo exposes them
+- derive candidate flows from repo evidence plus manifest-listed capability truth; do not rely on README-only claims and do not turn scan into a pre-baked scenario catalog
 - keep shared JSON and markdown redaction-first per `.oma/runtime/shared/data-handling-policy.json`; never persist secrets, credentials, tokens, raw auth headers, or machine-local values
 - stop with `needs-review` guidance if any manifest-listed bundle file is missing, capability truth cannot be resolved from the manifest, or a requested behavior is explicitly unsupported
 - leave scan results in structured JSON so `/akita-plan` can consume them later

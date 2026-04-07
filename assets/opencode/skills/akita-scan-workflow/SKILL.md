@@ -32,12 +32,14 @@ Persist exactly these shared scan outputs:
 1. Read `.oma/templates/scan/state-contract.json` first and treat it as the canonical persistence contract.
 2. Read `.oma/capability-manifest.json` and resolve every manifest-listed capability bundle plus every manifest-listed `activeCapabilityBundles[*].skillPath` and `references.*` file from disk before reasoning.
 3. Read the shared data-handling policy and the installed rule files before writing shared state.
-4. Inspect the repo for contracts, target candidates, prior art, runtime profile, flow candidates, and assertion opportunities.
-5. Persist those sections together in `.oma/state/shared/scan/scan-state.json`.
-6. If OpenAPI exists, record that evidence in the `contracts` section of `.oma/state/shared/scan/scan-state.json`.
-7. If OpenAPI does not exist, persist `code-first fallback` in the `contracts` section of `.oma/state/shared/scan/scan-state.json` and continue from repo/code evidence instead of crashing.
-8. Persist the exact shared scan outputs listed above.
-9. Keep machine state in JSON. Keep markdown summary output derived and secondary.
+4. Inspect the repo as a system under test. Discover repo-backed trigger surfaces, contract evidence, prior art, runtime profile, flow candidates, and assertion opportunities.
+5. Build a machine-readable evidence map in `.oma/state/shared/scan/scan-state.json` that lets later planning reason honestly about what the system can trigger, what evidence exists, and what side effects can be asserted.
+6. Treat OpenAPI and AsyncAPI as first-class contract evidence when present. Also record code-first contracts, DTO or event schemas, feature files, tests, and other repo-backed contract evidence when those are the honest sources.
+7. Do not treat missing OpenAPI or missing AsyncAPI as a special failure mode. When they are absent, continue from repo and code evidence and record the actual contract evidence that exists.
+8. Record target candidates, flow candidates, and assertion opportunities as conclusions drawn from repo evidence plus manifest-listed capability truth. Do not invent a catalog of allowed flow patterns.
+9. Capture side-effect and evidence surfaces wherever the repo exposes them: DB state, broker traffic, files, documents, exports, response payloads, async state transitions, and similar observable effects.
+10. Persist the exact shared scan outputs listed above.
+11. Keep machine state in JSON. Keep markdown summary output derived and secondary.
 
 ## Stop with `needs-review` when
 
@@ -52,8 +54,8 @@ When you stop, say `needs-review`, name the exact missing or unsupported surface
 ## Evidence and redaction
 
 - Ground findings in repo files and manifest-listed bundle references, not chat memory.
-- Never persist secrets, credentials, tokens, raw auth headers, or machine-local values in shared state.
 - README or other prose may provide context, but not capability truth.
+- Never persist secrets, credentials, tokens, raw auth headers, or machine-local values in shared state.
 
 ## Handoff
 

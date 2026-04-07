@@ -171,9 +171,12 @@ describe('package smoke fixture', () => {
     );
 
     const installedScanCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-scan.md'), 'utf8');
+    const installedPlanCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-plan.md'), 'utf8');
     const installedWriteCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-write.md'), 'utf8');
     const installedValidateCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-validate.md'), 'utf8');
     const installedPromoteCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-promote.md'), 'utf8');
+    const installedScanWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'akita-scan-workflow', 'SKILL.md'), 'utf8');
+    const installedPlanWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'akita-plan-workflow', 'SKILL.md'), 'utf8');
     const installedWriteWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'akita-write-workflow', 'SKILL.md'), 'utf8');
     const installedValidateWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'akita-validate-workflow', 'SKILL.md'), 'utf8');
     const installedPromoteWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'akita-promote-workflow', 'SKILL.md'), 'utf8');
@@ -185,6 +188,14 @@ describe('package smoke fixture', () => {
     );
 
     expect(installedScanCommand).toContain('agent: build');
+    expect(installedScanCommand).toContain('system under test');
+    expect(installedScanCommand).toContain('OpenAPI and AsyncAPI');
+    expect(installedScanWorkflow).toContain('machine-readable evidence map');
+    expect(installedScanWorkflow).toContain('Do not treat missing OpenAPI or missing AsyncAPI as a special failure mode');
+    expect(installedPlanCommand).toContain('persisted scan evidence');
+    expect(installedPlanCommand).toContain('do not turn plan into a catalog of pre-approved scenario patterns');
+    expect(installedPlanWorkflow).toContain('OpenAPI or AsyncAPI evidence may strengthen a candidate');
+    expect(installedPlanWorkflow).toContain('Do not create `.oma/state/shared/plan/approved-plan.json` unless the user explicitly chooses');
     expect(installedWriteCommand).toContain('.oma/templates/write/state-contract.json');
     expect(installedWriteCommand).toContain('.oma/generated/');
     expect(installedWriteWorkflow).toContain('.oma/state/shared/write/write-report.json');

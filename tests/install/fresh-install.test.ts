@@ -117,6 +117,8 @@ describe('fresh install', () => {
     expect(agentsContent).toContain('/akita-scan');
     expect(agentsContent).toContain('/akita-promote');
     expect(installedScanCommand).toContain('agent: build');
+    expect(installedScanCommand).toContain('system under test');
+    expect(installedScanCommand).toContain('OpenAPI and AsyncAPI');
 
     const opencodeConfig = readJsonFile<Record<string, unknown>>(opencodeConfigPath);
     expect(opencodeConfig.instructions).toEqual(

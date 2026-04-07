@@ -84,6 +84,15 @@ describe('scan and plan template materialization', () => {
       expect(installState.ownedFiles.some((file) => file.relativePath === relativePath), relativePath).toBe(true);
     }
 
+    const installedScanContract = readFileSync(path.join(fixture.rootDir, '.oma', 'templates', 'scan', 'state-contract.json'), 'utf8');
+    const installedScanSummary = readFileSync(path.join(fixture.rootDir, '.oma', 'templates', 'scan', 'scan-summary.md'), 'utf8');
+
+    expect(installedScanContract).toContain('system under test');
+    expect(installedScanContract).toContain('contract evidence');
+    expect(installedScanSummary).toContain('### Trigger surfaces');
+    expect(installedScanSummary).toContain('### Contract evidence');
+    expect(installedScanSummary).toContain('### Assertion opportunities');
+
     expect(readFileSync(userTemplatePath, 'utf8')).toBe('user-owned template notes\n');
     expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/templates/user-notes/README.md')).toBe(false);
   });
