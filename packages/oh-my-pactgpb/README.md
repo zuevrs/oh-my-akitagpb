@@ -1,43 +1,58 @@
-# oh-my-akitagpb
+# oh-my-pactgpb
 
-Native-first OpenCode bootstrap pack for Akita GPB workflows.
+Native-first OpenCode bootstrap pack for **Pact provider verification** workflows.
 
-`oh-my-akitagpb` installs a managed `.oma/` and `.opencode/` surface into a target
-repository so an OpenCode agent can scan the repo as a system under test, plan
-high-value meaningful Akita flows from persisted evidence, write Akita-grounded
-artifacts, and validate them against shipped capability bundles.
+`oh-my-pactgpb` installs a managed `.oma/` and `.opencode/` surface into a target
+repository so an OpenCode agent can inspect a Java/Spring provider repo, detect
+whether Pact provider verification is actually grounded in repo evidence, and
+persist a Pact-specific scan state plus summary.
 
-This package now lives inside the umbrella repository at
-`packages/oh-my-akitagpb`, but the published package name, CLI entrypoint, and
+This package lives inside the umbrella repository at
+`packages/oh-my-pactgpb`, but the published package name, CLI entrypoint, and
 runtime behavior stay the same.
 
-The product worldview is system-behavior-first:
+## MVP scope right now
 
-- scan discovers trigger surfaces, contract evidence, prior art, runtime shape,
-  candidate flows, and assertion opportunities from repo evidence
-- OpenAPI and AsyncAPI are first-class contract evidence sources when present,
-  but not the center of all reasoning
-- code-first contracts, DTOs, event schemas, tests, and feature files are normal
-  evidence sources, not fallback accidents
-- capability truth comes from manifest-listed bundles and their reviewed
-  references, not from README prose
+Slice 1 is intentionally narrow.
 
-## What it ships
+### What is implemented
 
 - CLI lifecycle commands: `install`, `update`, `doctor`
-- OpenCode commands: `/akita-scan`, `/akita-plan`, `/akita-write`, `/akita-validate`, `/akita-promote`
-- Curated capability bundles currently pinned in the manifest for:
-  - `akita-gpb-core-module@c795936046e`
-  - `akita-gpb-api-module@223b2561bbc`
-  - `ccl-database-module@bb0d27eda3e`
-  - `ccl-files-module@05e1cf4d5e7`
-  - `akita-gpb-kafka-mq-module@ff56f175d8c`
-  - `ccl-additional-steps-module@95eda279aa4`
-- Pack-owned templates, rules, manifests, and runtime state scaffolding
+- OpenCode command: `/pact-scan`
+- OpenCode workflow skill: `.opencode/skills/pact-scan-workflow/SKILL.md`
+- Pact scan state contract and summary template under `.oma/templates/scan/`
+- Strict ownership/update safety for pack-managed `.oma/`, `.opencode/`,
+  `AGENTS.md`, `opencode.json`, and the managed `.gitignore` block
+- Package-local proof fixtures that verify grounded detection of:
+  - Maven/Gradle Pact provider dependencies
+  - provider verification tests
+  - local pact files
+  - broker-related config hints
+  - provider state hooks
+  - Spring HTTP controller surface
+  - integration-test prior art
 
-The pack does not ship a fixed catalog of scenarios. `/akita-scan` and
-`/akita-plan` are meant to derive candidate flows from repo evidence plus the
-active capability bundle set.
+### What is intentionally not implemented yet
+
+- `/pact-plan`
+- `/pact-write`
+- `/pact-validate`
+- consumer pact generation
+- broker publish / can-i-deploy automation
+- message pacts
+- Kafka/Rabbit Pact flows
+- multi-language provider support
+- generic contract-testing platform abstractions
+
+## Product worldview
+
+The pack is **provider-first** and **repo-evidence-first**:
+
+- it looks for evidence of Pact provider verification already present in the repo
+- it treats Java/Spring HTTP providers as the MVP target
+- it records when Pact is relevant, when it is irrelevant, and when blockers are
+  real instead of inventing missing setup
+- it allows small duplication instead of forcing a shared Akita/Pact core too early
 
 ## Requirements
 
@@ -47,23 +62,24 @@ active capability bundle set.
 ## Install
 
 ```bash
-npm install -D oh-my-akitagpb
-npx oh-my-akitagpb install
+npm install -D oh-my-pactgpb
+npx oh-my-pactgpb install
 ```
 
 After install, open the target repo in OpenCode and start with:
 
 ```text
-/akita-scan
+/pact-scan
 ```
 
 ## CLI commands
 
 ### `install`
 
-Bootstrap-only install. Materializes the managed pack surface into the current
-repository, records local install ownership in `.oma/install-state.json`, and
-updates a pack-managed `.gitignore` block for local/runtime/generated surfaces.
+Bootstrap-only install. Materializes the managed Pact scan surface into the
+current repository, records local install ownership in `.oma/install-state.json`,
+and updates a pack-managed `.gitignore` block for local/runtime/generated
+surfaces.
 
 ### `update`
 
@@ -80,10 +96,11 @@ returns one safe next step.
 
 The package materializes these top-level surfaces in a target repository:
 
-- `.oma/` as the source of truth for state, templates, manifests, and runtime metadata
-- `.opencode/commands/akita-*.md`
-- `.opencode/skills/akita-*-workflow/**`
-- `.opencode/skills/akita-capability-*/**`
+- `.oma/` as the source of truth for scan templates, instructions, manifests, and runtime metadata
+- `.opencode/commands/pact-scan.md`
+- `.opencode/skills/pact-scan-workflow/SKILL.md`
+- `.oma/templates/scan/state-contract.json`
+- `.oma/templates/scan/scan-summary.md`
 
 Ownership is strict. The pack does not silently overwrite user-owned `AGENTS.md`,
 `opencode.json`, unrelated `.opencode/*`, or user-owned `.gitignore` rules
@@ -99,17 +116,16 @@ These files are meant to live in git and be shared across the team:
 
 - `AGENTS.md`
 - `opencode.json`
-- `.opencode/commands/akita-*.md`
-- `.opencode/skills/akita-*/**`
+- `.opencode/commands/pact-scan.md`
+- `.opencode/skills/pact-scan-workflow/**`
 - `.oma/capability-manifest.json`
 - `.oma/instructions/**`
 - `.oma/templates/**`
 - `.oma/runtime/shared/**`
 - `.oma/state/shared/**`
 
-This includes shared workflow state such as scan, plan, and write outputs.
-Those files are the durable handoff surface between commands and between
-teammates; they are not treated as local scratch state.
+This includes shared scan state such as `.oma/state/shared/scan/scan-state.json`
+and `.oma/state/shared/scan/scan-summary.md`.
 
 ### Local-only runtime surface
 
@@ -120,20 +136,16 @@ These files stay local and are ignored by the managed `.gitignore` block:
 - `.oma/state/local/**`
 
 `install-state.json` is intentionally local because it contains machine-specific
-install bookkeeping such as the recorded project root and install path. It is
-required for safe `update`, but it is not shareable repo truth.
+install bookkeeping such as the recorded project root and install path.
 
 ### Generated staging surface
 
 These files are also ignored:
 
-- `.oma/generated/features/**`
-- `.oma/generated/payloads/**`
-- `.oma/generated/fixtures/**`
+- `.oma/generated/**`
 
-`/akita-write` stages artifacts there on purpose. They are not final live repo
-outputs. `/akita-promote` is the explicit publish step that copies accepted
-artifacts into real repo paths chosen by the user.
+Slice 1 does not yet materialize any write/promote workflow that uses this
+staging area, but the ignore policy keeps the local/generated split explicit.
 
 ## Development
 
@@ -150,9 +162,9 @@ From the workspace root:
 
 ```bash
 npm install
-npm run build --workspace oh-my-akitagpb
-npm test --workspace oh-my-akitagpb
-npm run smoke:pack-install --workspace oh-my-akitagpb
+npm run build --workspace oh-my-pactgpb
+npm test --workspace oh-my-pactgpb
+npm run smoke:pack-install --workspace oh-my-pactgpb
 ```
 
 ## Publishing
@@ -162,7 +174,7 @@ This repository includes:
 - CI workflow: `.github/workflows/ci.yml`
 - npm publish workflow: `.github/workflows/publish.yml`
 
-The package metadata marks `packages/oh-my-akitagpb` as the package directory
+The package metadata marks `packages/oh-my-pactgpb` as the package directory
 inside the `zuevrs/oh-my-gpb` repository.
 
 Trusted publishing setup on npmjs.com should point to:
@@ -172,11 +184,11 @@ Trusted publishing setup on npmjs.com should point to:
 
 Release flow:
 
-1. Update `packages/oh-my-akitagpb/package.json` version.
+1. Update `packages/oh-my-pactgpb/package.json` version.
 2. Merge to `main`.
 3. Tag the release as `vX.Y.Z`.
 4. Push the tag.
-5. GitHub Actions publishes the package from `packages/oh-my-akitagpb`.
+5. GitHub Actions publishes the package from `packages/oh-my-pactgpb`.
 
 ## License
 
