@@ -106,7 +106,7 @@ export function executeUpdateCommand(options: ExecuteUpdateOptions): CliResult {
       'ok',
       'update-complete',
       'Recorded pack-owned artifacts were refreshed successfully.',
-      'Open OpenCode in this repo and run `/pact-scan`.',
+      'Open OpenCode in this repo and run `/pact-init` for zero-Pact repos or `/pact-scan` when Pact evidence already exists.',
       details,
     );
   } catch (error) {

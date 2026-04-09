@@ -39,18 +39,22 @@ afterEach(() => {
   }
 });
 
-describe('scan, plan, write, and validate template materialization', () => {
-  it('keeps the shipped scan, plan, write, and validate assets registered in the package asset catalog', () => {
+describe('init, scan, plan, write, and validate template materialization', () => {
+  it('keeps the shipped init, scan, plan, write, and validate assets registered in the package asset catalog', () => {
     const catalog = createAssetCatalog(repoRoot);
     const expectedAssetEntries = {
+      'commands/pact-init': path.join(repoRoot, 'assets', 'commands', 'pact-init.md'),
       'commands/pact-scan': path.join(repoRoot, 'assets', 'commands', 'pact-scan.md'),
       'commands/pact-plan': path.join(repoRoot, 'assets', 'commands', 'pact-plan.md'),
       'commands/pact-write': path.join(repoRoot, 'assets', 'commands', 'pact-write.md'),
       'commands/pact-validate': path.join(repoRoot, 'assets', 'commands', 'pact-validate.md'),
+      'opencode/skills/pact-init-workflow': path.join(repoRoot, 'assets', 'opencode', 'skills', 'pact-init-workflow', 'SKILL.md'),
       'opencode/skills/pact-scan-workflow': path.join(repoRoot, 'assets', 'opencode', 'skills', 'pact-scan-workflow', 'SKILL.md'),
       'opencode/skills/pact-plan-workflow': path.join(repoRoot, 'assets', 'opencode', 'skills', 'pact-plan-workflow', 'SKILL.md'),
       'opencode/skills/pact-write-workflow': path.join(repoRoot, 'assets', 'opencode', 'skills', 'pact-write-workflow', 'SKILL.md'),
       'opencode/skills/pact-validate-workflow': path.join(repoRoot, 'assets', 'opencode', 'skills', 'pact-validate-workflow', 'SKILL.md'),
+      'oma/templates/init/state-contract': path.join(repoRoot, 'assets', 'oma', 'templates', 'init', 'state-contract.json'),
+      'oma/templates/init/init-summary': path.join(repoRoot, 'assets', 'oma', 'templates', 'init', 'init-summary.md'),
       'oma/templates/scan/state-contract': path.join(repoRoot, 'assets', 'oma', 'templates', 'scan', 'state-contract.json'),
       'oma/templates/scan/scan-summary': path.join(repoRoot, 'assets', 'oma', 'templates', 'scan', 'scan-summary.md'),
       'oma/templates/plan/state-contract': path.join(repoRoot, 'assets', 'oma', 'templates', 'plan', 'state-contract.json'),
@@ -68,7 +72,7 @@ describe('scan, plan, write, and validate template materialization', () => {
     }
   });
 
-  it('materializes the scan, plan, write, and validate contract templates on fresh install without claiming unrelated template files', () => {
+  it('materializes the init, scan, plan, write, and validate contract templates on fresh install without claiming unrelated template files', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
     const userTemplatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'user-notes', 'README.md');
     mkdirSync(path.dirname(userTemplatePath), { recursive: true });
@@ -87,6 +91,8 @@ describe('scan, plan, write, and validate template materialization', () => {
     });
 
     for (const relativePath of [
+      '.oma/packs/oh-my-pactgpb/templates/init/state-contract.json',
+      '.oma/packs/oh-my-pactgpb/templates/init/init-summary.md',
       '.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json',
       '.oma/packs/oh-my-pactgpb/templates/scan/scan-summary.md',
       '.oma/packs/oh-my-pactgpb/templates/plan/state-contract.json',
@@ -100,6 +106,8 @@ describe('scan, plan, write, and validate template materialization', () => {
       expect(installState.ownedFiles.some((file) => file.relativePath === relativePath), relativePath).toBe(true);
     }
 
+    const installedInitContract = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'state-contract.json'), 'utf8');
+    const installedInitSummary = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'init-summary.md'), 'utf8');
     const installedScanContract = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'state-contract.json'), 'utf8');
     const installedScanSummary = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'scan-summary.md'), 'utf8');
     const installedPlanContract = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'plan', 'state-contract.json'), 'utf8');
@@ -109,6 +117,10 @@ describe('scan, plan, write, and validate template materialization', () => {
     const installedValidateContract = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'validate', 'state-contract.json'), 'utf8');
     const installedValidateSummary = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'validate', 'validate-summary.md'), 'utf8');
 
+    expect(installedInitContract).toContain('existingPactEvidence');
+    expect(installedInitContract).toContain('bootstrapPlan');
+    expect(installedInitSummary).toContain('### Outcome');
+    expect(installedInitSummary).toContain('### Bootstrap decision');
     expect(installedScanContract).toContain('provider');
     expect(installedScanContract).toContain('artifactSource');
     expect(installedScanSummary).toContain('## Summary');

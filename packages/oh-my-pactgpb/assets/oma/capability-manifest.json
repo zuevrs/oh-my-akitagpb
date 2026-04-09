@@ -1,12 +1,14 @@
 {
   "schemaVersion": 1,
   "activeCommandIds": [
+    "pact-init",
     "pact-scan",
     "pact-plan",
     "pact-write",
     "pact-validate"
   ],
   "activeWorkflowSkills": [
+    "pact-init-workflow",
     "pact-scan-workflow",
     "pact-plan-workflow",
     "pact-write-workflow",

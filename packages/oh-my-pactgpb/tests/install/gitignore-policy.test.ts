@@ -106,6 +106,7 @@ describe('gitignore policy materialization', () => {
     expect(gitignoreContent).toContain('.oma/packs/oh-my-pactgpb/generated/');
     expect(gitignoreContent).toContain('!.oma/packs/oh-my-pactgpb/state/shared/**');
 
+    ensureFile(fixture.rootDir, '.oma/packs/oh-my-pactgpb/state/shared/init/init-state.json', '{"init":true}\n');
     ensureFile(fixture.rootDir, '.oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json', '{"scan":true}\n');
     ensureFile(fixture.rootDir, '.oma/packs/oh-my-pactgpb/state/shared/plan/plan-state.json', '{"plan":true}\n');
     ensureFile(fixture.rootDir, '.oma/packs/oh-my-pactgpb/state/shared/write/write-state.json', '{"write":true}\n');
@@ -116,10 +117,12 @@ describe('gitignore policy materialization', () => {
     for (const relativePath of [
       'AGENTS.md',
       'opencode.json',
+      '.opencode/commands/pact-init.md',
       '.opencode/commands/pact-scan.md',
       '.opencode/commands/pact-plan.md',
       '.opencode/commands/pact-write.md',
       '.opencode/commands/pact-validate.md',
+      '.opencode/skills/pact-init-workflow/SKILL.md',
       '.opencode/skills/pact-scan-workflow/SKILL.md',
       '.opencode/skills/pact-plan-workflow/SKILL.md',
       '.opencode/skills/pact-write-workflow/SKILL.md',
@@ -127,6 +130,7 @@ describe('gitignore policy materialization', () => {
       '.oma/packs/oh-my-pactgpb/capability-manifest.json',
       '.oma/packs/oh-my-pactgpb/runtime/shared/version.json',
       '.oma/packs/oh-my-pactgpb/runtime/shared/data-handling-policy.json',
+      '.oma/packs/oh-my-pactgpb/state/shared/init/init-state.json',
       '.oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json',
       '.oma/packs/oh-my-pactgpb/state/shared/plan/plan-state.json',
       '.oma/packs/oh-my-pactgpb/state/shared/write/write-state.json',

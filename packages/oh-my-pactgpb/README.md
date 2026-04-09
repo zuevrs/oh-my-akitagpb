@@ -17,14 +17,18 @@ Slice 1 is intentionally narrow.
 ### What is implemented
 
 - CLI lifecycle commands: `install`, `update`, `doctor`
+- OpenCode command: `/pact-init`
 - OpenCode command: `/pact-scan`
 - OpenCode command: `/pact-plan`
 - OpenCode command: `/pact-write`
 - OpenCode command: `/pact-validate`
+- OpenCode workflow skill: `.opencode/skills/pact-init-workflow/SKILL.md`
 - OpenCode workflow skill: `.opencode/skills/pact-scan-workflow/SKILL.md`
 - OpenCode workflow skill: `.opencode/skills/pact-plan-workflow/SKILL.md`
 - OpenCode workflow skill: `.opencode/skills/pact-write-workflow/SKILL.md`
 - OpenCode workflow skill: `.opencode/skills/pact-validate-workflow/SKILL.md`
+- Pact init state contract and summary template under
+  `.oma/packs/oh-my-pactgpb/templates/init/`
 - Pact scan state contract and summary template under
   `.oma/packs/oh-my-pactgpb/templates/scan/`
 - Pact plan state contract and summary template under
@@ -75,7 +79,25 @@ npm install -D oh-my-pactgpb
 npx oh-my-pactgpb install
 ```
 
-After install, open the target repo in OpenCode and start with:
+After install, pick the entry that matches the repo state.
+
+### Zero-Pact bootstrap entry
+
+Use `/pact-init` when the repo does **not** already contain meaningful Pact
+provider-verification evidence and you want to decide whether Pact should start
+here at all.
+
+```text
+/pact-init
+```
+
+`/pact-init` is usually a one-time bootstrap step. If it completes, the next
+step is the normal verification track.
+
+### Verification track
+
+Use the existing verification track when Pact already exists in the repo or is
+already grounded by repo evidence:
 
 ```text
 /pact-scan
@@ -184,8 +206,10 @@ These files are meant to live in git and be shared across the team:
 - `.oma/packs/oh-my-pactgpb/runtime/shared/**`
 - `.oma/packs/oh-my-pactgpb/state/shared/**`
 
-This includes durable scan, plan, and write state such as:
+This includes durable init, scan, plan, and write state such as:
 
+- `.oma/packs/oh-my-pactgpb/state/shared/init/init-state.json`
+- `.oma/packs/oh-my-pactgpb/state/shared/init/init-summary.md`
 - `.oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json`
 - `.oma/packs/oh-my-pactgpb/state/shared/scan/scan-summary.md`
 - `.oma/packs/oh-my-pactgpb/state/shared/plan/plan-state.json`
