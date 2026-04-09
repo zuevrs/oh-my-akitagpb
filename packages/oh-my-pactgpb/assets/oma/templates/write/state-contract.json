@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "contractId": "pact-provider-write-state",
+  "sharedStateBasePath": ".oma/packs/oh-my-pactgpb/state/shared/write",
+  "installedTemplateBasePath": ".oma/packs/oh-my-pactgpb/templates/write",
+  "planPrerequisites": {
+    "contractPath": ".oma/packs/oh-my-pactgpb/templates/plan/state-contract.json",
+    "sharedStateBasePath": ".oma/packs/oh-my-pactgpb/state/shared/plan",
+    "requiredStatePaths": [
+      ".oma/packs/oh-my-pactgpb/state/shared/plan/plan-state.json"
+    ],
+    "writerMustReadFromDisk": true,
+    "description": "pact-write must consume the persisted plan snapshot from disk before deciding what provider verification scaffolding is safe to write."
+  },
+  "scanSupportInputs": {
+    "contractPath": ".oma/packs/oh-my-pactgpb/templates/scan/state-contract.json",
+    "sharedStateBasePath": ".oma/packs/oh-my-pactgpb/state/shared/scan",
+    "requiredStatePaths": [
+      ".oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json"
+    ],
+    "writerMustReadFromDisk": true,
+    "description": "pact-write must read the persisted scan snapshot from disk as supporting evidence for target files, provider state hints, and artifact-source honesty."
+  },
+  "requiredMachineState": [
+    {
+      "id": "write-state",
+      "path": ".oma/packs/oh-my-pactgpb/state/shared/write/write-state.json",
+      "format": "json",
+      "required": true,
+      "requiredTopLevelFields": [
+        "providerSelection",
+        "inputPlanVerdict",
+        "writeOutcome",
+        "filesPlanned",
+        "filesWritten",
+        "filesModified",
+        "writesSkipped",
+        "unresolvedBlockers",
+        "manualFollowUps",
+        "expectedVerificationCommand",
+        "notes"
+      ],
+      "description": "Canonical persisted write result for Pact provider verification scaffolding. It must capture the selected provider, the input plan verdict, actual writes performed, intentional skips, remaining blockers, manual follow-ups, and the next verification step without pretending readiness unsupported by persisted state."
+    }
+  ],
+  "planVerdictTaxonomy": {
+    "path": ".oma/packs/oh-my-pactgpb/state/shared/plan/plan-state.json",
+    "section": "verificationReadiness.verdict",
+    "allowed": [
+      "ready-to-scaffold",
+      "needs-provider-state-work",
+      "needs-artifact-source-clarification",
+      "blocked",
+      "irrelevant"
+    ],
+    "description": "pact-write must obey this persisted plan verdict taxonomy instead of inventing a new decision surface."
+  },
+  "writeOutcomeTaxonomy": {
+    "path": ".oma/packs/oh-my-pactgpb/state/shared/write/write-state.json",
+    "section": "writeOutcome",
+    "allowed": [
+      "written",
+      "partial",
+      "blocked",
+      "no-op"
+    ],
+    "description": "pact-write must distinguish completed scaffold writes, partial scaffold/remediation, blocked writes, and honest no-op outcomes."
+  },
+  "ownership": {
+    "packManagedStatePaths": [
+      ".oma/packs/oh-my-pactgpb/state/shared/write/write-state.json"
+    ],
+    "summaryPath": ".oma/packs/oh-my-pactgpb/state/shared/write/write-summary.md",
+    "repoWritePolicy": [
+      "extend existing provider verification files when safe",
+      "create new provider-state-oriented scaffold files only when the persisted plan justifies them",
+      "allow minimal dependency/config patches only when clearly needed by the chosen scaffold",
+      "forbid broad refactors or unrelated file rewrites"
+    ],
+    "description": "pact-write may always update the canonical write state files above and may touch repo files only when the persisted plan and repo evidence make the target narrow, attributable, and safe."
+  },
+  "stopConditions": [
+    {
+      "id": "missing-plan-state",
+      "classification": "blocked",
+      "reportIn": "write-state",
+      "description": "Required persisted plan state is missing, so write cannot proceed honestly."
+    },
+    {
+      "id": "missing-scan-state",
+      "classification": "blocked",
+      "reportIn": "write-state",
+      "description": "Required persisted scan state is missing, so write cannot reconcile target files and evidence honestly."
+    },
+    {
+      "id": "blocked-plan-verdict",
+      "classification": "blocked",
+      "reportIn": "write-state",
+      "description": "The persisted plan verdict is blocked, so write must not imply progress by generating scaffolding."
+    },
+    {
+      "id": "irrelevant-plan-verdict",
+      "classification": "no-op",
+      "reportIn": "write-state",
+      "description": "The persisted plan verdict is irrelevant, so Pact provider verification artifacts must not be written."
+    },
+    {
+      "id": "unsafe-target-selection",
+      "classification": "blocked",
+      "reportIn": "write-state",
+      "description": "The safe provider verification target file or extension point cannot be identified without inventing a new architecture."
+    }
+  ],
+  "summaryState": {
+    "path": ".oma/packs/oh-my-pactgpb/state/shared/write/write-summary.md",
+    "templatePath": ".oma/packs/oh-my-pactgpb/templates/write/write-summary.md",
+    "format": "markdown",
+    "required": false,
+    "canonical": false,
+    "mustBeDerivedFrom": [
+      "write-state"
+    ],
+    "description": "Human-readable Pact write summary only. Canonical machine state stays in write-state.json."
+  },
+  "redaction": {
+    "policyPath": ".oma/packs/oh-my-pactgpb/runtime/shared/data-handling-policy.json",
+    "redactionRequired": true,
+    "markdownIsSummaryOnly": true,
+    "forbiddenSharedData": [
+      "secrets",
+      "tokens",
+      "credentials",
+      "raw auth headers",
+      "machine-local values"
+    ],
+    "allowedSharedData": [
+      "provider identity",
+      "repo-relative file paths",
+      "artifact source reasoning",
+      "provider-state gaps",
+      "manual follow-up notes",
+      "verification commands",
+      "write blockers"
+    ]
+  }
+}

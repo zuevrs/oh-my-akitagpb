@@ -2,11 +2,13 @@
   "schemaVersion": 1,
   "activeCommandIds": [
     "pact-scan",
-    "pact-plan"
+    "pact-plan",
+    "pact-write"
   ],
   "activeWorkflowSkills": [
     "pact-scan-workflow",
-    "pact-plan-workflow"
+    "pact-plan-workflow",
+    "pact-write-workflow"
   ],
   "activeCapabilityBundles": []
 }

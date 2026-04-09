@@ -84,15 +84,19 @@ describe('fresh install', () => {
     expect(existsSync(path.join(fixture.rootDir, ...packRootSegments, 'instructions', 'rules', 'default-language-russian.md'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.opencode', 'commands', 'pact-scan.md'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.opencode', 'commands', 'pact-plan.md'))).toBe(true);
+    expect(existsSync(path.join(fixture.rootDir, '.opencode', 'commands', 'pact-write.md'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.opencode', 'skills', 'pact-scan-workflow', 'SKILL.md'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.opencode', 'skills', 'pact-plan-workflow', 'SKILL.md'))).toBe(true);
+    expect(existsSync(path.join(fixture.rootDir, '.opencode', 'skills', 'pact-write-workflow', 'SKILL.md'))).toBe(true);
 
     const installState = readJsonFile<InstallState>(installStatePath);
     expect(installState.projectMode).toBe('fresh');
     expect(installState.ownedFiles.some((file) => file.relativePath === '.opencode/commands/pact-scan.md')).toBe(true);
     expect(installState.ownedFiles.some((file) => file.relativePath === '.opencode/commands/pact-plan.md')).toBe(true);
+    expect(installState.ownedFiles.some((file) => file.relativePath === '.opencode/commands/pact-write.md')).toBe(true);
     expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json')).toBe(true);
     expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/packs/oh-my-pactgpb/templates/plan/state-contract.json')).toBe(true);
+    expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/packs/oh-my-pactgpb/templates/write/state-contract.json')).toBe(true);
     expect(installState.managedSurfaces).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ relativePath: 'AGENTS.md' }),
@@ -107,20 +111,27 @@ describe('fresh install', () => {
     const agentsContent = readFileSync(agentsPath, 'utf8');
     const installedScanCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'pact-scan.md'), 'utf8');
     const installedPlanCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'pact-plan.md'), 'utf8');
+    const installedWriteCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'pact-write.md'), 'utf8');
     const installedScanWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'pact-scan-workflow', 'SKILL.md'), 'utf8');
     const installedPlanWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'pact-plan-workflow', 'SKILL.md'), 'utf8');
+    const installedWriteWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'pact-write-workflow', 'SKILL.md'), 'utf8');
 
     expect(agentsContent).toContain('<!-- oh-my-pactgpb:begin -->');
     expect(agentsContent).toContain('/pact-scan');
     expect(agentsContent).toContain('/pact-plan');
+    expect(agentsContent).toContain('/pact-write');
     expect(installedScanCommand).toContain('Pact provider verification');
     expect(installedScanCommand).toContain('.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json');
     expect(installedPlanCommand).toContain('.oma/packs/oh-my-pactgpb/templates/plan/state-contract.json');
     expect(installedPlanCommand).toContain('.oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json');
+    expect(installedWriteCommand).toContain('.oma/packs/oh-my-pactgpb/templates/write/state-contract.json');
+    expect(installedWriteCommand).toContain('.oma/packs/oh-my-pactgpb/state/shared/plan/plan-state.json');
     expect(installedScanWorkflow).toContain('provider verification');
     expect(installedScanWorkflow).toContain('artifact source');
     expect(installedPlanWorkflow).toContain('provider-verification plan');
     expect(installedPlanWorkflow).toContain('persisted scan state');
+    expect(installedWriteWorkflow).toContain('plan-obedient Pact provider verification scaffolding');
+    expect(installedWriteWorkflow).toContain('write-state.json');
 
     const opencodeConfig = readJsonFile<Record<string, unknown>>(opencodeConfigPath);
     expect(opencodeConfig.instructions).toEqual(

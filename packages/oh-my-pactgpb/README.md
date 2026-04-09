@@ -19,12 +19,16 @@ Slice 1 is intentionally narrow.
 - CLI lifecycle commands: `install`, `update`, `doctor`
 - OpenCode command: `/pact-scan`
 - OpenCode command: `/pact-plan`
+- OpenCode command: `/pact-write`
 - OpenCode workflow skill: `.opencode/skills/pact-scan-workflow/SKILL.md`
 - OpenCode workflow skill: `.opencode/skills/pact-plan-workflow/SKILL.md`
+- OpenCode workflow skill: `.opencode/skills/pact-write-workflow/SKILL.md`
 - Pact scan state contract and summary template under
   `.oma/packs/oh-my-pactgpb/templates/scan/`
 - Pact plan state contract and summary template under
   `.oma/packs/oh-my-pactgpb/templates/plan/`
+- Pact write state contract and summary template under
+  `.oma/packs/oh-my-pactgpb/templates/write/`
 - Strict ownership/update safety for pack-owned runtime plus additive shared
   surfaces
 - Package-local proof fixtures that verify grounded detection of:
@@ -38,7 +42,6 @@ Slice 1 is intentionally narrow.
 
 ### What is intentionally not implemented yet
 
-- `/pact-write`
 - `/pact-validate`
 - consumer pact generation
 - broker publish / can-i-deploy automation
@@ -79,6 +82,12 @@ Then turn persisted scan evidence into a provider-verification plan with:
 
 ```text
 /pact-plan
+```
+
+Then materialize only the provider-verification scaffold the plan safely allows with:
+
+```text
+/pact-write
 ```
 
 ## Co-install support
@@ -165,12 +174,14 @@ These files are meant to live in git and be shared across the team:
 - `.oma/packs/oh-my-pactgpb/runtime/shared/**`
 - `.oma/packs/oh-my-pactgpb/state/shared/**`
 
-This includes durable scan and plan state such as:
+This includes durable scan, plan, and write state such as:
 
 - `.oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json`
 - `.oma/packs/oh-my-pactgpb/state/shared/scan/scan-summary.md`
 - `.oma/packs/oh-my-pactgpb/state/shared/plan/plan-state.json`
 - `.oma/packs/oh-my-pactgpb/state/shared/plan/plan-summary.md`
+- `.oma/packs/oh-my-pactgpb/state/shared/write/write-state.json`
+- `.oma/packs/oh-my-pactgpb/state/shared/write/write-summary.md`
 
 ### Local-only Pact runtime surface
 

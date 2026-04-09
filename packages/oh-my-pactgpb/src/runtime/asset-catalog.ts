@@ -67,8 +67,10 @@ export class PackageSurfaceError extends Error {
 const ASSET_ENTRIES = Object.freeze({
   'commands/pact-scan': 'commands/pact-scan.md',
   'commands/pact-plan': 'commands/pact-plan.md',
+  'commands/pact-write': 'commands/pact-write.md',
   'opencode/skills/pact-scan-workflow': 'opencode/skills/pact-scan-workflow/SKILL.md',
   'opencode/skills/pact-plan-workflow': 'opencode/skills/pact-plan-workflow/SKILL.md',
+  'opencode/skills/pact-write-workflow': 'opencode/skills/pact-write-workflow/SKILL.md',
   'oma/capability-manifest': 'oma/capability-manifest.json',
   'oma/runtime/shared/data-handling-policy': 'oma/runtime/shared/data-handling-policy.json',
   'oma/instructions/rules/manifest-first': 'oma/instructions/rules/manifest-first.md',
@@ -82,6 +84,8 @@ const ASSET_ENTRIES = Object.freeze({
   'oma/templates/scan/scan-summary': 'oma/templates/scan/scan-summary.md',
   'oma/templates/plan/state-contract': 'oma/templates/plan/state-contract.json',
   'oma/templates/plan/plan-summary': 'oma/templates/plan/plan-summary.md',
+  'oma/templates/write/state-contract': 'oma/templates/write/state-contract.json',
+  'oma/templates/write/write-summary': 'oma/templates/write/write-summary.md',
 } satisfies Record<string, string>);
 
 const CAPABILITY_BUNDLE_PREFIX = 'pact-capability-';
