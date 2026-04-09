@@ -65,10 +65,12 @@ export class PackageSurfaceError extends Error {
 }
 
 const ASSET_ENTRIES = Object.freeze({
+  'commands/pact-init': 'commands/pact-init.md',
   'commands/pact-scan': 'commands/pact-scan.md',
   'commands/pact-plan': 'commands/pact-plan.md',
   'commands/pact-write': 'commands/pact-write.md',
   'commands/pact-validate': 'commands/pact-validate.md',
+  'opencode/skills/pact-init-workflow': 'opencode/skills/pact-init-workflow/SKILL.md',
   'opencode/skills/pact-scan-workflow': 'opencode/skills/pact-scan-workflow/SKILL.md',
   'opencode/skills/pact-plan-workflow': 'opencode/skills/pact-plan-workflow/SKILL.md',
   'opencode/skills/pact-write-workflow': 'opencode/skills/pact-write-workflow/SKILL.md',
@@ -82,6 +84,8 @@ const ASSET_ENTRIES = Object.freeze({
   'oma/instructions/rules/prefer-existing-prior-art': 'oma/instructions/rules/prefer-existing-prior-art.md',
   'oma/instructions/rules/explicit-unsupported': 'oma/instructions/rules/explicit-unsupported.md',
   'oma/instructions/rules/respect-pack-ownership': 'oma/instructions/rules/respect-pack-ownership.md',
+  'oma/templates/init/state-contract': 'oma/templates/init/state-contract.json',
+  'oma/templates/init/init-summary': 'oma/templates/init/init-summary.md',
   'oma/templates/scan/state-contract': 'oma/templates/scan/state-contract.json',
   'oma/templates/scan/scan-summary': 'oma/templates/scan/scan-summary.md',
   'oma/templates/plan/state-contract': 'oma/templates/plan/state-contract.json',

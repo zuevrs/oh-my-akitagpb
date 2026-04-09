@@ -8,6 +8,10 @@ export type FixtureTemplate =
   | 'empty'
   | 'package-only'
   | 'java-service'
+  | 'spring-provider-init-openapi'
+  | 'spring-provider-init-codefirst'
+  | 'spring-provider-init-internal'
+  | 'spring-provider-init-ambiguous'
   | 'spring-pact-provider-local'
   | 'spring-pact-provider-unclear'
   | 'spring-pact-provider-broker'
@@ -54,6 +58,10 @@ const packLockDir = path.join(packLockRoot, 'lock');
 const npmCacheRoot = path.join(tmpdir(), 'oh-my-pactgpb-npm-cache');
 const fixtureTemplateRoots: Partial<Record<FixtureTemplate, string>> = {
   'java-service': path.join(repoRoot, 'tests', 'fixtures', 'empty-java-service'),
+  'spring-provider-init-openapi': path.join(repoRoot, 'tests', 'fixtures', 'spring-provider-init-openapi'),
+  'spring-provider-init-codefirst': path.join(repoRoot, 'tests', 'fixtures', 'spring-provider-init-codefirst'),
+  'spring-provider-init-internal': path.join(repoRoot, 'tests', 'fixtures', 'spring-provider-init-internal'),
+  'spring-provider-init-ambiguous': path.join(repoRoot, 'tests', 'fixtures', 'spring-provider-init-ambiguous'),
   'spring-pact-provider-local': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-local'),
   'spring-pact-provider-unclear': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-unclear'),
   'spring-pact-provider-broker': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-broker'),

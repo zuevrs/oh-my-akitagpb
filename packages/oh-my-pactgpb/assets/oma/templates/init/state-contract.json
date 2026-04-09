@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "contractId": "pact-provider-init-state",
+  "sharedStateBasePath": ".oma/packs/oh-my-pactgpb/state/shared/init",
+  "installedTemplateBasePath": ".oma/packs/oh-my-pactgpb/templates/init",
+  "requiredMachineState": [
+    {
+      "id": "init-state",
+      "path": ".oma/packs/oh-my-pactgpb/state/shared/init/init-state.json",
+      "format": "json",
+      "required": true,
+      "requiredTopLevelFields": [
+        "verdict",
+        "providerCandidate",
+        "httpSurface",
+        "existingPactEvidence",
+        "initJustification",
+        "bootstrapPlan",
+        "writesPerformed",
+        "remainingBlockers",
+        "recommendedNextStep",
+        "expectedFollowUpCommand",
+        "notes"
+      ],
+      "description": "Canonical persisted one-shot init result for zero-Pact Java/Spring provider repos. It must capture whether init was completed, not justified, blocked by insufficient boundary evidence, or redirected because existing Pact evidence already exists; identify the provider candidate and HTTP surface; record the existing Pact evidence check; explain the bootstrap justification and narrow write plan; and persist what was written without pretending verification is already grounded or passing."
+    }
+  ],
+  "outcomeTaxonomy": {
+    "path": ".oma/packs/oh-my-pactgpb/state/shared/init/init-state.json",
+    "section": "verdict",
+    "allowed": [
+      "init-completed",
+      "init-not-justified",
+      "insufficient-boundary-evidence",
+      "existing-pact-evidence-detected"
+    ],
+    "description": "pact-init must classify its one-shot bootstrap outcome using this narrow verdict set."
+  },
+  "writePolicy": {
+    "allowedRepoWrites": [
+      "minimal Pact provider test dependency patching in pom.xml or build.gradle when clearly needed",
+      "one narrow provider verification harness",
+      "minimal provider-state skeletons when justified",
+      "canonical init shared state outputs"
+    ],
+    "forbiddenRepoWrites": [
+      "consumer pact generation",
+      "broker publish or can-i-deploy automation",
+      "message pact support",
+      "broad build refactors",
+      "generic contract platform scaffolding",
+      "claims that provider verification is already proven or passing"
+    ],
+    "description": "pact-init may write only narrow provider-side bootstrap artifacts and must leave the repo prepared for the normal verification track, not pretend the full verification lifecycle is already complete."
+  },
+  "stopConditions": [
+    {
+      "id": "existing-pact-evidence",
+      "classification": "existing-pact-evidence-detected",
+      "reportIn": "init-state",
+      "description": "Meaningful Pact provider evidence already exists, so init must redirect to the normal verification track instead of scaffolding a parallel setup."
+    },
+    {
+      "id": "ambiguous-provider-boundary",
+      "classification": "insufficient-boundary-evidence",
+      "reportIn": "init-state",
+      "description": "The repo does not provide enough boundary evidence to choose a provider under contract honestly."
+    },
+    {
+      "id": "weak-http-surface",
+      "classification": "init-not-justified",
+      "reportIn": "init-state",
+      "description": "The repo exposes weak or internal-only HTTP seams, so Pact bootstrap is not justified right now."
+    }
+  ],
+  "summaryState": {
+    "path": ".oma/packs/oh-my-pactgpb/state/shared/init/init-summary.md",
+    "templatePath": ".oma/packs/oh-my-pactgpb/templates/init/init-summary.md",
+    "format": "markdown",
+    "required": false,
+    "canonical": false,
+    "mustBeDerivedFrom": [
+      "init-state"
+    ],
+    "description": "Human-readable Pact init summary only. Canonical machine state stays in init-state.json."
+  },
+  "redaction": {
+    "policyPath": ".oma/packs/oh-my-pactgpb/runtime/shared/data-handling-policy.json",
+    "redactionRequired": true,
+    "markdownIsSummaryOnly": true,
+    "forbiddenSharedData": [
+      "secrets",
+      "tokens",
+      "credentials",
+      "raw auth headers",
+      "machine-local values"
+    ],
+    "allowedSharedData": [
+      "repo structure",
+      "provider boundary clues",
+      "Spring controller and request mapping evidence",
+      "OpenAPI evidence",
+      "DTO evidence",
+      "existing Pact evidence",
+      "bootstrap blockers",
+      "repo-relative write paths",
+      "recommended next-step commands"
+    ]
+  }
+}

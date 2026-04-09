@@ -30,8 +30,14 @@ export interface MaterializedInstall {
   managedSurfaces: readonly ManagedSurfaceRecord[];
 }
 
-export const COMMAND_IDS = ['pact-scan', 'pact-plan', 'pact-write', 'pact-validate'] as const;
-export const WORKFLOW_SKILL_IDS = ['pact-scan-workflow', 'pact-plan-workflow', 'pact-write-workflow', 'pact-validate-workflow'] as const;
+export const COMMAND_IDS = ['pact-init', 'pact-scan', 'pact-plan', 'pact-write', 'pact-validate'] as const;
+export const WORKFLOW_SKILL_IDS = [
+  'pact-init-workflow',
+  'pact-scan-workflow',
+  'pact-plan-workflow',
+  'pact-write-workflow',
+  'pact-validate-workflow',
+] as const;
 export const MANAGED_INSTRUCTION_PATHS = [
   'AGENTS.md',
   `${PACK_RUNTIME_ROOT}/instructions/rules/manifest-first.md`,
@@ -53,6 +59,8 @@ const PACK_OWNED_ASSET_KEYS = [
   'oma/instructions/rules/prefer-existing-prior-art',
   'oma/instructions/rules/explicit-unsupported',
   'oma/instructions/rules/respect-pack-ownership',
+  'oma/templates/init/state-contract',
+  'oma/templates/init/init-summary',
   'oma/templates/scan/state-contract',
   'oma/templates/scan/scan-summary',
   'oma/templates/plan/state-contract',
@@ -135,6 +143,12 @@ export function planMaterializedFiles(
       generatedBy: 'runtime',
     },
     {
+      relativePath: '.opencode/commands/pact-init.md',
+      content: loadAssetText(catalog, 'commands/pact-init'),
+      generatedBy: 'asset',
+      assetKey: 'commands/pact-init',
+    },
+    {
       relativePath: '.opencode/commands/pact-scan.md',
       content: loadAssetText(catalog, 'commands/pact-scan'),
       generatedBy: 'asset',
@@ -157,6 +171,12 @@ export function planMaterializedFiles(
       content: loadAssetText(catalog, 'commands/pact-validate'),
       generatedBy: 'asset',
       assetKey: 'commands/pact-validate',
+    },
+    {
+      relativePath: '.opencode/skills/pact-init-workflow/SKILL.md',
+      content: loadAssetText(catalog, 'opencode/skills/pact-init-workflow'),
+      generatedBy: 'asset',
+      assetKey: 'opencode/skills/pact-init-workflow',
     },
     {
       relativePath: '.opencode/skills/pact-scan-workflow/SKILL.md',
@@ -247,8 +267,15 @@ export function materializeFreshInstall(
       packageName: packageSurface.packageName,
       packageVersion: packageSurface.packageVersion,
       instructions: MANAGED_INSTRUCTION_PATHS,
-      commands: ['.opencode/commands/pact-scan.md', '.opencode/commands/pact-plan.md', '.opencode/commands/pact-write.md', '.opencode/commands/pact-validate.md'],
+      commands: [
+        '.opencode/commands/pact-init.md',
+        '.opencode/commands/pact-scan.md',
+        '.opencode/commands/pact-plan.md',
+        '.opencode/commands/pact-write.md',
+        '.opencode/commands/pact-validate.md',
+      ],
       skills: [
+        '.opencode/skills/pact-init-workflow/SKILL.md',
         '.opencode/skills/pact-scan-workflow/SKILL.md',
         '.opencode/skills/pact-plan-workflow/SKILL.md',
         '.opencode/skills/pact-write-workflow/SKILL.md',

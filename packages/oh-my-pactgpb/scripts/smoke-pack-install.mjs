@@ -123,14 +123,18 @@ function main() {
   const doctorReportPath = path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'state', 'local', 'doctor', 'doctor-report.json');
   const opencodeConfigPath = path.join(fixtureRoot, 'opencode.json');
   const requiredInstalledPaths = [
+    '.opencode/commands/pact-init.md',
     '.opencode/commands/pact-scan.md',
     '.opencode/commands/pact-plan.md',
     '.opencode/commands/pact-write.md',
     '.opencode/commands/pact-validate.md',
+    '.opencode/skills/pact-init-workflow/SKILL.md',
     '.opencode/skills/pact-scan-workflow/SKILL.md',
     '.opencode/skills/pact-plan-workflow/SKILL.md',
     '.opencode/skills/pact-write-workflow/SKILL.md',
     '.opencode/skills/pact-validate-workflow/SKILL.md',
+    '.oma/packs/oh-my-pactgpb/templates/init/state-contract.json',
+    '.oma/packs/oh-my-pactgpb/templates/init/init-summary.md',
     '.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json',
     '.oma/packs/oh-my-pactgpb/templates/scan/scan-summary.md',
     '.oma/packs/oh-my-pactgpb/templates/plan/state-contract.json',
@@ -174,7 +178,8 @@ function main() {
 
   if (
     !Array.isArray(capabilityManifest.activeCommandIds) ||
-    capabilityManifest.activeCommandIds.length !== 4 ||
+    capabilityManifest.activeCommandIds.length !== 5 ||
+    !capabilityManifest.activeCommandIds.includes('pact-init') ||
     !capabilityManifest.activeCommandIds.includes('pact-scan') ||
     !capabilityManifest.activeCommandIds.includes('pact-plan') ||
     !capabilityManifest.activeCommandIds.includes('pact-write') ||
@@ -185,7 +190,8 @@ function main() {
 
   if (
     !Array.isArray(capabilityManifest.activeWorkflowSkills) ||
-    capabilityManifest.activeWorkflowSkills.length !== 4 ||
+    capabilityManifest.activeWorkflowSkills.length !== 5 ||
+    !capabilityManifest.activeWorkflowSkills.includes('pact-init-workflow') ||
     !capabilityManifest.activeWorkflowSkills.includes('pact-scan-workflow') ||
     !capabilityManifest.activeWorkflowSkills.includes('pact-plan-workflow') ||
     !capabilityManifest.activeWorkflowSkills.includes('pact-write-workflow') ||
@@ -210,6 +216,8 @@ function main() {
     throw new Error('doctor-report.json did not include a safe next step.');
   }
 
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-init.md'), '.oma/packs/oh-my-pactgpb/templates/init/state-contract.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-init.md'), 'zero-Pact Java/Spring provider repos');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-scan.md'), '.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-scan.md'), 'Pact provider verification');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-plan.md'), '.oma/packs/oh-my-pactgpb/templates/plan/state-contract.json');
@@ -218,6 +226,8 @@ function main() {
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-write.md'), '.oma/packs/oh-my-pactgpb/state/shared/plan/plan-state.json');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-validate.md'), '.oma/packs/oh-my-pactgpb/templates/validate/state-contract.json');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-validate.md'), '.oma/packs/oh-my-pactgpb/state/shared/write/write-state.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-init-workflow', 'SKILL.md'), 'zero-Pact Java/Spring repos');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-init-workflow', 'SKILL.md'), 'existing-pact-evidence-detected');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-scan-workflow', 'SKILL.md'), 'artifact source');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-scan-workflow', 'SKILL.md'), 'provider verification');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-plan-workflow', 'SKILL.md'), 'persisted scan state');
@@ -226,6 +236,9 @@ function main() {
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-write-workflow', 'SKILL.md'), 'write-state.json');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-validate-workflow', 'SKILL.md'), 'scan/plan/write outcomes');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-validate-workflow', 'SKILL.md'), 'validate-state.json');
+  assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'state-contract.json'), 'existingPactEvidence');
+  assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'state-contract.json'), 'bootstrapPlan');
+  assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'init-summary.md'), '### Bootstrap decision');
   assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'state-contract.json'), 'artifactSource');
   assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'scan-summary.md'), '### Provider under contract');
   assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'plan', 'state-contract.json'), 'providerSelection');

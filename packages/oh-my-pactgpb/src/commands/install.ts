@@ -110,7 +110,7 @@ export function executeInstallCommand(options: ExecuteInstallOptions): CliResult
       availableSubcommands: ['install', 'update', 'doctor'],
       assetCatalogRoot: options.assetCatalog.assetsRoot,
       assetCatalogEntries: Object.keys(options.assetCatalog.entries),
-      nextStep: 'Open OpenCode in this repo and run `/pact-scan`.',
+      nextStep: 'Open OpenCode in this repo and run `/pact-init` for zero-Pact repos or `/pact-scan` when Pact evidence already exists.',
       details: {
         classification: 'fresh',
         projectMode: compatibility.projectMode.mode,
