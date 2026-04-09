@@ -33,7 +33,7 @@ afterEach(() => {
 describe('repeat install', () => {
   it('blocks a second install and leaves drifted pack-owned files untouched until update is explicit', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const versionPath = path.join(fixture.rootDir, '.oma', 'runtime', 'shared', 'version.json');
+    const versionPath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'runtime', 'shared', 'version.json');
 
     const first = parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
     writeFileSync(versionPath, '{"stale":true}\n', 'utf8');
@@ -61,7 +61,7 @@ describe('repeat install', () => {
 
   it('refuses repeat install when managed surfaces exist but the install-state ledger is missing', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'install-state.json');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
     rmSync(installStatePath);

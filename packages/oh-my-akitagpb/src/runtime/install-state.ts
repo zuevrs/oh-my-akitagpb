@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { PackageSurfaceError } from './asset-catalog.js';
+import { resolveInstallStateAbsolutePath } from './layout.js';
 
 export interface OwnedFileRecord {
   kind: 'file';
@@ -31,7 +32,7 @@ export interface InstallState {
 }
 
 export function resolveInstallStatePath(projectRoot: string): string {
-  return path.join(projectRoot, '.oma', 'install-state.json');
+  return resolveInstallStateAbsolutePath(projectRoot);
 }
 
 export function hasInstallState(projectRoot: string): boolean {

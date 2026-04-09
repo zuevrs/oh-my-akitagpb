@@ -8,13 +8,19 @@ import {
   PackageSurfaceError,
   resolveCapabilityBundleAssetFiles,
 } from './asset-catalog.js';
+import { applyManagedGitignoreBlock } from './gitignore-block.js';
 import {
   applyManagedAgentsBlock,
   applyManagedOpencodeConfig,
   hashContent,
   type ManagedSurfaceWriteResult,
 } from './managed-blocks.js';
-import { applyManagedGitignoreBlock } from './gitignore-block.js';
+import {
+  DATA_HANDLING_POLICY_RELATIVE_PATH,
+  PACK_RUNTIME_ROOT,
+  PROJECT_MODE_RELATIVE_PATH,
+  VERSION_RELATIVE_PATH,
+} from './layout.js';
 import { type ManagedSurfaceRecord, type OwnedFileRecord } from './install-state.js';
 import { createProjectModeRecord, readProjectModeRecord, type ProjectModeClassification } from './project-mode.js';
 
@@ -40,13 +46,43 @@ export const WORKFLOW_SKILL_IDS = [
 ] as const;
 export const MANAGED_INSTRUCTION_PATHS = [
   'AGENTS.md',
-  '.oma/instructions/rules/manifest-first.md',
-  '.oma/instructions/rules/default-language-russian.md',
-  '.oma/instructions/rules/never-invent-steps.md',
-  '.oma/instructions/rules/redact-shared-state.md',
-  '.oma/instructions/rules/prefer-existing-prior-art.md',
-  '.oma/instructions/rules/explicit-unsupported.md',
-  '.oma/instructions/rules/respect-pack-ownership.md',
+  `${PACK_RUNTIME_ROOT}/instructions/rules/manifest-first.md`,
+  `${PACK_RUNTIME_ROOT}/instructions/rules/default-language-russian.md`,
+  `${PACK_RUNTIME_ROOT}/instructions/rules/never-invent-steps.md`,
+  `${PACK_RUNTIME_ROOT}/instructions/rules/redact-shared-state.md`,
+  `${PACK_RUNTIME_ROOT}/instructions/rules/prefer-existing-prior-art.md`,
+  `${PACK_RUNTIME_ROOT}/instructions/rules/explicit-unsupported.md`,
+  `${PACK_RUNTIME_ROOT}/instructions/rules/respect-pack-ownership.md`,
+] as const;
+
+const PACK_OWNED_ASSET_KEYS = [
+  'oma/capability-manifest',
+  'oma/runtime/shared/data-handling-policy',
+  'oma/instructions/rules/manifest-first',
+  'oma/instructions/rules/default-language-russian',
+  'oma/instructions/rules/never-invent-steps',
+  'oma/instructions/rules/redact-shared-state',
+  'oma/instructions/rules/prefer-existing-prior-art',
+  'oma/instructions/rules/explicit-unsupported',
+  'oma/instructions/rules/respect-pack-ownership',
+  'oma/templates/feature/README',
+  'oma/templates/feature/default',
+  'oma/templates/feature/with-background',
+  'oma/templates/feature/with-omissions-note',
+  'oma/templates/payload/README',
+  'oma/templates/payload/json-body',
+  'oma/templates/payload/property-file',
+  'oma/templates/payload/minimal-fixture',
+  'oma/templates/scan/state-contract',
+  'oma/templates/scan/scan-summary',
+  'oma/templates/plan/state-contract',
+  'oma/templates/plan/plan-summary',
+  'oma/templates/write/state-contract',
+  'oma/templates/write/write-summary',
+  'oma/templates/validate/state-contract',
+  'oma/templates/validate/validate-summary',
+  'oma/templates/promote/state-contract',
+  'oma/templates/promote/promote-summary',
 ] as const;
 
 function assertPathIsNotSymlink(targetPath: string, code: string, message: string): void {
@@ -63,6 +99,27 @@ function assertPathIsNotSymlink(targetPath: string, code: string, message: strin
 
 function loadAssetText(catalog: AssetCatalog, assetKey: string): string {
   return readFileSync(getAssetEntry(catalog, assetKey), 'utf8');
+}
+
+function runtimeRelativePathFromAssetKey(catalog: AssetCatalog, assetKey: string): string {
+  const assetRelativePath = catalog.entries[assetKey];
+  if (!assetRelativePath || !assetRelativePath.startsWith('oma/')) {
+    throw new PackageSurfaceError('asset-catalog-missing-entry', 'Pack-owned asset key did not resolve to an oma asset path.', {
+      assetKey,
+      assetRelativePath: assetRelativePath ?? '(missing)',
+    });
+  }
+
+  return `${PACK_RUNTIME_ROOT}/${assetRelativePath.slice('oma/'.length)}`;
+}
+
+function planPackOwnedAssetFiles(catalog: AssetCatalog): PlannedFile[] {
+  return PACK_OWNED_ASSET_KEYS.map((assetKey) => ({
+    relativePath: runtimeRelativePathFromAssetKey(catalog, assetKey),
+    content: loadAssetText(catalog, assetKey),
+    generatedBy: 'asset' as const,
+    assetKey,
+  }));
 }
 
 function planCapabilityBundleFiles(catalog: AssetCatalog): PlannedFile[] {
@@ -89,179 +146,22 @@ export function planMaterializedFiles(
       : new Date().toISOString();
 
   const plannedFiles: PlannedFile[] = [
+    ...planPackOwnedAssetFiles(catalog),
     {
-      relativePath: '.oma/capability-manifest.json',
-      content: loadAssetText(catalog, 'oma/capability-manifest'),
-      generatedBy: 'asset',
-      assetKey: 'oma/capability-manifest',
-    },
-    {
-      relativePath: '.oma/runtime/shared/data-handling-policy.json',
-      content: loadAssetText(catalog, 'oma/runtime/shared/data-handling-policy'),
-      generatedBy: 'asset',
-      assetKey: 'oma/runtime/shared/data-handling-policy',
-    },
-    {
-      relativePath: '.oma/instructions/rules/manifest-first.md',
-      content: loadAssetText(catalog, 'oma/instructions/rules/manifest-first'),
-      generatedBy: 'asset',
-      assetKey: 'oma/instructions/rules/manifest-first',
-    },
-    {
-      relativePath: '.oma/instructions/rules/default-language-russian.md',
-      content: loadAssetText(catalog, 'oma/instructions/rules/default-language-russian'),
-      generatedBy: 'asset',
-      assetKey: 'oma/instructions/rules/default-language-russian',
-    },
-    {
-      relativePath: '.oma/instructions/rules/never-invent-steps.md',
-      content: loadAssetText(catalog, 'oma/instructions/rules/never-invent-steps'),
-      generatedBy: 'asset',
-      assetKey: 'oma/instructions/rules/never-invent-steps',
-    },
-    {
-      relativePath: '.oma/instructions/rules/redact-shared-state.md',
-      content: loadAssetText(catalog, 'oma/instructions/rules/redact-shared-state'),
-      generatedBy: 'asset',
-      assetKey: 'oma/instructions/rules/redact-shared-state',
-    },
-    {
-      relativePath: '.oma/instructions/rules/prefer-existing-prior-art.md',
-      content: loadAssetText(catalog, 'oma/instructions/rules/prefer-existing-prior-art'),
-      generatedBy: 'asset',
-      assetKey: 'oma/instructions/rules/prefer-existing-prior-art',
-    },
-    {
-      relativePath: '.oma/instructions/rules/explicit-unsupported.md',
-      content: loadAssetText(catalog, 'oma/instructions/rules/explicit-unsupported'),
-      generatedBy: 'asset',
-      assetKey: 'oma/instructions/rules/explicit-unsupported',
-    },
-    {
-      relativePath: '.oma/instructions/rules/respect-pack-ownership.md',
-      content: loadAssetText(catalog, 'oma/instructions/rules/respect-pack-ownership'),
-      generatedBy: 'asset',
-      assetKey: 'oma/instructions/rules/respect-pack-ownership',
-    },
-    {
-      relativePath: '.oma/templates/feature/README.md',
-      content: loadAssetText(catalog, 'oma/templates/feature/README'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/feature/README',
-    },
-    {
-      relativePath: '.oma/templates/feature/default.feature.md',
-      content: loadAssetText(catalog, 'oma/templates/feature/default'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/feature/default',
-    },
-    {
-      relativePath: '.oma/templates/feature/with-background.feature.md',
-      content: loadAssetText(catalog, 'oma/templates/feature/with-background'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/feature/with-background',
-    },
-    {
-      relativePath: '.oma/templates/feature/with-omissions-note.feature.md',
-      content: loadAssetText(catalog, 'oma/templates/feature/with-omissions-note'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/feature/with-omissions-note',
-    },
-    {
-      relativePath: '.oma/templates/payload/README.md',
-      content: loadAssetText(catalog, 'oma/templates/payload/README'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/payload/README',
-    },
-    {
-      relativePath: '.oma/templates/payload/json-body.md',
-      content: loadAssetText(catalog, 'oma/templates/payload/json-body'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/payload/json-body',
-    },
-    {
-      relativePath: '.oma/templates/payload/property-file.md',
-      content: loadAssetText(catalog, 'oma/templates/payload/property-file'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/payload/property-file',
-    },
-    {
-      relativePath: '.oma/templates/payload/minimal-fixture.md',
-      content: loadAssetText(catalog, 'oma/templates/payload/minimal-fixture'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/payload/minimal-fixture',
-    },
-    {
-      relativePath: '.oma/templates/scan/state-contract.json',
-      content: loadAssetText(catalog, 'oma/templates/scan/state-contract'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/scan/state-contract',
-    },
-    {
-      relativePath: '.oma/templates/scan/scan-summary.md',
-      content: loadAssetText(catalog, 'oma/templates/scan/scan-summary'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/scan/scan-summary',
-    },
-    {
-      relativePath: '.oma/templates/plan/state-contract.json',
-      content: loadAssetText(catalog, 'oma/templates/plan/state-contract'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/plan/state-contract',
-    },
-    {
-      relativePath: '.oma/templates/plan/plan-summary.md',
-      content: loadAssetText(catalog, 'oma/templates/plan/plan-summary'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/plan/plan-summary',
-    },
-    {
-      relativePath: '.oma/templates/write/state-contract.json',
-      content: loadAssetText(catalog, 'oma/templates/write/state-contract'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/write/state-contract',
-    },
-    {
-      relativePath: '.oma/templates/write/write-summary.md',
-      content: loadAssetText(catalog, 'oma/templates/write/write-summary'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/write/write-summary',
-    },
-    {
-      relativePath: '.oma/templates/validate/state-contract.json',
-      content: loadAssetText(catalog, 'oma/templates/validate/state-contract'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/validate/state-contract',
-    },
-    {
-      relativePath: '.oma/templates/validate/validate-summary.md',
-      content: loadAssetText(catalog, 'oma/templates/validate/validate-summary'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/validate/validate-summary',
-    },
-    {
-      relativePath: '.oma/templates/promote/state-contract.json',
-      content: loadAssetText(catalog, 'oma/templates/promote/state-contract'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/promote/state-contract',
-    },
-    {
-      relativePath: '.oma/templates/promote/promote-summary.md',
-      content: loadAssetText(catalog, 'oma/templates/promote/promote-summary'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/promote/promote-summary',
-    },
-    {
-      relativePath: '.oma/runtime/shared/version.json',
-      content: `${JSON.stringify({
-        schemaVersion: 1,
-        packageName: packageSurface.packageName,
-        packageVersion: packageSurface.packageVersion,
-      }, null, 2)}\n`,
+      relativePath: VERSION_RELATIVE_PATH,
+      content: `${JSON.stringify(
+        {
+          schemaVersion: 1,
+          packageName: packageSurface.packageName,
+          packageVersion: packageSurface.packageVersion,
+        },
+        null,
+        2,
+      )}\n`,
       generatedBy: 'runtime',
     },
     {
-      relativePath: '.oma/runtime/local/project-mode.json',
+      relativePath: PROJECT_MODE_RELATIVE_PATH,
       content: `${JSON.stringify(createProjectModeRecord(projectRoot, classification, classifiedAt), null, 2)}\n`,
       generatedBy: 'runtime',
     },

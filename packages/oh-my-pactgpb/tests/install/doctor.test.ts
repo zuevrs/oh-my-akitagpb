@@ -110,7 +110,7 @@ describe('doctor diagnostics', () => {
 
   it('writes a blocked report when managed surfaces exist but the install-state ledger is missing', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'install-state.json');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
     rmSync(installStatePath);

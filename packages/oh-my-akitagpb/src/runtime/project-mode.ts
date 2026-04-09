@@ -2,7 +2,7 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileS
 import path from 'node:path';
 
 import { hasInstallState } from './install-state.js';
-import { hasManagedAgentsBlock, hasManagedOpencodeConfig } from './managed-blocks.js';
+import { resolveProjectModeAbsolutePath } from './layout.js';
 
 export type ProjectMode = 'fresh' | 'resume';
 
@@ -18,7 +18,7 @@ export interface ProjectModeRecord extends ProjectModeClassification {
 }
 
 export function resolveProjectModePath(projectRoot: string): string {
-  return path.join(projectRoot, '.oma', 'runtime', 'local', 'project-mode.json');
+  return resolveProjectModeAbsolutePath(projectRoot);
 }
 
 function hasNamespacedEntries(dirPath: string): boolean {
@@ -38,15 +38,7 @@ export function classifyProjectMode(projectRoot: string): ProjectModeClassificat
   const reasons: string[] = [];
 
   if (hasInstallState(projectRoot)) {
-    reasons.push('.oma/install-state.json');
-  }
-
-  if (hasManagedAgentsBlock(path.join(projectRoot, 'AGENTS.md'))) {
-    reasons.push('AGENTS.md managed block');
-  }
-
-  if (hasManagedOpencodeConfig(path.join(projectRoot, 'opencode.json'))) {
-    reasons.push('opencode.json managed namespace');
+    reasons.push('pack install-state ledger');
   }
 
   if (hasNamespacedEntries(path.join(projectRoot, '.opencode', 'commands'))) {

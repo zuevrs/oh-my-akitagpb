@@ -2,8 +2,14 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, statSync, 
 import path from 'node:path';
 
 import type { PackageSurface } from './asset-catalog.js';
-import { hashContent, extractManagedAgentsBlock, inspectAgentsFile, inspectOpencodeConfig, type ManagedSurfaceState } from './managed-blocks.js';
 import { extractManagedGitignoreBlock, inspectGitignoreFile } from './gitignore-block.js';
+import { hashContent, extractManagedAgentsBlock, inspectAgentsFile, inspectOpencodeConfig, type ManagedSurfaceState } from './managed-blocks.js';
+import {
+  INSTALL_STATE_RELATIVE_PATH,
+  PROJECT_MODE_RELATIVE_PATH,
+  resolveDoctorReportAbsolutePath,
+  resolvePackRuntimeRootAbsolutePath,
+} from './layout.js';
 import { readInstallState, resolveInstallStatePath, type InstallState } from './install-state.js';
 import { classifyProjectMode, readProjectModeRecord, resolveProjectModePath } from './project-mode.js';
 
@@ -69,11 +75,11 @@ interface OwnedFileInspection {
 }
 
 function resolveDoctorStateDir(projectRoot: string): string {
-  return path.join(projectRoot, '.oma', 'state', 'local', 'doctor');
+  return path.dirname(resolveDoctorReportAbsolutePath(projectRoot));
 }
 
 export function resolveDoctorReportPath(projectRoot: string): string {
-  return path.join(resolveDoctorStateDir(projectRoot), 'doctor-report.json');
+  return resolveDoctorReportAbsolutePath(projectRoot);
 }
 
 function inspectProjectModeRecord(projectRoot: string): ProjectModeRecordInspection {
@@ -225,10 +231,36 @@ function hasUnexpectedOmaState(projectRoot: string): boolean {
     return true;
   }
 
-  const entries = readdirSync(omaRoot);
-  for (const entry of entries) {
+  const omaEntries = readdirSync(omaRoot);
+  for (const entry of omaEntries) {
+    if (entry !== 'packs') {
+      return true;
+    }
+  }
+
+  const packsRoot = path.join(omaRoot, 'packs');
+  if (!existsSync(packsRoot)) {
+    return false;
+  }
+
+  try {
+    const stat = statSync(packsRoot);
+    if (!stat.isDirectory()) {
+      return true;
+    }
+  } catch {
+    return true;
+  }
+
+  const currentPackRoot = resolvePackRuntimeRootAbsolutePath(projectRoot);
+  if (!existsSync(currentPackRoot)) {
+    return false;
+  }
+
+  const currentPackEntries = readdirSync(currentPackRoot);
+  for (const entry of currentPackEntries) {
     if (entry === 'state') {
-      const stateRoot = path.join(omaRoot, 'state');
+      const stateRoot = path.join(currentPackRoot, 'state');
       if (!existsSync(stateRoot)) {
         continue;
       }
@@ -383,11 +415,11 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
       code,
       severity: 'error',
       message,
-      path: '.oma/install-state.json',
+      path: INSTALL_STATE_RELATIVE_PATH,
       nextStep:
         code === 'install-state-missing'
-          ? 'Restore `.oma/install-state.json` from a trusted copy or remove the partial bootstrap surfaces before reinstalling.'
-          : 'Repair `.oma/install-state.json` so it contains valid ownership metadata, then rerun `npx oh-my-pactgpb doctor`.',
+          ? `Restore \`${INSTALL_STATE_RELATIVE_PATH}\` from a trusted copy or remove the partial bootstrap surfaces before reinstalling.`
+          : `Repair \`${INSTALL_STATE_RELATIVE_PATH}\` so it contains valid ownership metadata, then rerun \`npx oh-my-pactgpb doctor\`.`,
     };
     findings.push(installStateFinding);
 
@@ -438,7 +470,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
       code: 'project-mode-invalid',
       severity: 'warning',
       message: 'The recorded runtime project-mode metadata is malformed and should be refreshed by update.',
-      path: '.oma/runtime/local/project-mode.json',
+      path: PROJECT_MODE_RELATIVE_PATH,
     });
   }
 

@@ -36,6 +36,7 @@ type ProjectModeRecord = {
 };
 
 const fixtures: FixtureRepo[] = [];
+const packRootSegments = ['.oma', 'packs', 'oh-my-pactgpb'] as const;
 
 function trackFixture<T extends FixtureRepo>(fixture: T): T {
   fixtures.push(fixture);
@@ -69,25 +70,25 @@ describe('fresh install', () => {
     expect(realpathSync(result.cwd ?? '')).toBe(realpathSync(fixture.rootDir));
     expect(result.details?.projectMode).toBe('fresh');
 
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
-    const projectModePath = path.join(fixture.rootDir, '.oma', 'runtime', 'local', 'project-mode.json');
+    const installStatePath = path.join(fixture.rootDir, ...packRootSegments, 'install-state.json');
+    const projectModePath = path.join(fixture.rootDir, ...packRootSegments, 'runtime', 'local', 'project-mode.json');
     const opencodeConfigPath = path.join(fixture.rootDir, 'opencode.json');
     const agentsPath = path.join(fixture.rootDir, 'AGENTS.md');
 
     expect(realpathSync(result.details?.installStatePath ?? '')).toBe(realpathSync(installStatePath));
     expect(existsSync(installStatePath)).toBe(true);
     expect(existsSync(projectModePath)).toBe(true);
-    expect(existsSync(path.join(fixture.rootDir, '.oma', 'capability-manifest.json'))).toBe(true);
-    expect(existsSync(path.join(fixture.rootDir, '.oma', 'runtime', 'shared', 'version.json'))).toBe(true);
-    expect(existsSync(path.join(fixture.rootDir, '.oma', 'runtime', 'shared', 'data-handling-policy.json'))).toBe(true);
-    expect(existsSync(path.join(fixture.rootDir, '.oma', 'instructions', 'rules', 'default-language-russian.md'))).toBe(true);
+    expect(existsSync(path.join(fixture.rootDir, ...packRootSegments, 'capability-manifest.json'))).toBe(true);
+    expect(existsSync(path.join(fixture.rootDir, ...packRootSegments, 'runtime', 'shared', 'version.json'))).toBe(true);
+    expect(existsSync(path.join(fixture.rootDir, ...packRootSegments, 'runtime', 'shared', 'data-handling-policy.json'))).toBe(true);
+    expect(existsSync(path.join(fixture.rootDir, ...packRootSegments, 'instructions', 'rules', 'default-language-russian.md'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.opencode', 'commands', 'pact-scan.md'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.opencode', 'skills', 'pact-scan-workflow', 'SKILL.md'))).toBe(true);
 
     const installState = readJsonFile<InstallState>(installStatePath);
     expect(installState.projectMode).toBe('fresh');
     expect(installState.ownedFiles.some((file) => file.relativePath === '.opencode/commands/pact-scan.md')).toBe(true);
-    expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/templates/scan/state-contract.json')).toBe(true);
+    expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json')).toBe(true);
     expect(installState.managedSurfaces).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ relativePath: 'AGENTS.md' }),
@@ -114,9 +115,9 @@ describe('fresh install', () => {
     expect(opencodeConfig.instructions).toEqual(
       expect.arrayContaining([
         'AGENTS.md',
-        '.oma/instructions/rules/manifest-first.md',
-        '.oma/instructions/rules/default-language-russian.md',
-        '.oma/instructions/rules/respect-pack-ownership.md',
+        '.oma/packs/oh-my-pactgpb/instructions/rules/manifest-first.md',
+        '.oma/packs/oh-my-pactgpb/instructions/rules/default-language-russian.md',
+        '.oma/packs/oh-my-pactgpb/instructions/rules/respect-pack-ownership.md',
       ]),
     );
   });
@@ -150,7 +151,7 @@ describe('fresh install', () => {
       status: 'blocked',
       reason: 'install-user-owned-agents',
     });
-    expect(existsSync(path.join(fixture.rootDir, '.oma', 'install-state.json'))).toBe(false);
+    expect(existsSync(path.join(fixture.rootDir, ...packRootSegments, 'install-state.json'))).toBe(false);
   });
 
   it('blocks on malformed opencode.json instead of guessing how to merge it', () => {
@@ -167,6 +168,6 @@ describe('fresh install', () => {
       reason: 'install-malformed-opencode',
     });
     expect(result.nextStep).toContain('doctor');
-    expect(existsSync(path.join(fixture.rootDir, '.oma', 'install-state.json'))).toBe(false);
+    expect(existsSync(path.join(fixture.rootDir, ...packRootSegments, 'install-state.json'))).toBe(false);
   });
 });

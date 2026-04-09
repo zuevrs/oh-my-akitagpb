@@ -2,20 +2,10 @@ import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
 import { PackageSurfaceError } from './asset-catalog.js';
+import { PACK_RUNTIME_ROOT } from './layout.js';
 
 export const AGENTS_MANAGED_BLOCK_ID = 'oh-my-pactgpb';
-
-const REQUIRED_OPENCODE_MANAGED_INSTRUCTIONS = [
-  'AGENTS.md',
-  '.oma/instructions/rules/manifest-first.md',
-  '.oma/instructions/rules/default-language-russian.md',
-  '.oma/instructions/rules/never-invent-steps.md',
-  '.oma/instructions/rules/redact-shared-state.md',
-  '.oma/instructions/rules/prefer-existing-prior-art.md',
-  '.oma/instructions/rules/explicit-unsupported.md',
-  '.oma/instructions/rules/respect-pack-ownership.md',
-] as const;
-const MANAGED_OPENCODE_RULE_PREFIX = '.oma/instructions/rules/';
+const MANAGED_OPENCODE_RULE_PREFIX = '.oma/packs/';
 
 function hasPackManagedOpencodeSignature(instructions: readonly string[]): boolean {
   const instructionSet = new Set(instructions);
@@ -23,10 +13,12 @@ function hasPackManagedOpencodeSignature(instructions: readonly string[]): boole
     return false;
   }
 
-  return instructions.some((instruction) => instruction.startsWith(MANAGED_OPENCODE_RULE_PREFIX));
+  return instructions.some(
+    (instruction) => instruction.startsWith(MANAGED_OPENCODE_RULE_PREFIX) && instruction.includes('/instructions/rules/'),
+  );
 }
 
-export type ManagedSurfaceState = 'missing' | 'empty' | 'managed' | 'user-owned' | 'malformed' | 'symlink';
+export type ManagedSurfaceState = 'missing' | 'empty' | 'managed' | 'foreign-managed' | 'user-owned' | 'malformed' | 'symlink';
 
 export interface ManagedSurfaceInspection {
   state: ManagedSurfaceState;
@@ -75,6 +67,10 @@ function resolveTrailingNewlineIndex(content: string, index: number): number {
   return index;
 }
 
+function hasForeignManagedAgentsMarkers(content: string): boolean {
+  return /<!-- oh-my-[^\s:>]+:begin -->/.test(content) && /<!-- oh-my-[^\s:>]+:end -->/.test(content);
+}
+
 function inspectAgentsContent(content: string, blockId: string = AGENTS_MANAGED_BLOCK_ID): ManagedSurfaceInspection {
   if (content.trim().length === 0) {
     return { state: 'empty', content };
@@ -86,7 +82,9 @@ function inspectAgentsContent(content: string, blockId: string = AGENTS_MANAGED_
   const endCount = countOccurrences(content, endMarker);
 
   if (beginCount === 0 && endCount === 0) {
-    return { state: 'user-owned', content };
+    return hasForeignManagedAgentsMarkers(content)
+      ? { state: 'foreign-managed', content }
+      : { state: 'user-owned', content };
   }
 
   if (beginCount !== 1 || endCount !== 1 || content.indexOf(beginMarker) > content.indexOf(endMarker)) {
@@ -137,7 +135,7 @@ export function renderManagedAgentsBlock(packageName: string, packageVersion: st
     '',
     `Installed from \`${packageName}@${packageVersion}\`.`,
     '',
-    'Pack-owned runtime lives under `.oma/` and `.opencode/`.',
+    `Pack-owned runtime lives under \`${PACK_RUNTIME_ROOT}/\` and additive command/skill surfaces under \`.opencode/\`.`,
     'Use `npx oh-my-pactgpb update` to refresh managed surfaces and `npx oh-my-pactgpb doctor` to inspect conflicts.',
     '',
     'Available commands:',
@@ -158,6 +156,12 @@ function buildManagedAgentsContent(
 
   if (inspection.state === 'missing' || inspection.state === 'empty') {
     return block;
+  }
+
+  if (inspection.state === 'foreign-managed') {
+    const currentContent = inspection.content ?? '';
+    const separator = currentContent.endsWith('\n') ? '\n' : '\n\n';
+    return `${currentContent}${separator}${block}`;
   }
 
   if (inspection.state === 'managed') {
