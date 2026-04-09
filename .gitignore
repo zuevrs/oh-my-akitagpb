@@ -9,7 +9,7 @@ AGENTS.md
 opencode.json
 
 .agents/
-docs/
+/docs/
 .gsd/
 
 .DS_Store

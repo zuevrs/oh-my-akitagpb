@@ -9,8 +9,12 @@ on:
       - 'chore/**'
   pull_request:
 
+env:
+  PACKAGE_NAME: oh-my-akitagpb
+  PACKAGE_DIR: packages/oh-my-akitagpb
+
 jobs:
-  test:
+  verify:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -32,5 +36,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build package
+        run: npm run build --workspace $PACKAGE_NAME
+
       - name: Run tests
-        run: npm test
+        run: npm test --workspace $PACKAGE_NAME
+
+  smoke-pack-install:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run packed install smoke check
+        run: npm run smoke:pack-install --workspace $PACKAGE_NAME

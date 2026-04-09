@@ -1,48 +1,14 @@
 {
-  "name": "oh-my-akitagpb",
-  "version": "0.3.0",
-  "description": "Native-first OpenCode bootstrap pack for Akita GPB workflows.",
-  "license": "MIT",
-  "author": "zuevrs",
-  "keywords": [
-    "akita",
-    "gpb",
-    "opencode",
-    "cli",
-    "bootstrap",
-    "testing"
+  "name": "oh-my-gpb",
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
-  "homepage": "https://github.com/zuevrs/oh-my-akitagpb#readme",
-  "bugs": {
-    "url": "https://github.com/zuevrs/oh-my-akitagpb/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zuevrs/oh-my-akitagpb.git"
-  },
-  "type": "module",
-  "bin": {
-    "oh-my-akitagpb": "dist/cli.js"
-  },
-  "files": [
-    "dist",
-    "assets"
-  ],
-  "engines": {
-    "node": ">=20.0.0"
-  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "prepare": "npm run build",
-    "release:check": "npm test && npm run smoke:pack-install",
-    "prepublishOnly": "npm run release:check",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "smoke:pack-install": "node ./scripts/smoke-pack-install.mjs"
-  },
-  "devDependencies": {
-    "@types/node": "^24.6.1",
-    "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "build": "npm run build --workspace oh-my-akitagpb",
+    "test": "npm test --workspace oh-my-akitagpb",
+    "smoke:pack-install": "npm run smoke:pack-install --workspace oh-my-akitagpb",
+    "release:check": "npm run release:check --workspace oh-my-akitagpb",
+    "pack:akita": "npm pack --workspace oh-my-akitagpb --json"
   }
 }
