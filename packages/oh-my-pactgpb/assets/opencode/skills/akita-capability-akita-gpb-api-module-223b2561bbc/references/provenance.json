@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-akita-gpb-api-module-223b2561bbc",
+  "moduleId": "akita-gpb-api-module",
+  "pin": "223b2561bbc",
+  "evidence": {
+    "manifest": "gpb-manifest.json",
+    "stepClasses": [
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    ],
+    "supplementalReviewedFiles": [
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiBaseMethods.java",
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/hooks/ApiHooks.java",
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/rest/RequestParamType.java"
+    ]
+  },
+  "authoringPolicy": {
+    "curatedSnapshot": true,
+    "runtimeExtraction": false,
+    "onlyAnnotatedStepMethodsPromoted": true,
+    "unclearBehaviorMarkedUnsupported": true,
+    "readmeUsedAsContextOnly": true
+  },
+  "redactions": {
+    "excluded": [
+      "maintainer email addresses",
+      "internal documentation URLs",
+      "raw contact sections",
+      "unreviewed helper and hook internals"
+    ]
+  }
+}

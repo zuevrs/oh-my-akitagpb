@@ -9,6 +9,10 @@
     "test": "npm test --workspace oh-my-akitagpb",
     "smoke:pack-install": "npm run smoke:pack-install --workspace oh-my-akitagpb",
     "release:check": "npm run release:check --workspace oh-my-akitagpb",
-    "pack:akita": "npm pack --workspace oh-my-akitagpb --json"
+    "pack:akita": "npm pack --workspace oh-my-akitagpb --json",
+    "build:pact": "npm run build --workspace oh-my-pactgpb",
+    "test:pact": "npm test --workspace oh-my-pactgpb",
+    "smoke:pact": "npm run smoke:pack-install --workspace oh-my-pactgpb",
+    "pack:pact": "npm pack --workspace oh-my-pactgpb --json"
   }
 }

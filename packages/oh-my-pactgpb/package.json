@@ -1,0 +1,49 @@
+{
+  "name": "oh-my-pactgpb",
+  "version": "0.1.0",
+  "description": "Native-first OpenCode bootstrap pack for Pact provider verification workflows.",
+  "license": "MIT",
+  "author": "zuevrs",
+  "keywords": [
+    "pact",
+    "provider-verification",
+    "spring",
+    "opencode",
+    "cli",
+    "bootstrap"
+  ],
+  "homepage": "https://github.com/zuevrs/oh-my-gpb/tree/main/packages/oh-my-pactgpb#readme",
+  "bugs": {
+    "url": "https://github.com/zuevrs/oh-my-gpb/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zuevrs/oh-my-gpb.git",
+    "directory": "packages/oh-my-pactgpb"
+  },
+  "type": "module",
+  "bin": {
+    "oh-my-pactgpb": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "release:check": "npm run build && npm test && npm run smoke:pack-install",
+    "prepublishOnly": "npm run release:check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "smoke:pack-install": "node ./scripts/smoke-pack-install.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

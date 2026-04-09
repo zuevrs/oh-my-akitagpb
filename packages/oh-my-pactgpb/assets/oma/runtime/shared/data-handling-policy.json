@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "sharedStateBasePath": ".oma/state/shared",
+  "localStateBasePath": ".oma/state/local",
+  "redactionRequired": true,
+  "markdownIsSummaryOnly": true,
+  "forbiddenSharedData": [
+    "secrets",
+    "tokens",
+    "credentials",
+    "raw auth headers"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-ccl-database-module-bb0d27eda3e",
+  "moduleId": "ccl-database-module",
+  "pin": "bb0d27eda3e",
+  "evidence": {
+    "manifest": "gpb-manifest.json",
+    "stepClasses": [
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java"
+    ],
+    "supplementalReviewedFiles": [
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/DataBaseMethods.java",
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/DataBaseConfig.java",
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/DataBaseExceptions.java"
+    ]
+  },
+  "authoringPolicy": {
+    "curatedSnapshot": true,
+    "runtimeExtraction": false,
+    "onlyAnnotatedStepMethodsPromoted": true,
+    "unclearBehaviorMarkedUnsupported": true,
+    "readmeUsedAsContextOnly": true
+  },
+  "redactions": {
+    "excluded": [
+      "maintainer email addresses",
+      "internal documentation URLs",
+      "raw contact sections",
+      "unreviewed helper, config, and internal implementation details"
+    ]
+  }
+}

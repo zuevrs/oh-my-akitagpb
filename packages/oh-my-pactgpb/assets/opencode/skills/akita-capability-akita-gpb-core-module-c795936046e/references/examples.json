@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-akita-gpb-core-module-c795936046e",
+  "examples": [
+    {
+      "id": "core-property-roundtrip-example",
+      "summary": "Store a property value and compare it with another scenario variable.",
+      "steps": [
+        "И сохранено значение \"service.login\" из property файла в переменную \"login\"",
+        "И установлено значение переменной \"expectedLogin\" равным \"service.login\"",
+        "Тогда значения в переменных \"login\" и \"expectedLogin\" совпадают"
+      ]
+    },
+    {
+      "id": "core-template-fill",
+      "summary": "Fill a request template from a Cucumber table and keep the rendered text in a variable.",
+      "steps": [
+        "И шаблон \"requestTemplate\" заполнен данными из таблицы и сохранён в переменную \"requestBody\""
+      ],
+      "table": [
+        [
+          "\\$\\{customerId\\}",
+          "12345"
+        ],
+        [
+          "\\$\\{status\\}",
+          "ACTIVE"
+        ]
+      ]
+    },
+    {
+      "id": "core-boolean-expression",
+      "summary": "Pass a boolean expression to the scenario evaluator.",
+      "steps": [
+        "Тогда верно, что \"${actualCode}.equals(${expectedCode})\""
+      ],
+      "notes": [
+        "Keep expressions boolean. The bundle does not promise arbitrary evaluator extensions beyond the observed assert(expression) call path."
+      ]
+    },
+    {
+      "id": "core-pdf-assertion",
+      "summary": "Assert text inside a PDF file object stored in a scenario variable.",
+      "steps": [
+        "И в файле \"generatedPdf\" содержится текст \"Подтверждено\""
+      ]
+    }
+  ]
+}

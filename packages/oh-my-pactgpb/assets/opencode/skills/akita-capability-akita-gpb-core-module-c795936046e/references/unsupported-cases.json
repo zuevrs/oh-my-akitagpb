@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-akita-gpb-core-module-c795936046e",
+  "cases": [
+    {
+      "id": "core.helper-only-methods-not-promised",
+      "status": "unsupported",
+      "summary": "BaseMethods helpers and utility methods are not part of the shipped capability contract unless a public step annotation exposes them.",
+      "reason": "The pinned evidence includes helper methods such as random-value generation, string replacement, and download-directory helpers, but they are not directly exposed through step annotations.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/BaseMethods.java"
+      ]
+    },
+    {
+      "id": "core.hook-behavior-not-step-addressable",
+      "status": "unsupported",
+      "summary": "Hook-driven initialization and statistics behavior are out of scope for this runtime bundle.",
+      "reason": "The reviewed source contains hook classes, but this bundle curates only public step semantics and does not claim implicit lifecycle side effects.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/hooks/InitialSetupHooks.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/hooks/statistics/StatisticsHooks.java"
+      ]
+    },
+    {
+      "id": "core.generic-file-assertions-not-promised",
+      "status": "unsupported",
+      "summary": "The file-content assertion step is only claimed for PDF-backed file variables, not arbitrary text or binary files.",
+      "reason": "The implementation constructs a PDF parser from the supplied scenario variable before checking text content.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java"
+      ]
+    },
+    {
+      "id": "core.cross-module-integrations-not-claimed",
+      "status": "unsupported",
+      "summary": "Cross-module integrations are not claimed by this core-only runtime bundle.",
+      "reason": "Only annotated core-module step classes define shipped capability truth for this bundle; documentation mentions do not expand runtime support.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-ccl-additional-steps-module-95eda279aa4",
+  "examples": [
+    {
+      "id": "additional-generate-values-and-extract-regexp",
+      "summary": "Generate a few reviewed scenario values, then extract one matched fragment from a stored string with a regular expression.",
+      "steps": [
+        "Когда сохраняем в переменные сценария значения из таблицы:",
+        "И к переменной \"documentLine\" применить регулярное выражение \"\\d{10}\" и сохранить результат в переменную \"innValue\""
+      ],
+      "table": [
+        [
+          "documentLine",
+          "ИНН 7707083893"
+        ],
+        [
+          "requestId",
+          "рандомный UUID"
+        ]
+      ],
+      "notes": [
+        "Keep generated-value usage inside the reviewed table step rather than assuming a wider template DSL.",
+        "The regexp step stores only the first matched fragment."
+      ]
+    },
+    {
+      "id": "additional-date-calculation-and-assertion",
+      "summary": "Calculate reviewed date outputs from a table and then assert one date relation through the reviewed assertion step.",
+      "steps": [
+        "Когда вычислить даты, сохранив результат в переменные из таблицы:",
+        "И для дат выполняются условия из таблицы:"
+      ],
+      "notes": [
+        "Use only the reviewed date-table action families proven by source.",
+        "The bundle stores formatted results, not generic date objects or schedulers."
+      ]
+    },
+    {
+      "id": "additional-number-format-and-wording",
+      "summary": "Format a number for output and generate reviewed wording for a money amount when a scenario needs presentation-ready text.",
+      "steps": [
+        "Когда сохранить число \"12345.6\" в формате \"# ##0,00\" в переменную \"formattedAmount\"",
+        "И сохранить сумму \"12345.67\" в рублях прописью с большой буквы в переменную \"amountWords\""
+      ],
+      "notes": [
+        "These are reviewed formatting/spellout helpers only, not a broad localization engine."
+      ]
+    },
+    {
+      "id": "additional-bytes-and-multipart-body",
+      "summary": "Decode reviewed binary content and build one multipart request body as bytes plus boundary variables for downstream transport steps.",
+      "steps": [
+        "Когда декодировать Base64-строку \"${encodedPayload}\" и сохранить полученный массив байт в переменную \"payloadBytes\"",
+        "И формируем тело api-запроса, сохраняем полученный массив байт в переменную \"multipartBody\", разделитель сохраняем в переменную \"multipartBoundary\""
+      ],
+      "table": [
+        [
+          "type",
+          "name",
+          "contentType",
+          "value"
+        ],
+        [
+          "text",
+          "metaData",
+          "application/json",
+          "{\"requestId\":\"${requestId}\"}"
+        ],
+        [
+          "file",
+          "data",
+          "application/octet-stream",
+          "${test.data.base.path}/attachments/report.pdf"
+        ]
+      ],
+      "notes": [
+        "This bundle only assembles the multipart byte payload and boundary value.",
+        "Do not infer a full HTTP transport or arbitrary multipart framework from this example."
+      ]
+    },
+    {
+      "id": "additional-list-build-and-array-compare",
+      "summary": "Append values into scenario lists and compare two reviewed arrays with the declared element type.",
+      "steps": [
+        "Когда значение \"alpha\" добавляем к списку в переменной сценария \"actualNames\"",
+        "И значение \"beta\" добавляем к списку в переменной сценария \"actualNames\"",
+        "И массив \"actualNames\" совпадает с массивом \"expectedNames\", тип элементов строка"
+      ],
+      "notes": [
+        "The list-append step is string-list specific even though the wording is broad.",
+        "Array comparison is type-switched and should not be assumed to mean ordered sequence equality."
+      ]
+    },
+    {
+      "id": "additional-string-assertion-and-fixed-wait",
+      "summary": "Assert reviewed string conditions and use the simple fixed-second wait only when a literal delay is truly what the scenario needs.",
+      "steps": [
+        "Когда для строки \"${errorText}\" выполняются условия из таблицы:",
+        "И выполнено ожидание в течение \"2\" секунды"
+      ],
+      "table": [
+        [
+          "Условие",
+          "Значение"
+        ],
+        [
+          "содержит",
+          "ошибка"
+        ]
+      ],
+      "notes": [
+        "The wait step is just sleep-by-seconds, not a condition-aware wait mechanism."
+      ]
+    },
+    {
+      "id": "additional-bounded-request-polling",
+      "summary": "Repeat one reviewed HTTP request until a JsonPath value reaches the expected JSON-stringified state.",
+      "steps": [
+        "Когда выполнен GET запрос на URL \"${statusUrl}\" с headers и parameters из таблицы. В ответе ожидаем что jsonPath \"$.state\" равен \"READY\""
+      ],
+      "table": [
+        [
+          "type",
+          "name",
+          "value"
+        ],
+        [
+          "header",
+          "X-Request-Id",
+          "${requestId}"
+        ]
+      ],
+      "notes": [
+        "Treat this as one reviewed polling loop only: fixed timeout, fixed interval, one JsonPath equality check.",
+        "Do not generalize it into a cross-module orchestration or eventual-consistency framework."
+      ]
+    }
+  ]
+}

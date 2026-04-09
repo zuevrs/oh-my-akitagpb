@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-ccl-database-module-bb0d27eda3e",
+  "examples": [
+    {
+      "id": "database-query-save-and-assert-fields",
+      "summary": "Run a DB lookup, keep the result under a named variable, and assert the fields the planner actually depends on.",
+      "steps": [
+        "Когда в БД \"application\" выполняем запрос \"найти клиента по id\" с параметрами и сохраняем результат в \"dbResponse\"",
+        "Тогда в ответе от БД \"dbResponse\", проверяем значения полей"
+      ],
+      "table": [
+        [
+          "customer_id",
+          "${customerId}"
+        ],
+        [
+          "status",
+          "ACTIVE"
+        ]
+      ],
+      "notes": [
+        "Use this shape when a later step needs one checked DB snapshot rather than repeated DB reads.",
+        "The single-row field assertion step checks only the first returned row, so use it when that is the intended contract."
+      ]
+    },
+    {
+      "id": "database-query-with-table-parameters-no-rewrite",
+      "summary": "Inject missing query variables from a table, preserve prior scenario state, and keep the resulting row set for later checks.",
+      "steps": [
+        "Когда в БД \"application\" выполняем запрос \"найти заявки по статусу\" с параметрами из таблицы без перезаписи переменных и сохраняем результат в \"applications\"",
+        "Тогда в ответе от БД \"applications\" проверяем значения полей без учёта порядка строк"
+      ],
+      "table": [
+        [
+          "status",
+          "OPEN"
+        ],
+        [
+          "limit",
+          "10"
+        ]
+      ],
+      "notes": [
+        "Use the no-rewrite suffix when the temporary DB query parameters should not leak into later scenario logic."
+      ]
+    },
+    {
+      "id": "database-ordered-and-unordered-row-assertions",
+      "summary": "Choose ordered or unordered row comparison based on whether DB row order is part of the real contract.",
+      "steps": [
+        "Тогда в ответе от БД \"dbResponse\" проверяем значения полей с учётом порядка строк",
+        "И в ответе от БД \"dbResponse\" проверяем значения полей без учёта порядка строк"
+      ],
+      "table": [
+        [
+          "code",
+          "name"
+        ],
+        [
+          "24",
+          "Действующее"
+        ],
+        [
+          "36",
+          "Ликвидировано"
+        ]
+      ],
+      "notes": [
+        "Use the ordered variant only when the row sequence itself is meaningful.",
+        "Prefer the unordered variant for membership-style checks where sorting is incidental."
+      ]
+    },
+    {
+      "id": "database-extract-values",
+      "summary": "Read DB output once, then promote the one value or formatted value list that downstream steps actually need.",
+      "steps": [
+        "Когда в БД \"application\" выполняем запрос \"найти клиента по id\" с параметрами и сохраняем результат в \"dbResponse\"",
+        "И из ответа от БД \"dbResponse\" значение столбца \"customer_id\" сохранено как текст в переменную \"customerId\"",
+        "И из ответа от БД \"dbResponse\" значение столбца \"code\" сохранено как массив строк формата \"'%s', '%s'\" в переменную \"codeList\""
+      ],
+      "notes": [
+        "Use text/object extraction for one downstream value.",
+        "Use formatted-string extraction only when a later reviewed step expects a string, not a structured collection."
+      ]
+    },
+    {
+      "id": "database-save-json-and-check-empty",
+      "summary": "Persist a DB result as JSON when later logic needs serialized text, and keep empty-result checks as a separate explicit assertion.",
+      "steps": [
+        "Когда в БД \"application\" выполняем запрос \"найти клиента по id\" с параметрами и сохраняем результат в переменную \"dbResponseJson\" в виде json строки",
+        "И в БД \"application\" выполняем запрос \"найти удалённые записи\" и получаем пустой ответ"
+      ],
+      "notes": [
+        "Do not treat the JSON-string step as a generic typed export layer; it produces serialized text only."
+      ]
+    },
+    {
+      "id": "database-update-and-positive-row-count",
+      "summary": "Use the checked update/delete/insert step when the planner needs a DB write and a reviewed positive-row-count assertion in one move.",
+      "steps": [
+        "Когда в БД \"application\" выполняем запрос добавления \"добавить тестовую запись\" с параметрами из таблицы и проверяем полученный ответ"
+      ],
+      "table": [
+        [
+          "customer_id",
+          "${customerId}"
+        ],
+        [
+          "status",
+          "ACTIVE"
+        ]
+      ],
+      "notes": [
+        "Use the unchecked update step only when later assertions intentionally own the affected-row interpretation."
+      ]
+    },
+    {
+      "id": "database-wait-for-row-appearance",
+      "summary": "Wait for a DB row to appear, then reuse the same lookup as a normal saved-result assertion flow.",
+      "steps": [
+        "Когда в БД \"application\" выполняем запрос \"найти запись по id\" с параметрами из таблицы и ждём пока придёт непустой ответ",
+        "И в БД \"application\" выполняем запрос \"найти запись по id\" с параметрами и сохраняем результат в \"dbResponse\"",
+        "Тогда в ответе от БД \"dbResponse\", проверяем значения полей"
+      ],
+      "table": [
+        [
+          "record_id",
+          "${recordId}"
+        ]
+      ],
+      "notes": [
+        "This is still a narrow reviewed mini-flow: the wait step only waits for a non-empty result with fixed timeout and poll interval semantics."
+      ]
+    }
+  ]
+}

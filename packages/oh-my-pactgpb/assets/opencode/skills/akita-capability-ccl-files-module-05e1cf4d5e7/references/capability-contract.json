@@ -1,0 +1,720 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-ccl-files-module-05e1cf4d5e7",
+  "module": {
+    "id": "ccl-files-module",
+    "pin": "05e1cf4d5e7"
+  },
+  "supportPolicy": {
+    "onlyAnnotatedStepMethods": true,
+    "helperOnlyBehaviorIsUnsupported": true,
+    "readmeClaimsDoNotExpandRuntimeTruth": true
+  },
+  "supportedCapabilities": [
+    {
+      "id": "files.save-file-content-as-string",
+      "status": "supported",
+      "summary": "Save file content or resource-file content as text in a scenario variable.",
+      "stepPatterns": [
+        "содержимое файла( ресурсов)? \"(.*)\" сохраняем в переменную сценария \"(.*)\""
+      ],
+      "method": "saveStringFromFileValue",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/FileSteps.java",
+      "notes": [
+        "The reviewed step has two modes: resource-file content when the optional 'ресурсов' fragment is present, otherwise project-file content."
+      ]
+    },
+    {
+      "id": "files.check-downloaded-file-and-optionally-save-copy",
+      "status": "partial",
+      "summary": "Wait for one downloaded file whose name contains the expected text, then optionally copy that file into a scenario variable before deleting the original downloaded file.",
+      "stepPatterns": [
+        "файл \"(.*)\" загрузился в директорию загрузки( и сохранён в переменную сценария \"(.*)\")?"
+      ],
+      "method": "fileDownloaded",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/FileSteps.java",
+      "notes": [
+        "The reviewed implementation polls a configured download directory for up to 5 seconds.",
+        "Matching is by filename substring and the step fails if more than one matching file is present.",
+        "When the optional save fragment is used, the stored variable is a copied File under build/downloads/<scenarioId> rather than the original download."
+      ]
+    },
+    {
+      "id": "files.check-downloaded-file-and-copy-to-path",
+      "status": "partial",
+      "summary": "Wait for one downloaded file whose name contains the expected text and copy it to an explicit path.",
+      "stepPatterns": [
+        "файл \"(.*)\" загрузился в директорию загрузки и сохранён по пути \"(.*)\""
+      ],
+      "method": "downloadAndSaveFile",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/FileSteps.java",
+      "notes": [
+        "The reviewed implementation uses the same configured download-directory polling and substring-match semantics as the optional-save download step.",
+        "After copying, it deletes the original downloaded file."
+      ]
+    },
+    {
+      "id": "files.save-random-file",
+      "status": "partial",
+      "summary": "Generate a random local file with the requested size in megabytes and extension, then save the File object in a scenario variable.",
+      "stepPatterns": [
+        "сохраняем рандомный файл размером \"(.*)\" МБ в формате \"(.*)\" в переменную \"(.*)\""
+      ],
+      "method": "saveRandomFile",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/FileSteps.java",
+      "notes": [
+        "The reviewed step promises random-file creation only; it does not define file-content semantics beyond helper-generated output."
+      ]
+    },
+    {
+      "id": "files.save-file-name",
+      "status": "supported",
+      "summary": "Read the name of a stored File variable and save that filename string in another scenario variable.",
+      "stepPatterns": [
+        "сохраняем имя файла \"(.*)\" в переменную \"(.*)\""
+      ],
+      "method": "saveFileName",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/FileSteps.java"
+    },
+    {
+      "id": "files.convert-byte-array-variable-to-file",
+      "status": "partial",
+      "summary": "Write a byte-array scenario variable into a local file with the requested name and save that File object in another scenario variable.",
+      "stepPatterns": [
+        "значение переменной \"(.*)\" преобразуем в файл с именем \"(.*)\" и сохраняем в переменную \"(.*)\""
+      ],
+      "method": "test",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/FileSteps.java",
+      "notes": [
+        "The reviewed implementation expects the source variable to hold byte[].",
+        "The created file is written under build/downloads/<scenarioId>/ rather than an arbitrary caller-selected directory."
+      ]
+    },
+    {
+      "id": "files.save-file-object",
+      "status": "supported",
+      "summary": "Wrap a resolved local file path into a File object and save it in a scenario variable.",
+      "stepPatterns": [
+        "сохранить файл \"(.+)\" в переменную сценария \"(.+)\""
+      ],
+      "method": "saveFile",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/FileSteps.java"
+    },
+    {
+      "id": "files.unzip-archive-save-file-list",
+      "status": "partial",
+      "summary": "Unpack a reviewed ZIP archive from a file variable or file path and save the extracted File list in a scenario variable.",
+      "stepPatterns": [
+        "распаковать архив \"(.+)\" и сохранить список разархивированных файлов в переменную \"(.+)\""
+      ],
+      "method": "unzipFileIntoFilesList",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/FileSteps.java",
+      "notes": [
+        "The reviewed step is explicitly an unzip flow and does not claim generic archive-format support."
+      ]
+    },
+    {
+      "id": "files.assert-file-list-contains-names",
+      "status": "partial",
+      "summary": "Assert that a stored file list contains files whose names match the expected exact names or regex templates.",
+      "stepPatterns": [
+        "список файлов \"(.+)\" содержит файлы с именами:?"
+      ],
+      "method": "assertFilesListContainsFilesWithNames",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/FileSteps.java",
+      "notes": [
+        "Each expected name is matched against the remaining list and a matched file is removed from further matching, so the same file cannot satisfy multiple expected rows."
+      ]
+    },
+    {
+      "id": "files.save-file-from-list-by-name",
+      "status": "partial",
+      "summary": "Find one file in a stored file list by exact name or regex-like pattern and save that File object in a scenario variable.",
+      "stepPatterns": [
+        "из списка файлов \"(.+)\" сохранить файл с именем \"(.+)\" в переменную \"(.+)\""
+      ],
+      "method": "saveFileFromFilesListByName",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/FileSteps.java",
+      "notes": [
+        "The reviewed implementation resolves a processed name template for messaging but matches using the raw fileName argument in the stream predicate."
+      ]
+    },
+    {
+      "id": "docx.fill-template-and-save-file",
+      "status": "partial",
+      "summary": "Load a DOCX template from reviewed resources, replace placeholder text from a table, save the resulting DOCX file locally, and store that File object in a scenario variable.",
+      "stepPatterns": [
+        "в DOCX-шаблон \"(.+)\" подставить переменные из таблицы, сохранив результат в файл \"(.+)\""
+      ],
+      "method": "getDocxByTemplate",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/DocxSteps.java",
+      "notes": [
+        "The reviewed step loads the template through resource-file lookup rather than generic local-file lookup.",
+        "Placeholder replacement is text-based over collected DOCX text nodes; it does not promise full Word template-engine semantics."
+      ]
+    },
+    {
+      "id": "docx.assert-docx-text-content-equal",
+      "status": "partial",
+      "summary": "Assert that two stored DOCX File variables have equal extracted text content.",
+      "stepPatterns": [
+        "содержимое DOCX-файлов \"(.*)\" и \"(.*)\" равно"
+      ],
+      "method": "assertDocxFilesContentEqual",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/DocxSteps.java",
+      "notes": [
+        "The reviewed equality check compares extracted main-document text content, not binary DOCX equivalence, style/layout equality, or metadata equality."
+      ]
+    },
+    {
+      "id": "docx.save-docx-text-content",
+      "status": "partial",
+      "summary": "Extract text content from a reviewed DOCX input and save that text in a scenario variable.",
+      "stepPatterns": [
+        "содержимое DOCX-файла \"(.*)\" сохранено в переменную \"(.*)\""
+      ],
+      "method": "saveDocxFilesContent",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/DocxSteps.java",
+      "notes": [
+        "The reviewed implementation uses resource-file lookup after processValue, so callers should not assume arbitrary DOCX source handling beyond that behavior."
+      ]
+    },
+    {
+      "id": "excel.assert-workbook-has-sheet",
+      "status": "supported",
+      "summary": "Assert that a reviewed Excel file contains a sheet with the requested name.",
+      "stepPatterns": [
+        "в excel-файле \"(.*)\" есть страница \"(.*)\""
+      ],
+      "method": "assertExcelFileHasSheet",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ExcelSteps.java"
+    },
+    {
+      "id": "excel.save-cell-values",
+      "status": "partial",
+      "summary": "Read reviewed Excel cells by sheet and address definitions from a table and save their values into scenario variables.",
+      "stepPatterns": [
+        "из excel-файла \"(.*)\" значения ячеек сохранены в переменные:?"
+      ],
+      "method": "saveCellValuesFromExcel",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ExcelSteps.java",
+      "notes": [
+        "The reviewed implementation stores actualValue.toString() for each extracted cell rather than preserving typed workbook objects."
+      ]
+    },
+    {
+      "id": "excel.save-row-by-cell-conditions",
+      "status": "partial",
+      "summary": "Find one Excel row on a reviewed sheet by table-provided cell conditions and save the Row object in a scenario variable.",
+      "stepPatterns": [
+        "из excel-файла \"(.*)\" со страницы \"(.*)\" строка с параметрами из таблицы сохранена в переменную \"(.*)\""
+      ],
+      "method": "saveRowFromExcel",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ExcelSteps.java"
+    },
+    {
+      "id": "excel.save-row-column-values",
+      "status": "supported",
+      "summary": "Read values from a stored Excel Row object and save selected columns into scenario variables.",
+      "stepPatterns": [
+        "из excel-строки \"(.*)\" значения столбцов сохранены в переменные:?"
+      ],
+      "method": "saveCellValuesFromExcelRow",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ExcelSteps.java"
+    },
+    {
+      "id": "excel.assert-cell-conditions",
+      "status": "supported",
+      "summary": "Assert reviewed typed conditions against specific Excel cells selected by sheet and cell address.",
+      "stepPatterns": [
+        "для excel-файла \"(.*)\" выполняются условия из таблицы:?"
+      ],
+      "method": "assertExcelCellValues",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ExcelSteps.java"
+    },
+    {
+      "id": "excel.assert-range-conditions",
+      "status": "supported",
+      "summary": "Assert reviewed typed conditions across every cell inside an Excel range.",
+      "stepPatterns": [
+        "для диапазона excel-файла \"(.*)\" выполняются условия из таблицы:?"
+      ],
+      "method": "assertExcelRangeCellValues",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ExcelSteps.java"
+    },
+    {
+      "id": "excel.assert-row-conditions",
+      "status": "supported",
+      "summary": "Assert reviewed typed conditions against selected columns of a stored Excel Row object.",
+      "stepPatterns": [
+        "для excel-строки \"(.*)\" выполняются условия из таблицы:?"
+      ],
+      "method": "assertExcelCellValuesFromExcelRow",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ExcelSteps.java"
+    },
+    {
+      "id": "excel.convert-workbook-to-json",
+      "status": "supported",
+      "summary": "Convert a reviewed Excel file into JSON text and save that JSON string in a scenario variable.",
+      "stepPatterns": [
+        "содержимое excel-файла \"(.*)\" сохраняем в виде json в переменную \"(.*)\""
+      ],
+      "method": "convertExcelToJson",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ExcelSteps.java"
+    },
+    {
+      "id": "excel.convert-range-to-json",
+      "status": "partial",
+      "summary": "Convert one reviewed Excel range into JSON text and save that JSON string in a scenario variable.",
+      "stepPatterns": [
+        "часть содержимого excel-файла \"(.*)\" сохраняем в виде json в переменную \"(.*)\""
+      ],
+      "method": "convertExcelToJson2",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ExcelSteps.java",
+      "notes": [
+        "The reviewed scope is a caller-provided range only; it does not promise arbitrary workbook slicing semantics beyond the helper-backed part-to-JSON conversion."
+      ]
+    },
+    {
+      "id": "excel.assert-cell-fill-color",
+      "status": "partial",
+      "summary": "Assert the fill color of one reviewed Excel cell on a specific sheet using an RGB string.",
+      "stepPatterns": [
+        "в excel-файле \"(.*)\" на странице \"(.*)\" ячейка \"(.*)\" имеет цвет заливки \"(.*)\""
+      ],
+      "method": "saveRowFromExcel",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ExcelSteps.java",
+      "notes": [
+        "The reviewed implementation contains a dedicated special case for white fill (255;255;255).",
+        "The step operates through XSSF color handling and does not promise broader style/theme inspection."
+      ]
+    },
+    {
+      "id": "html.select-element-by-xpath",
+      "status": "partial",
+      "summary": "Parse an HTML string, select one element by XPath, and save that element object in a scenario variable.",
+      "stepPatterns": [
+        "из HTML-строки \"(.+)\" получить элемент по xpath \"(.+)\" и сохранить в переменную \"(.+)\""
+      ],
+      "method": "getElementFromHtmlByXpath",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/HtmlSteps.java",
+      "notes": [
+        "The reviewed step operates on an HTML string only and does not claim browser-page lookup or CSS selector semantics."
+      ]
+    },
+    {
+      "id": "html.save-element-own-text",
+      "status": "supported",
+      "summary": "Read the own-text content of a stored HTML element and save it in a scenario variable.",
+      "stepPatterns": [
+        "из HTML-элемента \"(.+)\" сохранить внутренний текст в переменную \"(.+)\""
+      ],
+      "method": "getHtmlElementOwnText",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/HtmlSteps.java"
+    },
+    {
+      "id": "html.save-element-attribute",
+      "status": "supported",
+      "summary": "Read one attribute value from a stored HTML element and save it in a scenario variable.",
+      "stepPatterns": [
+        "из HTML-элемента \"(.+)\" сохранить значение атрибута \"(.+)\" в переменную \"(.+)\""
+      ],
+      "method": "getHtmlElementAttribute",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/HtmlSteps.java"
+    },
+    {
+      "id": "image.compare-two-stored-images",
+      "status": "partial",
+      "summary": "Compare two stored BufferedImage variables and fail when the reviewed diff algorithm finds a difference.",
+      "stepPatterns": [
+        "сравнить изображение \"(.*)\" с \"(.*)\""
+      ],
+      "method": "compareImage",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ImageSteps.java",
+      "notes": [
+        "The reviewed implementation ignores magenta during diffing and emits attachments on failure.",
+        "This bundle does not promote configurable thresholds, masks, or OCR semantics beyond that exact step."
+      ]
+    },
+    {
+      "id": "image.load-image-from-path",
+      "status": "supported",
+      "summary": "Load an image from a path and save the BufferedImage in a scenario variable.",
+      "stepPatterns": [
+        "получить изображение по пути \"(.*)\" и сохранить в переменную \"(.*)\""
+      ],
+      "method": "loadScreenShot",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/ImageSteps.java"
+    },
+    {
+      "id": "json.assert-jsonpath-values-from-json-input",
+      "status": "partial",
+      "summary": "Assert that JsonPath-selected values from a JSON string or JSON file match the expected table values.",
+      "stepPatterns": [
+        "в json (строке|файле) \"(.*)\" значения, найденные по JsonPath, равны значениям из таблицы"
+      ],
+      "method": "checkValuesInJsonAsString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java",
+      "notes": [
+        "The reviewed implementation uses a configuration that always returns lists and then compares only the first matched value for each JsonPath.",
+        "Expected values support exact string equality and the reviewed 'not_null' sentinel."
+      ]
+    },
+    {
+      "id": "json.save-jsonpath-values-from-json-input",
+      "status": "partial",
+      "summary": "Extract JsonPath-selected values from a JSON string or JSON file and save them as stringified values in scenario variables.",
+      "stepPatterns": [
+        "значения из json (строки|файла) \"(.*)\", найденные по JsonPath из таблицы, сохранены в переменные"
+      ],
+      "method": "getValuesFromJsonAsString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java",
+      "notes": [
+        "The reviewed implementation selects only the first value from the returned JsonPath list for each row and stringifies that value before storage."
+      ]
+    },
+    {
+      "id": "json.escape-json-as-string",
+      "status": "partial",
+      "summary": "Resolve a JSON string or reviewed JSON file content, escape it as a JSON string literal, and save the result in a scenario variable.",
+      "stepPatterns": [
+        "сохраняем json \"(.*)\" в виде строки в переменную \"(.*)\""
+      ],
+      "method": "saveJsonAsString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java",
+      "notes": [
+        "The reviewed step performs JSON-string escaping, not generic JSON normalization or pretty printing."
+      ]
+    },
+    {
+      "id": "json.save-response-body-values-by-path",
+      "status": "partial",
+      "summary": "Read values from a stored REST response body by JsonPath or GPath and save them as JSON strings in scenario variables.",
+      "stepPatterns": [
+        "из ответа \"(.*)\" значения тела, найденные по (jsonpath|GPath)?, сохранены в переменные"
+      ],
+      "method": "getValuesFromJsonAsString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java",
+      "notes": [
+        "The reviewed step assumes the source variable holds a RestAssured Response object.",
+        "The path mode is limited to the reviewed JsonPath versus GPath branch in the implementation."
+      ]
+    },
+    {
+      "id": "json.assert-response-body-values-by-path",
+      "status": "partial",
+      "summary": "Assert values from a stored REST response body by JsonPath or GPath against expected table values.",
+      "stepPatterns": [
+        "из ответа \"(.*)\" значения тела, найденные по (jsonpath|GPath)?, равны значениям из таблицы"
+      ],
+      "method": "checkValuesFromJsonAsString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java",
+      "notes": [
+        "The reviewed implementation supports exact equality and the reviewed 'not_null' sentinel rather than a broader assertion DSL."
+      ]
+    },
+    {
+      "id": "json.compare-json-with-order",
+      "status": "supported",
+      "summary": "Compare two scenario variables as JSON with array order preserved.",
+      "stepPatterns": [
+        "json переменные \"(.*)\" и \"(.*)\" совпадают с учётом сортировки"
+      ],
+      "method": "compareJsonWithSort",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java"
+    },
+    {
+      "id": "json.compare-json-ignoring-array-order",
+      "status": "supported",
+      "summary": "Compare two scenario variables as JSON while ignoring array order.",
+      "stepPatterns": [
+        "json переменные \"(.*)\" и \"(.*)\" совпадают без учёта сортировки"
+      ],
+      "method": "compareJsonWithoutSort",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java"
+    },
+    {
+      "id": "json.compare-json-with-order-ignoring-paths",
+      "status": "supported",
+      "summary": "Compare two scenario variables as JSON with array order preserved while ignoring the specified paths.",
+      "stepPatterns": [
+        "json переменные \"(.*)\" и \"(.*)\" совпадают с учётом сортировки, игнорируемые элементы:"
+      ],
+      "method": "compareJsonWithSortAndIgnoreElements",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java"
+    },
+    {
+      "id": "json.compare-json-ignoring-array-order-and-paths",
+      "status": "supported",
+      "summary": "Compare two scenario variables as JSON while ignoring both array order and the specified ignored paths.",
+      "stepPatterns": [
+        "json переменные \"(.*)\" и \"(.*)\" совпадают без учёта сортировки, игнорируемые элементы:"
+      ],
+      "method": "compareJsonWithoutSortAndIgnoreElements",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java"
+    },
+    {
+      "id": "json.assert-json-variable-conditions",
+      "status": "supported",
+      "summary": "Assert reviewed typed conditions against values selected from a JSON variable by JsonPath or GPath-style paths.",
+      "stepPatterns": [
+        "для json переменной \"(.*)\" выполняются условия из таблицы:?"
+      ],
+      "method": "assertJsonVariable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java"
+    },
+    {
+      "id": "json.save-jsonpath-arrays-from-json-input",
+      "status": "partial",
+      "summary": "Extract JsonPath-selected arrays from a JSON string or file and save the raw list results in scenario variables.",
+      "stepPatterns": [
+        "значения из json (строки|файла) \"(.*)\", найденные по JsonPath из таблицы, сохранены в виде массива в переменные"
+      ],
+      "method": "getValuesFromJsonAsString2",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java",
+      "notes": [
+        "The reviewed implementation stores the returned list directly and does not enforce a typed array contract beyond that raw result."
+      ]
+    },
+    {
+      "id": "json.transform-json-by-actions",
+      "status": "partial",
+      "summary": "Apply reviewed delete, set, or add/put actions to a JSON string or JSON file by JsonPath and save the transformed JSON string in a scenario variable.",
+      "stepPatterns": [
+        "в json (строке|файле) \"(.*)\" выполнено преобразование и результат сохранён в переменную \"(.*)\""
+      ],
+      "method": "setJsonPath",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java",
+      "notes": [
+        "The reviewed action surface is limited to 'удалить', 'вставить', and 'новое'.",
+        "The helper-supported value types are limited to the reviewed String/default, Integer, Long, Double, Boolean, Map, Array, and Null forms."
+      ]
+    },
+    {
+      "id": "json.assert-response-jsonpath-not-found",
+      "status": "supported",
+      "summary": "Assert that each listed JsonPath does not resolve inside a stored REST response body.",
+      "stepPatterns": [
+        "из ответа \"(.*)\" ключ по jsonpath не найден"
+      ],
+      "method": "checkNotExistJsonpath",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/JsonSteps.java"
+    },
+    {
+      "id": "pdf.assert-text-content",
+      "status": "partial",
+      "summary": "Assert that a PDF file or stored PDF File variable contains or does not contain reviewed text content, either with normalized whitespace or with preserved line breaks.",
+      "stepPatterns": [
+        "в PDF файле \"(.+)\" (содержится|отсутствует) (текст|текст с переносом строк) \"(.+)\""
+      ],
+      "method": "containsText",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/PDFSteps.java",
+      "notes": [
+        "For the 'текст' variant, the reviewed implementation replaces tabs/newlines with spaces and collapses repeated whitespace before matching."
+      ]
+    },
+    {
+      "id": "pdf.convert-pdf-to-image",
+      "status": "partial",
+      "summary": "Convert a PDF file or stored PDF File variable into a BufferedImage and save that image in a scenario variable.",
+      "stepPatterns": [
+        "преобразовать PDF файл \"(.+)\" в изображение и сохранить в переменную \"(.+)\""
+      ],
+      "method": "convertPDF",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/PDFSteps.java",
+      "notes": [
+        "The reviewed step promises only the helper-backed PDF-to-image conversion result, not page-by-page rendering controls or format tuning."
+      ]
+    },
+    {
+      "id": "pdf.assert-line-text",
+      "status": "partial",
+      "summary": "Assert that at least one extracted PDF text line contains or does not contain the requested text fragment.",
+      "stepPatterns": [
+        "в PDF файле \"(.+)\" (содержится|отсутствует) текст без переноса строк \"(.+)\""
+      ],
+      "method": "containsLineText",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/PDFSteps.java",
+      "notes": [
+        "The reviewed implementation splits extracted PDF text on CRLF and checks line fragments, not broader semantic lines or layout blocks."
+      ]
+    },
+    {
+      "id": "pdf.assert-text-slices-with-parameters",
+      "status": "partial",
+      "summary": "Assert that a PDF contains or does not contain text slices that match the reviewed text/font/style parameter table.",
+      "stepPatterns": [
+        "в PDF файле \"(.+)\" (содержится|отсутствует) текст c параметрами"
+      ],
+      "method": "containsTextWithParameters",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/PDFSteps.java",
+      "notes": [
+        "The reviewed parameter surface is limited to the step table model consumed by PDFTextParameter checks."
+      ]
+    },
+    {
+      "id": "pdf.assert-table-after-text-equals",
+      "status": "partial",
+      "summary": "Assert that a PDF table found after the specified text equals the expected table, with optional reviewed blue-design handling.",
+      "stepPatterns": [
+        "в PDF файле \"(.+)\" таблица, найденная после текста \"(.+)\", равна:?",
+        "в PDF файле \"(.+)\" (с синим дизайном) таблица, найденная после текста \"(.+)\", равна:?"
+      ],
+      "method": "assertDefaultDesignPdfTableEquals",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/PDFSteps.java",
+      "notes": [
+        "The reviewed design selector is limited to the annotated default versus 'с синим дизайном' variants."
+      ]
+    },
+    {
+      "id": "pdf.assert-table-after-text-contains-rows",
+      "status": "partial",
+      "summary": "Assert that a PDF table found after the specified text contains the expected rows, with optional reviewed blue-design handling.",
+      "stepPatterns": [
+        "в PDF файле \"(.+)\" таблица, найденная после текста \"(.+)\", содержит строки:?",
+        "в PDF файле \"(.+)\" (с синим дизайном) таблица, найденная после текста \"(.+)\", содержит строки:?"
+      ],
+      "method": "assertDefaultDesignPdfTableContainsRows",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/PDFSteps.java"
+    },
+    {
+      "id": "pdf.assert-indexed-table-equals",
+      "status": "partial",
+      "summary": "Assert that the first, last, or Nth PDF table equals the expected table, with optional reviewed blue-design handling.",
+      "stepPatterns": [
+        "в PDF файле \"(.+)\" (?:(первая|последняя) таблица|таблица с порядковым номером (\\d+)) равна:?",
+        "в PDF файле \"(.+)\" (с синим дизайном) (?:(первая|последняя) таблица|таблица с порядковым номером (\\d+)) равна:?"
+      ],
+      "method": "assertDefaultDesignPdfTableWithIndexEquals",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/PDFSteps.java",
+      "notes": [
+        "The reviewed first/last/numeric selector maps internally to index 0, null-for-last, or one-based table number minus one."
+      ]
+    },
+    {
+      "id": "pdf.assert-indexed-table-contains-rows",
+      "status": "partial",
+      "summary": "Assert that the first, last, or Nth PDF table contains the expected rows, with optional reviewed blue-design handling.",
+      "stepPatterns": [
+        "в PDF файле \"(.+)\" (?:(первая|последняя) таблица|таблица с порядковым номером (\\d+)) содержит строки:?",
+        "в PDF файле \"(.+)\" (с синим дизайном) (?:(первая|последняя) таблица|таблица с порядковым номером (\\d+)) содержит строки:?"
+      ],
+      "method": "assertDefaultDesignPdfTableWithIndexContainsRows",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/PDFSteps.java"
+    },
+    {
+      "id": "pdf.assert-page-table-equals",
+      "status": "partial",
+      "summary": "Assert that the first, last, or Nth table on a specific PDF page equals the expected table, with optional reviewed blue-design handling.",
+      "stepPatterns": [
+        "в PDF файле \"(.+)\" (?:(первая|последняя) таблица|таблица с порядковым номером (\\d+)) на странице (\\d+) равна:?",
+        "в PDF файле \"(.+)\" (с синим дизайном) (?:(первая|последняя) таблица|таблица с порядковым номером (\\d+)) на странице (\\d+) равна:?"
+      ],
+      "method": "assertDefaultDesignPdfTableFromPageEquals",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/PDFSteps.java"
+    },
+    {
+      "id": "pdf.assert-page-table-contains-rows",
+      "status": "partial",
+      "summary": "Assert that the first, last, or Nth table on a specific PDF page contains the expected rows, with optional reviewed blue-design handling.",
+      "stepPatterns": [
+        "в PDF файле \"(.+)\" (?:(первая|последняя) таблица|таблица с порядковым номером (\\d+)) на странице (\\d+) содержит строки:?",
+        "в PDF файле \"(.+)\" (с синим дизайном) (?:(первая|последняя) таблица|таблица с порядковым номером (\\d+)) на странице (\\d+) содержит строки:?"
+      ],
+      "method": "asserDefaultDesigntPdfTableFromPageContainsRows",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/PDFSteps.java"
+    },
+    {
+      "id": "xml.save-tag-value-from-file",
+      "status": "partial",
+      "summary": "Read one XML tag value by tag name from a reviewed XML file and save it in a scenario variable.",
+      "stepPatterns": [
+        "из XML файла \"(.+)\" получить значение тэга \"(.+)\" и сохранить в переменную \"(.+)\""
+      ],
+      "method": "getElementValueAndSave",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/XMLSteps.java",
+      "notes": [
+        "The reviewed step delegates tag lookup by name through XMLHelper and does not promise namespace-aware or multi-match selection semantics beyond that helper-backed behavior."
+      ]
+    },
+    {
+      "id": "xml.save-tag-attribute-from-file",
+      "status": "partial",
+      "summary": "Read one attribute value by tag name from a reviewed XML file and save it in a scenario variable.",
+      "stepPatterns": [
+        "из XML файла \"(.+)\" получить значение атрибута \"(.+)\" тэга \"(.+)\" и сохранить в переменную \"(.+)\""
+      ],
+      "method": "getElementAttributeValueAndSave",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/XMLSteps.java"
+    },
+    {
+      "id": "xml.save-tag-list-by-name",
+      "status": "supported",
+      "summary": "Read all XML nodes with the requested tag name from a reviewed XML file and save the NodeList in a scenario variable.",
+      "stepPatterns": [
+        "из XML файла \"(.+)\" получить список тэгов по имени \"(.+)\" и сохранить в переменную \"(.+)\""
+      ],
+      "method": "getElementByNameAndSave",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/XMLSteps.java"
+    },
+    {
+      "id": "xml.save-first-tag-by-name-and-attributes",
+      "status": "partial",
+      "summary": "Find one XML node by tag name plus attribute table and save that Node in a scenario variable.",
+      "stepPatterns": [
+        "из XML файла \"(.+)\" получить тэг по имени \"(.+)\" с атрибутами из таблицы и сохранить в переменную \"(.+)\""
+      ],
+      "method": "getElementByNameAndParamsAndSave",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/XMLSteps.java",
+      "notes": [
+        "The reviewed step promises one helper-selected node match, not a broader multi-node query contract."
+      ]
+    },
+    {
+      "id": "xml.save-tag-value-from-stored-node",
+      "status": "partial",
+      "summary": "Read node.getNodeValue() from a stored XML Node and save that value in a scenario variable.",
+      "stepPatterns": [
+        "из XML тэга \"(.+)\" получить значение и сохранить в переменную \"(.+)\""
+      ],
+      "method": "getElementValueFromVar",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/XMLSteps.java",
+      "notes": [
+        "The reviewed implementation reads Node.getNodeValue() directly, so callers should not generalize this into robust element-text extraction for arbitrary stored node types."
+      ]
+    },
+    {
+      "id": "xml.save-tag-attribute-from-stored-node",
+      "status": "supported",
+      "summary": "Read one attribute value from a stored XML Node and save it in a scenario variable.",
+      "stepPatterns": [
+        "из XML тэга \"(.+)\" получить значение атрибута \"(.+)\" и сохранить в переменную \"(.+)\""
+      ],
+      "method": "getElementAttributeValueFromVar",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/XMLSteps.java"
+    },
+    {
+      "id": "xml.save-xmlpath-results-as-array",
+      "status": "partial",
+      "summary": "Run xmlpath against a reviewed XML string or file content and save the matched values as a string list in a scenario variable.",
+      "stepPatterns": [
+        "значения из xml (?:строки|файла) \"(.*)\", найденные по xmlpath \"(.*)\", сохранены в виде массива в переменную \"(.*)\""
+      ],
+      "method": "getValuesFromXmlAsString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/XMLSteps.java",
+      "notes": [
+        "The reviewed implementation stores string values derived from either node first-child text or node values."
+      ]
+    },
+    {
+      "id": "xml.escape-xml-string",
+      "status": "supported",
+      "summary": "Escape a reviewed XML string and save the escaped text in a scenario variable.",
+      "stepPatterns": [
+        "преобразовать XML строку \"(.*)\" и сохранить в переменную \"(.*)\""
+      ],
+      "method": "xmlEscape",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/files/steps/XMLSteps.java"
+    }
+  ]
+}

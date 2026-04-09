@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-akita-gpb-api-module-223b2561bbc",
+  "module": {
+    "id": "akita-gpb-api-module",
+    "pin": "223b2561bbc"
+  },
+  "supportPolicy": {
+    "onlyAnnotatedStepMethods": true,
+    "helperOnlyBehaviorIsUnsupported": true,
+    "readmeClaimsDoNotExpandRuntimeTruth": true
+  },
+  "supportedCapabilities": [
+    {
+      "id": "api.send-request-save-response",
+      "status": "supported",
+      "summary": "Send a GET, POST, PUT, DELETE, or PATCH request to the resolved URL and save the Response object in a scenario variable.",
+      "stepPatterns": [
+        "выполнен (GET|POST|PUT|DELETE|PATCH) запрос на URL \"(.*)\". Полученный ответ сохранен в переменную \"(.*)\""
+      ],
+      "method": "sendHttpRequestWithoutParams",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java",
+      "notes": [
+        "The address is resolved through PropertyLoader before the request is sent.",
+        "This contract covers the generic HTTP method dispatch only; it does not claim endpoint-specific request or response semantics."
+      ]
+    },
+    {
+      "id": "api.send-sse-get-save-first-event",
+      "status": "partial",
+      "summary": "Send a GET(SSE) request, capture the first returned line, wrap it in braces, and save that string in a scenario variable.",
+      "stepPatterns": [
+        "выполнен GET\\(SSE\\) запрос на URL \"(.*)\". Полученный ответ сохранен в переменную \"(.*)\""
+      ],
+      "method": "sendHttpGetRequestWithoutParams",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java",
+      "notes": [
+        "The implementation reads only the first line from the SSE response stream and stores a brace-wrapped string.",
+        "This bundle does not promise multi-event accumulation, reconnect logic, or structured SSE event parsing."
+      ]
+    },
+    {
+      "id": "api.send-parameterized-request-save-response",
+      "status": "supported",
+      "summary": "Send a GET, POST, PUT, DELETE, or PATCH request with table-driven request parameters and save the Response object in a scenario variable.",
+      "stepPatterns": [
+        "выполнен (GET|POST|PUT|DELETE|PATCH) запрос на URL \"(.*)\" с headers и parameters из таблицы. Полученный ответ сохранен в переменную \"(.*)\""
+      ],
+      "method": "sendHttpRequestSaveResponse",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java",
+      "notes": [
+        "Reviewed table row types are transformed by ApiHooks.requestParamTransformer and executed through ApiBaseMethods.createRequest.",
+        "The reviewed RequestParamType surface includes PARAMETER, HEADER, BODY, BODY_BYTE, COOKIE, API_SPEC, NO_SSL_CHECK, SSL_CERTIFICATE_FILE, SSL_CERTIFICATE_PASSWORD, SSL_CERTIFICATE_TYPE, VAR, MULTIPART, MULTIPART_FILE, MULTIPART_FILE_CONTENT, MULTIPART_UTF8, and FORM_PARAM.",
+        "The VAR row type mutates Akita scenario state while building the request instead of sending wire data."
+      ]
+    },
+    {
+      "id": "api.send-request-assert-status",
+      "status": "supported",
+      "summary": "Send a request without table parameters and assert that the response status code matches the expected value.",
+      "stepPatterns": [
+        "выполнен (GET|POST|PUT|DELETE|PATCH) запрос на URL \"(.*)\". Ожидается код ответа: (\\d+)"
+      ],
+      "method": "checkResponseCodeWithoutParams",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.send-parameterized-request-assert-status",
+      "status": "supported",
+      "summary": "Send a table-driven request and assert that the response status code matches the expected value.",
+      "stepPatterns": [
+        "выполнен (GET|POST|PUT|DELETE|PATCH) запрос на URL \"(.*)\" с headers и parameters из таблицы. Ожидается код ответа: (\\d+)"
+      ],
+      "method": "checkResponseCode",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.assert-stored-response-status",
+      "status": "supported",
+      "summary": "Assert that a previously stored Response object has the expected status code.",
+      "stepPatterns": [
+        "в ответе \"(.*)\" код ответа равен (\\d+)"
+      ],
+      "method": "checkResponseCode",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.save-response-cookie",
+      "status": "supported",
+      "summary": "Read a named cookie from a stored Response object and save it in a scenario variable.",
+      "stepPatterns": [
+        "из ответа \"(.*)\" cookie с именем \"(.*)\" сохранен в переменную \"(.*)\""
+      ],
+      "method": "saveCookieResponseToVariable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.save-response-header",
+      "status": "supported",
+      "summary": "Read a named header from a stored Response object and save it in a scenario variable.",
+      "stepPatterns": [
+        "из ответа \"(.*)\" header с именем \"(.*)\" сохранен в переменную \"(.*)\""
+      ],
+      "method": "saveHeaderResponseToVariable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.save-response-value-by-jsonpath",
+      "status": "supported",
+      "summary": "Read a value from a stored response body by JsonPath and save it in a scenario variable.",
+      "stepPatterns": [
+        "из ответа \"(.*)\" значение тела по пути \"(.*)\" сохранено в переменную \"(.*)\""
+      ],
+      "method": "saveValueFromJsonPathResponseToVariable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java",
+      "notes": [
+        "Paths starting with '$' are resolved with Jayway JsonPath; other paths are resolved with RestAssured JsonPath."
+      ]
+    },
+    {
+      "id": "api.save-response-body",
+      "status": "supported",
+      "summary": "Save the full response body string from a stored Response object into a scenario variable.",
+      "stepPatterns": [
+        "из ответа \"(.*)\" значение тела сохранено в переменную \"(.*)\""
+      ],
+      "method": "getBodyAndSaveToVariable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.assert-jsonpath-exists",
+      "status": "supported",
+      "summary": "Assert that each JsonPath from a Cucumber table resolves inside a reviewed JSON string or file input.",
+      "stepPatterns": [
+        "в json (?:строке|файле) \"(.*)\" элементы, найденные по jsonpath из таблицы, существуют"
+      ],
+      "method": "checkJsonPathExists",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.assert-jsonpath-not-exists",
+      "status": "supported",
+      "summary": "Assert that each JsonPath from a Cucumber table does not resolve inside a reviewed JSON string, file, or stored response body.",
+      "stepPatterns": [
+        "в json (?:строке|файле) \"(.*)\" элементы, найденные по jsonpath из таблицы, не существуют"
+      ],
+      "method": "checkJsonPathDoesNotExists",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.assert-json-values-by-jsonpath",
+      "status": "supported",
+      "summary": "Assert that JsonPath-selected values match the table of expected values for either a JSON string variable or a stored response body.",
+      "stepPatterns": [
+        "в json строке \"(.*)\" значения, найденные по jsonpath, равны значениям из таблицы",
+        "в ответе \"(.*)\" значения, найденные по jsonpath, равны значениям из таблицы"
+      ],
+      "method": "checkValuesInJsonAsString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.save-json-values-by-jsonpath",
+      "status": "supported",
+      "summary": "Save JsonPath-selected values into scenario variables for either a JSON string variable or a stored response body.",
+      "stepPatterns": [
+        "значения из json строки \"(.*)\", найденные по jsonpath из таблицы, сохранены в переменные",
+        "значения из ответа \"(.*)\", найденные по jsonpath из таблицы, сохранены в переменные"
+      ],
+      "method": "getValuesFromJsonAsString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.validate-json-against-schema",
+      "status": "supported",
+      "summary": "Validate the body of a stored Response object against a provided JSON schema document.",
+      "stepPatterns": [
+        "значения json \"(.*)\", соответствует схеме \"(.*)\""
+      ],
+      "method": "checkJsonSchema",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.assert-xml-values-by-xmlpath",
+      "status": "supported",
+      "summary": "Assert that XmlPath-selected values match the table of expected values for a reviewed XML string or file input.",
+      "stepPatterns": [
+        "в xml (?:строке|файле) \"(.*)\" значения, найденные по xmlpath, равны значениям из таблицы"
+      ],
+      "method": "checkValuesInXmlAsString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.assert-xmlpath-exists",
+      "status": "supported",
+      "summary": "Assert that each XmlPath from a Cucumber table resolves inside a reviewed XML string or file input.",
+      "stepPatterns": [
+        "в xml (?:строке|файле) \"(.*)\" элементы, найденные по xmlpath из таблицы, существуют"
+      ],
+      "method": "checkXmlPathExists",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.assert-xmlpath-not-exists",
+      "status": "supported",
+      "summary": "Assert that each XmlPath from a Cucumber table does not resolve inside a reviewed XML string or file input.",
+      "stepPatterns": [
+        "в xml (?:строке|файле) \"(.*)\" элементы, найденные по xmlpath из таблицы, не существуют"
+      ],
+      "method": "checkXmlPathNotExists",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.save-xml-values-by-xmlpath",
+      "status": "supported",
+      "summary": "Save XmlPath-selected values into scenario variables for a reviewed XML string or file input.",
+      "stepPatterns": [
+        "значения из xml (?:строки|файла) \"(.*)\", найденные по xmlpath из таблицы, сохранены в переменные"
+      ],
+      "method": "getValuesFromXmlAsString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+    },
+    {
+      "id": "api.validate-xml-against-xsd",
+      "status": "supported",
+      "summary": "Validate XML text from a stored response variable against the provided XSD file path.",
+      "stepPatterns": [
+        "значения xml \"(.*)\", соответствует схеме \"(.*)\""
+      ],
+      "method": "checkXsdSchema",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java",
+      "notes": [
+        "The implementation strips a literal soapenv envelope form before validating the remaining XML against the supplied XSD file path."
+      ]
+    }
+  ]
+}

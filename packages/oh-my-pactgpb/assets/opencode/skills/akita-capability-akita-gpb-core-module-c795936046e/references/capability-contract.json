@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-akita-gpb-core-module-c795936046e",
+  "module": {
+    "id": "akita-gpb-core-module",
+    "pin": "c795936046e"
+  },
+  "supportPolicy": {
+    "onlyAnnotatedStepMethods": true,
+    "helperOnlyBehaviorIsUnsupported": true,
+    "readmeClaimsDoNotExpandRuntimeTruth": true
+  },
+  "supportedCapabilities": [
+    {
+      "id": "core.save-property-to-variable",
+      "status": "supported",
+      "summary": "Load a property value and store it in an Akita scenario variable.",
+      "stepPatterns": [
+        "сохранено значение \"(.*)\" из property файла в переменную \"(.*)\""
+      ],
+      "method": "saveValueToVar",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java",
+      "notes": [
+        "The property name is resolved through PropertyLoader before storing the value in the scenario variable store."
+      ]
+    },
+    {
+      "id": "core.set-variable",
+      "status": "supported",
+      "summary": "Set a scenario variable from a literal or property-backed value.",
+      "stepPatterns": [
+        "установлено значение переменной \"(.*)\" равным \"(.*)\""
+      ],
+      "method": "setVariable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java",
+      "notes": [
+        "The second argument is resolved through PropertyLoader.getPropertyOrValue before storage."
+      ]
+    },
+    {
+      "id": "core.wait-fixed-seconds",
+      "status": "supported",
+      "summary": "Sleep for the requested number of seconds.",
+      "stepPatterns": [
+        "выполнено ожидание в течение (\\d+) (?:секунд|секунды)"
+      ],
+      "method": "waitForSeconds",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java",
+      "notes": [
+        "The implementation delegates directly to Thread.sleep with second-to-millisecond conversion."
+      ]
+    },
+    {
+      "id": "core.fill-template-from-table",
+      "status": "supported",
+      "summary": "Load a template, replace placeholders from a Cucumber table, and store the filled content in a variable.",
+      "stepPatterns": [
+        "шаблон \"(.*)\" заполнен данными из таблицы и сохранён в переменную \"(.*)\""
+      ],
+      "method": "fillTemplate",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java",
+      "notes": [
+        "If any requested placeholder is absent in the template, the step logs the miss and throws a RuntimeException."
+      ]
+    },
+    {
+      "id": "core.compare-variables-equal",
+      "status": "supported",
+      "summary": "Assert that two scenario variables are equal.",
+      "stepPatterns": [
+        "значения в переменных \"(.*)\" и \"(.*)\" совпадают"
+      ],
+      "method": "compareTwoVariables",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java"
+    },
+    {
+      "id": "core.compare-variables-not-equal",
+      "status": "supported",
+      "summary": "Assert that two scenario variables are not equal.",
+      "stepPatterns": [
+        "значения в переменных \"(.*)\" и \"(.*)\" не совпадают"
+      ],
+      "method": "checkingTwoVariablesAreNotEquals",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java"
+    },
+    {
+      "id": "core.delete-file-by-name",
+      "status": "supported",
+      "summary": "Delete a file with the requested name from the provided directory.",
+      "stepPatterns": [
+        "удалить файл \"(.*)\" из директории \"(.*)\""
+      ],
+      "method": "deleteDownloadedFile",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java",
+      "notes": [
+        "The step throws when no matching file is found."
+      ]
+    },
+    {
+      "id": "core.assert-pdf-contains-text",
+      "status": "supported",
+      "summary": "Assert that a scenario variable containing a PDF file includes the requested text fragment.",
+      "stepPatterns": [
+        "в файле \"(.*)\" содержится текст \"(.*)\""
+      ],
+      "method": "checkTextFromFile",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java",
+      "notes": [
+        "Despite the generic step wording, the implementation constructs com.codeborne.pdftest.PDF from the variable value and checks extracted PDF text."
+      ]
+    },
+    {
+      "id": "core.compare-variable-with-property",
+      "status": "supported",
+      "summary": "Assert that a scenario variable matches a property value, case-insensitively.",
+      "stepPatterns": [
+        "значения из переменной \"(.*)\" и из property файла \"(.*)\" совпадают"
+      ],
+      "method": "checkIfValueFromVariableEqualPropertyVariable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java"
+    },
+    {
+      "id": "core.assert-boolean-expression",
+      "status": "partial",
+      "summary": "Pass a boolean assertion expression through the Akita scenario evaluator.",
+      "stepPatterns": [
+        "верно, что \"(.*)\""
+      ],
+      "method": "expressionExpression",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/core/steps/CommonSteps.java",
+      "notes": [
+        "The implementation wraps the supplied text in assert(...) and delegates evaluation to akitaScenario.getVars().evaluate(...).",
+        "This bundle does not promise the full expression language beyond boolean assertions accepted by that evaluator."
+      ]
+    }
+  ]
+}

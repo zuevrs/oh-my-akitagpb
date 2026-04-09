@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-ccl-additional-steps-module-95eda279aa4",
+  "moduleId": "ccl-additional-steps-module",
+  "pin": "95eda279aa4",
+  "evidence": {
+    "manifest": "gpb-manifest.json",
+    "stepClasses": [
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/ArraySteps.java",
+      "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CircleSteps.java"
+    ],
+    "supplementalReviewedFiles": [
+      "README.md"
+    ]
+  },
+  "authoringPolicy": {
+    "curatedSnapshot": true,
+    "runtimeExtraction": false,
+    "onlyAnnotatedStepMethodsPromoted": true,
+    "unclearBehaviorMarkedUnsupported": true,
+    "readmeUsedAsContextOnly": true
+  },
+  "redactions": {
+    "excluded": [
+      "maintainer email addresses",
+      "internal documentation URLs",
+      "raw contact sections",
+      "source archive locations",
+      "dependency internals and non-annotated helper behavior"
+    ]
+  }
+}

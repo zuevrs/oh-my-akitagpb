@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-ccl-additional-steps-module-95eda279aa4",
+  "module": {
+    "id": "ccl-additional-steps-module",
+    "pin": "95eda279aa4"
+  },
+  "supportPolicy": {
+    "onlyAnnotatedStepMethods": true,
+    "helperOnlyBehaviorIsUnsupported": true,
+    "readmeClaimsDoNotExpandRuntimeTruth": true
+  },
+  "supportedCapabilities": [
+    {
+      "id": "additional.save-literal-to-variable",
+      "status": "supported",
+      "summary": "Store the supplied text exactly as given in a scenario variable.",
+      "stepPatterns": [
+        "значение \"(.*)\" сохраняем в переменную сценария \"(.*)\""
+      ],
+      "method": "saveStringValue",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "The reviewed implementation stores the raw step argument and does not call processValue for this step."
+      ]
+    },
+    {
+      "id": "additional.save-generated-values-from-table",
+      "status": "partial",
+      "summary": "Generate or resolve reviewed value templates from a table and store the resulting strings in scenario variables.",
+      "stepPatterns": [
+        "сохраняем в переменные сценария значения из таблицы:?"
+      ],
+      "method": "saveGeneratedValuesIntoVars",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "The reviewed step delegates each table value to generateVariable(...).",
+        "This bundle does not promote the full helper template language beyond the step-backed behavior observed here."
+      ]
+    },
+    {
+      "id": "additional.apply-regexp-to-variable",
+      "status": "supported",
+      "summary": "Apply a regular expression to a stored variable value and save the first matched fragment into another scenario variable.",
+      "stepPatterns": [
+        "к переменной \"(.+)\" применить регулярное выражение \"(.+)\" и сохранить результат в переменную \"(.+)\""
+      ],
+      "method": "doRegExp",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "The reviewed implementation stores matcher.group() from the first find() result only."
+      ]
+    },
+    {
+      "id": "additional.calculate-dates-from-table",
+      "status": "partial",
+      "summary": "Apply reviewed date arithmetic, normalization, comparison-difference, or earlier/later selection flows from a parameter table and store formatted results in scenario variables.",
+      "stepPatterns": [
+        "вычислить даты, сохранив результат в переменные из таблицы:?"
+      ],
+      "method": "calculateDates",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "Date parsing is delegated to DateHelper.parseDateTime and the supported action semantics come from the reviewed helper-backed calculator path.",
+        "The step stores formatted strings, not date objects."
+      ]
+    },
+    {
+      "id": "additional.assert-date-conditions",
+      "status": "partial",
+      "summary": "Assert reviewed date conditions from a table against supplied date values.",
+      "stepPatterns": [
+        "для дат выполняются условия из таблицы:?"
+      ],
+      "method": "assertDates",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "Condition semantics are limited to the DateAssertableConditionParam and MainAssert paths consumed by the step."
+      ]
+    },
+    {
+      "id": "additional.evaluate-expression-to-variable",
+      "status": "partial",
+      "summary": "Evaluate one expression through the scenario evaluator and save the stringified result in a scenario variable.",
+      "stepPatterns": [
+        "выполнить выражение \"(.+)\" и сохранить его результат в переменную \"(.+)\""
+      ],
+      "method": "evaluateExpression",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "The reviewed implementation delegates to akitaScenario.getVars().evaluate(expression).",
+        "This bundle does not promise a generic scripting platform beyond expressions accepted by that evaluator."
+      ]
+    },
+    {
+      "id": "additional.spellout-number-with-format",
+      "status": "partial",
+      "summary": "Spell out a numeric value using a reviewed format string and optional capitalization mode, then store the resulting text in a scenario variable.",
+      "stepPatterns": [
+        "сохранить число \"(.+)\" прописью( с большой буквы| в верхнем регистре)? в формате \"(.+)\" в переменную \"(.+)\""
+      ],
+      "method": "numberToString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "The reviewed implementation parses the input as BigDecimal and delegates formatting to StringHelper.spellOutNumber(...)."
+      ]
+    },
+    {
+      "id": "additional.spellout-ruble-amount",
+      "status": "partial",
+      "summary": "Convert a numeric amount into reviewed ruble wording with optional capitalization mode and store the result in a scenario variable.",
+      "stepPatterns": [
+        "сохранить сумму \"(.+)\" в рублях прописью( с большой буквы| в верхнем регистре)? в переменную \"(.+)\""
+      ],
+      "method": "currencyAmountToString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java"
+    },
+    {
+      "id": "additional.spellout-percent",
+      "status": "partial",
+      "summary": "Convert a numeric percent value into reviewed wording with optional capitalization mode and store the result in a scenario variable.",
+      "stepPatterns": [
+        "сохранить число процентов \"(.+)\" прописью( с большой буквы| в верхнем регистре)? в переменную \"(.+)\""
+      ],
+      "method": "percentToString",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java"
+    },
+    {
+      "id": "additional.format-number-to-string",
+      "status": "supported",
+      "summary": "Format a numeric value with the requested reviewed pattern and store the resulting string in a scenario variable.",
+      "stepPatterns": [
+        "сохранить число \"(.+)\" в формате \"(.+)\" в переменную \"(.+)\""
+      ],
+      "method": "formatNumber",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java"
+    },
+    {
+      "id": "additional.save-response-body-as-bytes",
+      "status": "partial",
+      "summary": "Read the body of a stored REST response as a byte array and save it in a scenario variable.",
+      "stepPatterns": [
+        "из ответа \"(.*)\" значение тела сохранено в виде массива байт в переменную \"(.*)\""
+      ],
+      "method": "getBytesBodyAndSaveToVariable",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "The reviewed implementation assumes the source variable contains a RestAssured Response object."
+      ]
+    },
+    {
+      "id": "additional.decode-base64-to-bytes",
+      "status": "supported",
+      "summary": "Decode a Base64 string into bytes and store the byte array in a scenario variable.",
+      "stepPatterns": [
+        "декодировать Base64-строку \"(.*)\" и сохранить полученный массив байт в переменную \"(.*)\""
+      ],
+      "method": "decodeBase64StringToBytes",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java"
+    },
+    {
+      "id": "additional.wait-fixed-seconds-from-value",
+      "status": "partial",
+      "summary": "Sleep for the requested number of seconds resolved from a literal or scenario value.",
+      "stepPatterns": [
+        "выполнено ожидание в течение \"(.*)\" (?:секунд|секунды)"
+      ],
+      "method": "waitForSecondsVar",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "The reviewed implementation performs a direct Thread.sleep after processValue(...) and Long.parseLong(...).",
+        "This is a fixed delay only, not a condition-driven wait framework."
+      ]
+    },
+    {
+      "id": "additional.assert-string-conditions",
+      "status": "partial",
+      "summary": "Assert reviewed string conditions from a table against a literal or scenario-resolved string value.",
+      "stepPatterns": [
+        "для строки \"(.*)\" выполняются условия из таблицы:?"
+      ],
+      "method": "assertStringValue",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "Condition semantics are limited to the StringAssertableConditionParam and MainAssert paths consumed by the step."
+      ]
+    },
+    {
+      "id": "additional.build-multipart-body-and-boundary",
+      "status": "partial",
+      "summary": "Build one reviewed multipart API request body as a byte array, store it in a scenario variable, and separately store the generated boundary value.",
+      "stepPatterns": [
+        "формируем тело api-запроса, сохраняем полученный массив байт в переменную \"(.*)\", разделитель сохраняем в переменную \"(.*)\""
+      ],
+      "method": "step",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CommonSteps.java",
+      "notes": [
+        "The reviewed table surface distinguishes only file parts versus non-file parts through the 'type' column.",
+        "File rows read bytes from a local file path and emit a filename plus filename*=UTF-8 content-disposition header."
+      ]
+    },
+    {
+      "id": "additional.compare-arrays-by-declared-type",
+      "status": "partial",
+      "summary": "Compare two stored arrays as string, number, or date lists using the reviewed type selector.",
+      "stepPatterns": [
+        "массив \"(.*)\" совпадает с массивом \"(.*)\", тип элементов (строка|число|дата)"
+      ],
+      "method": "compareArray",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/ArraySteps.java",
+      "notes": [
+        "The reviewed implementation dispatches to List<String>, List<Integer>, or List<ZonedDateTime> comparisons only.",
+        "Comparison uses AssertJ hasSameElementsAs(...), so callers should not infer ordered array equality semantics."
+      ]
+    },
+    {
+      "id": "additional.add-string-value-to-list-variable",
+      "status": "partial",
+      "summary": "Append a processed string value to a scenario list variable, creating a new string list when the target variable does not yet exist.",
+      "stepPatterns": [
+        "значение \"(.*)\" добавляем к списку в переменной сценария \"(.*)\""
+      ],
+      "method": "addStringValueToList",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/ArraySteps.java",
+      "notes": [
+        "The reviewed implementation is string-list specific even though the step wording says only 'value'.",
+        "If the variable already exists, it must be a List."
+      ]
+    },
+    {
+      "id": "additional.poll-http-until-jsonpath-equals",
+      "status": "partial",
+      "summary": "Repeat one reviewed HTTP request until the selected JsonPath value equals the expected JSON-stringified value.",
+      "stepPatterns": [
+        "выполнен (GET|POST|PUT|DELETE|PATCH) запрос на URL \"(.*)\" с headers и parameters из таблицы. В ответе ожидаем что jsonPath \"(.*)\" равен \"(.*)\""
+      ],
+      "method": "sendHttpRequestSaveResponse2",
+      "sourcePath": "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/additional/steps/CircleSteps.java",
+      "notes": [
+        "The reviewed implementation uses a fixed 60-second timeout and 2-second poll interval via Awaitility.",
+        "It sends the request through the API module request path and compares the expected value against StringHelper.objectToJsonString(JsonPath.read(...))."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-akita-gpb-api-module-223b2561bbc",
+  "cases": [
+    {
+      "id": "api.full-sse-stream-consumption-not-promised",
+      "status": "unsupported",
+      "summary": "The GET(SSE) step does not promise full event-stream handling.",
+      "reason": "The reviewed implementation reads only the first returned line, wraps it in braces, and stores that single string in a scenario variable.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+      ]
+    },
+    {
+      "id": "api.domain-endpoint-contracts-not-claimed",
+      "status": "unsupported",
+      "summary": "This bundle does not claim business-specific endpoints, authentication issuance flows, or response-field contracts beyond the generic HTTP and extraction steps.",
+      "reason": "The reviewed source exposes generic request, extraction, and validation steps only; illustrative endpoint or payload examples do not expand executable runtime truth.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+      ]
+    },
+    {
+      "id": "api.helper-and-hook-internals-not-standalone-capabilities",
+      "status": "unsupported",
+      "summary": "ApiBaseMethods request-building helpers and ApiHooks table conversion are supporting internals, not standalone shipped capabilities.",
+      "reason": "These files explain how the public annotated steps are wired, but they do not add new step-addressable operations by themselves.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiBaseMethods.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/hooks/ApiHooks.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/rest/RequestParamType.java"
+      ]
+    },
+    {
+      "id": "api.readme-template-and-publishing-guidance-not-runtime-truth",
+      "status": "unsupported",
+      "summary": "Template-module setup instructions, publishing guidance, and infrastructure links are intentionally excluded from the shipped capability contract.",
+      "reason": "They describe surrounding authoring workflow rather than runtime Akita step behavior, so they cannot expand executable support.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+      ]
+    },
+    {
+      "id": "api.generic-soap-envelope-normalization-needs-review",
+      "status": "needs-review",
+      "summary": "The XML schema-validation step should not be treated as generic SOAP-envelope handling beyond the reviewed literal replacements.",
+      "reason": "The implementation strips one hardcoded soapenv envelope form before validating the remaining XML, so broader SOAP variants need separate review.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/api/steps/ApiSteps.java"
+      ]
+    }
+  ]
+}

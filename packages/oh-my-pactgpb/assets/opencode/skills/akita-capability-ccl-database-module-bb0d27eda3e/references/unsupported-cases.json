@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "akita-capability-ccl-database-module-bb0d27eda3e",
+  "cases": [
+    {
+      "id": "database.helper-and-config-internals-not-standalone-capabilities",
+      "status": "unsupported",
+      "summary": "DataBaseMethods, DataBaseConfig, and other helper/config internals are not standalone shipped capabilities unless a public step annotation exposes them.",
+      "reason": "The reviewed helper and config classes explain connection setup, query lookup, and formatting support, but the runtime contract is curated from annotated step methods only.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/DataBaseMethods.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/DataBaseConfig.java",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/DataBaseExceptions.java"
+      ]
+    },
+    {
+      "id": "database.readme-claims-do-not-expand-runtime-truth",
+      "status": "unsupported",
+      "summary": "README descriptions and step lists do not expand the shipped DB capability contract.",
+      "reason": "The reviewed README is supporting context only and is both broader and less complete than the annotated step surface in CCLDataBaseSteps.java.",
+      "evidencePaths": [
+        "README.md",
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java"
+      ]
+    },
+    {
+      "id": "database-vendor-neutral-admin-and-schema-semantics-not-promised",
+      "status": "unsupported",
+      "summary": "This bundle does not promise vendor-neutral DB administration, migration, schema discovery, transaction control, or generic metadata operations.",
+      "reason": "The reviewed step surface covers executing prepared SQL, checking result rows, extracting values, serializing results, and asserting affected row counts only.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java"
+      ]
+    },
+    {
+      "id": "database-arbitrary-query-orchestration-not-promised",
+      "status": "unsupported",
+      "summary": "The bundle does not promise arbitrary DB workflow orchestration beyond the reviewed annotated steps.",
+      "reason": "Table parameters only create scenario variables for reviewed steps; there is no annotated contract for transactions, retries beyond the one wait step, batching, joins across multiple named results, or generic result-set transformations.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java"
+      ]
+    },
+    {
+      "id": "database-generic-wait-semantics-not-promised",
+      "status": "unsupported",
+      "summary": "The non-empty wait step must not be treated as a generic polling or eventual-consistency framework.",
+      "reason": "The reviewed implementation is narrowly scoped to one query step with table parameters, fixed 60-second timeout, 1-second polling interval, same-thread polling, and only a non-empty-result condition.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java"
+      ]
+    },
+    {
+      "id": "database-generic-collection-export-not-promised",
+      "status": "unsupported",
+      "summary": "Result extraction must not be treated as generic object/list export beyond the reviewed text, object, formatted-string, and JSON-string outputs.",
+      "reason": "The annotated steps expose first-value text/object storage, formatted string generation via helper formatting, and JSON-string serialization; they do not define a broader typed export contract.",
+      "evidencePaths": [
+        "src/main/java/ru/gazprombank/automation/akitagpb/modules/ccl/database/steps/CCLDataBaseSteps.java"
+      ]
+    }
+  ]
+}
