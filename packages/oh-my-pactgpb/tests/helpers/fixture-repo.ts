@@ -41,9 +41,9 @@ interface CreateFixtureRepoOptions {
 }
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const packLockRoot = path.join(tmpdir(), 'oh-my-akitagpb-pack-lock');
+const packLockRoot = path.join(tmpdir(), 'oh-my-pactgpb-pack-lock');
 const packLockDir = path.join(packLockRoot, 'lock');
-const npmCacheRoot = path.join(tmpdir(), 'oh-my-akitagpb-npm-cache');
+const npmCacheRoot = path.join(tmpdir(), 'oh-my-pactgpb-npm-cache');
 const fixtureTemplateRoots: Partial<Record<FixtureTemplate, string>> = {
   'java-service': path.join(repoRoot, 'tests', 'fixtures', 'empty-java-service'),
 };
@@ -136,11 +136,15 @@ function writeFixtureFiles(rootDir: string, template: FixtureTemplate): void {
   if (template === 'package-only') {
     writeFileSync(
       path.join(rootDir, 'package.json'),
-      `${JSON.stringify({
-        name: 'fixture-package-only',
-        private: true,
-        version: '0.0.0',
-      }, null, 2)}\n`,
+      `${JSON.stringify(
+        {
+          name: 'fixture-package-only',
+          private: true,
+          version: '0.0.0',
+        },
+        null,
+        2,
+      )}\n`,
       'utf8',
     );
     return;
@@ -156,7 +160,7 @@ function writeFixtureFiles(rootDir: string, template: FixtureTemplate): void {
 
 export function createFixtureRepo(options: CreateFixtureRepoOptions = {}): FixtureRepo {
   const template = options.template ?? 'java-service';
-  const parentDir = options.parentDir ?? path.join(tmpdir(), 'oh-my-akitagpb-tests-');
+  const parentDir = options.parentDir ?? path.join(tmpdir(), 'oh-my-pactgpb-tests-');
 
   try {
     const rootDir = options.rootDir ?? mkdtempSync(parentDir);
@@ -192,7 +196,7 @@ export function packLocalPackage(): string {
       return packedTarballPath;
     }
 
-    const packDestination = mkdtempSync(path.join(tmpdir(), 'oh-my-akitagpb-pack-'));
+    const packDestination = mkdtempSync(path.join(tmpdir(), 'oh-my-pactgpb-pack-'));
     const execution = runCommand('npm', ['pack', '--json', '--pack-destination', packDestination], repoRoot);
     let parsed: unknown;
 
@@ -236,7 +240,7 @@ export function invokeInstalledCli(
   args: readonly string[],
   options: { rejectOnNonZero?: boolean } = {},
 ): CommandExecution {
-  return runCommand('npx', ['oh-my-akitagpb', ...args], fixtureRoot, options.rejectOnNonZero ?? false);
+  return runCommand('npx', ['oh-my-pactgpb', ...args], fixtureRoot, options.rejectOnNonZero ?? false);
 }
 
 export function createInstalledFixture(options: CreateFixtureRepoOptions = {}): FixtureRepo {

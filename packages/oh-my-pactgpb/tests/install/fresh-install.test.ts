@@ -53,7 +53,7 @@ afterEach(() => {
 });
 
 describe('fresh install', () => {
-  it('materializes the bootstrap surface, managed wiring, and install-state in a clean Java-service repo', () => {
+  it('materializes the Pact bootstrap surface, managed wiring, and install-state in a clean Java-service repo', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
 
     const execution = invokeInstalledCli(fixture.rootDir, ['install']);
@@ -64,7 +64,7 @@ describe('fresh install', () => {
       subcommand: 'install',
       status: 'ok',
       reason: 'install-complete',
-      packageName: 'oh-my-akitagpb',
+      packageName: 'oh-my-pactgpb',
     });
     expect(realpathSync(result.cwd ?? '')).toBe(realpathSync(fixture.rootDir));
     expect(result.details?.projectMode).toBe('fresh');
@@ -81,25 +81,13 @@ describe('fresh install', () => {
     expect(existsSync(path.join(fixture.rootDir, '.oma', 'runtime', 'shared', 'version.json'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.oma', 'runtime', 'shared', 'data-handling-policy.json'))).toBe(true);
     expect(existsSync(path.join(fixture.rootDir, '.oma', 'instructions', 'rules', 'default-language-russian.md'))).toBe(true);
-
-    for (const commandId of ['akita-scan', 'akita-plan', 'akita-write', 'akita-validate', 'akita-promote']) {
-      expect(existsSync(path.join(fixture.rootDir, '.opencode', 'commands', `${commandId}.md`))).toBe(true);
-    }
-
-    for (const workflowId of [
-      'akita-scan-workflow',
-      'akita-plan-workflow',
-      'akita-write-workflow',
-      'akita-validate-workflow',
-      'akita-promote-workflow',
-    ]) {
-      expect(existsSync(path.join(fixture.rootDir, '.opencode', 'skills', workflowId, 'SKILL.md'))).toBe(true);
-    }
+    expect(existsSync(path.join(fixture.rootDir, '.opencode', 'commands', 'pact-scan.md'))).toBe(true);
+    expect(existsSync(path.join(fixture.rootDir, '.opencode', 'skills', 'pact-scan-workflow', 'SKILL.md'))).toBe(true);
 
     const installState = readJsonFile<InstallState>(installStatePath);
     expect(installState.projectMode).toBe('fresh');
-    expect(installState.ownedFiles.some((file) => file.relativePath === '.opencode/commands/akita-scan.md')).toBe(true);
-    expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/runtime/local/project-mode.json')).toBe(true);
+    expect(installState.ownedFiles.some((file) => file.relativePath === '.opencode/commands/pact-scan.md')).toBe(true);
+    expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/templates/scan/state-contract.json')).toBe(true);
     expect(installState.managedSurfaces).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ relativePath: 'AGENTS.md' }),
@@ -112,13 +100,15 @@ describe('fresh install', () => {
     expect(projectMode.reasons).toEqual([]);
 
     const agentsContent = readFileSync(agentsPath, 'utf8');
-    const installedScanCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'akita-scan.md'), 'utf8');
-    expect(agentsContent).toContain('<!-- oh-my-akitagpb:begin -->');
-    expect(agentsContent).toContain('/akita-scan');
-    expect(agentsContent).toContain('/akita-promote');
-    expect(installedScanCommand).toContain('agent: build');
-    expect(installedScanCommand).toContain('system under test');
-    expect(installedScanCommand).toContain('OpenAPI and AsyncAPI');
+    const installedScanCommand = readFileSync(path.join(fixture.rootDir, '.opencode', 'commands', 'pact-scan.md'), 'utf8');
+    const installedScanWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'pact-scan-workflow', 'SKILL.md'), 'utf8');
+
+    expect(agentsContent).toContain('<!-- oh-my-pactgpb:begin -->');
+    expect(agentsContent).toContain('/pact-scan');
+    expect(installedScanCommand).toContain('Pact provider verification');
+    expect(installedScanCommand).toContain('.oma/templates/scan/state-contract.json');
+    expect(installedScanWorkflow).toContain('provider verification');
+    expect(installedScanWorkflow).toContain('artifact source');
 
     const opencodeConfig = readJsonFile<Record<string, unknown>>(opencodeConfigPath);
     expect(opencodeConfig.instructions).toEqual(
@@ -129,7 +119,6 @@ describe('fresh install', () => {
         '.oma/instructions/rules/respect-pack-ownership.md',
       ]),
     );
-    expect(opencodeConfig.ohMyAkitaGpb).toBeUndefined();
   });
 
   it('preserves unrelated .opencode content and treats an empty AGENTS.md as safe bootstrap input', () => {
@@ -145,7 +134,7 @@ describe('fresh install', () => {
     expect(execution.exitCode).toBe(0);
     expect(result.reason).toBe('install-complete');
     expect(readFileSync(customCommandPath, 'utf8')).toBe('user-owned command\n');
-    expect(readFileSync(path.join(fixture.rootDir, 'AGENTS.md'), 'utf8')).toContain('<!-- oh-my-akitagpb:begin -->');
+    expect(readFileSync(path.join(fixture.rootDir, 'AGENTS.md'), 'utf8')).toContain('<!-- oh-my-pactgpb:begin -->');
   });
 
   it('blocks when AGENTS.md already contains user-owned instructions without pack markers', () => {

@@ -6,7 +6,6 @@ import {
   getAssetEntry,
   type PackageSurface,
   PackageSurfaceError,
-  resolveCapabilityBundleAssetFiles,
 } from './asset-catalog.js';
 import {
   applyManagedAgentsBlock,
@@ -30,14 +29,8 @@ export interface MaterializedInstall {
   managedSurfaces: readonly ManagedSurfaceRecord[];
 }
 
-export const COMMAND_IDS = ['akita-scan', 'akita-plan', 'akita-write', 'akita-validate', 'akita-promote'] as const;
-export const WORKFLOW_SKILL_IDS = [
-  'akita-scan-workflow',
-  'akita-plan-workflow',
-  'akita-write-workflow',
-  'akita-validate-workflow',
-  'akita-promote-workflow',
-] as const;
+export const COMMAND_IDS = ['pact-scan'] as const;
+export const WORKFLOW_SKILL_IDS = ['pact-scan-workflow'] as const;
 export const MANAGED_INSTRUCTION_PATHS = [
   'AGENTS.md',
   '.oma/instructions/rules/manifest-first.md',
@@ -65,15 +58,6 @@ function loadAssetText(catalog: AssetCatalog, assetKey: string): string {
   return readFileSync(getAssetEntry(catalog, assetKey), 'utf8');
 }
 
-function planCapabilityBundleFiles(catalog: AssetCatalog): PlannedFile[] {
-  return resolveCapabilityBundleAssetFiles(catalog).map((bundleAssetFile) => ({
-    relativePath: bundleAssetFile.runtimePath,
-    content: readFileSync(bundleAssetFile.assetAbsolutePath, 'utf8'),
-    generatedBy: 'asset' as const,
-    assetKey: bundleAssetFile.assetRelativePath,
-  }));
-}
-
 export function planMaterializedFiles(
   projectRoot: string,
   catalog: AssetCatalog,
@@ -88,7 +72,7 @@ export function planMaterializedFiles(
       ? existingProjectMode.classifiedAt
       : new Date().toISOString();
 
-  const plannedFiles: PlannedFile[] = [
+  return [
     {
       relativePath: '.oma/capability-manifest.json',
       content: loadAssetText(catalog, 'oma/capability-manifest'),
@@ -144,54 +128,6 @@ export function planMaterializedFiles(
       assetKey: 'oma/instructions/rules/respect-pack-ownership',
     },
     {
-      relativePath: '.oma/templates/feature/README.md',
-      content: loadAssetText(catalog, 'oma/templates/feature/README'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/feature/README',
-    },
-    {
-      relativePath: '.oma/templates/feature/default.feature.md',
-      content: loadAssetText(catalog, 'oma/templates/feature/default'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/feature/default',
-    },
-    {
-      relativePath: '.oma/templates/feature/with-background.feature.md',
-      content: loadAssetText(catalog, 'oma/templates/feature/with-background'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/feature/with-background',
-    },
-    {
-      relativePath: '.oma/templates/feature/with-omissions-note.feature.md',
-      content: loadAssetText(catalog, 'oma/templates/feature/with-omissions-note'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/feature/with-omissions-note',
-    },
-    {
-      relativePath: '.oma/templates/payload/README.md',
-      content: loadAssetText(catalog, 'oma/templates/payload/README'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/payload/README',
-    },
-    {
-      relativePath: '.oma/templates/payload/json-body.md',
-      content: loadAssetText(catalog, 'oma/templates/payload/json-body'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/payload/json-body',
-    },
-    {
-      relativePath: '.oma/templates/payload/property-file.md',
-      content: loadAssetText(catalog, 'oma/templates/payload/property-file'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/payload/property-file',
-    },
-    {
-      relativePath: '.oma/templates/payload/minimal-fixture.md',
-      content: loadAssetText(catalog, 'oma/templates/payload/minimal-fixture'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/payload/minimal-fixture',
-    },
-    {
       relativePath: '.oma/templates/scan/state-contract.json',
       content: loadAssetText(catalog, 'oma/templates/scan/state-contract'),
       generatedBy: 'asset',
@@ -204,60 +140,16 @@ export function planMaterializedFiles(
       assetKey: 'oma/templates/scan/scan-summary',
     },
     {
-      relativePath: '.oma/templates/plan/state-contract.json',
-      content: loadAssetText(catalog, 'oma/templates/plan/state-contract'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/plan/state-contract',
-    },
-    {
-      relativePath: '.oma/templates/plan/plan-summary.md',
-      content: loadAssetText(catalog, 'oma/templates/plan/plan-summary'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/plan/plan-summary',
-    },
-    {
-      relativePath: '.oma/templates/write/state-contract.json',
-      content: loadAssetText(catalog, 'oma/templates/write/state-contract'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/write/state-contract',
-    },
-    {
-      relativePath: '.oma/templates/write/write-summary.md',
-      content: loadAssetText(catalog, 'oma/templates/write/write-summary'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/write/write-summary',
-    },
-    {
-      relativePath: '.oma/templates/validate/state-contract.json',
-      content: loadAssetText(catalog, 'oma/templates/validate/state-contract'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/validate/state-contract',
-    },
-    {
-      relativePath: '.oma/templates/validate/validate-summary.md',
-      content: loadAssetText(catalog, 'oma/templates/validate/validate-summary'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/validate/validate-summary',
-    },
-    {
-      relativePath: '.oma/templates/promote/state-contract.json',
-      content: loadAssetText(catalog, 'oma/templates/promote/state-contract'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/promote/state-contract',
-    },
-    {
-      relativePath: '.oma/templates/promote/promote-summary.md',
-      content: loadAssetText(catalog, 'oma/templates/promote/promote-summary'),
-      generatedBy: 'asset',
-      assetKey: 'oma/templates/promote/promote-summary',
-    },
-    {
       relativePath: '.oma/runtime/shared/version.json',
-      content: `${JSON.stringify({
-        schemaVersion: 1,
-        packageName: packageSurface.packageName,
-        packageVersion: packageSurface.packageVersion,
-      }, null, 2)}\n`,
+      content: `${JSON.stringify(
+        {
+          schemaVersion: 1,
+          packageName: packageSurface.packageName,
+          packageVersion: packageSurface.packageVersion,
+        },
+        null,
+        2,
+      )}\n`,
       generatedBy: 'runtime',
     },
     {
@@ -265,31 +157,19 @@ export function planMaterializedFiles(
       content: `${JSON.stringify(createProjectModeRecord(projectRoot, classification, classifiedAt), null, 2)}\n`,
       generatedBy: 'runtime',
     },
+    {
+      relativePath: '.opencode/commands/pact-scan.md',
+      content: loadAssetText(catalog, 'commands/pact-scan'),
+      generatedBy: 'asset',
+      assetKey: 'commands/pact-scan',
+    },
+    {
+      relativePath: '.opencode/skills/pact-scan-workflow/SKILL.md',
+      content: loadAssetText(catalog, 'opencode/skills/pact-scan-workflow'),
+      generatedBy: 'asset',
+      assetKey: 'opencode/skills/pact-scan-workflow',
+    },
   ];
-
-  for (const commandId of COMMAND_IDS) {
-    const assetKey = `commands/${commandId}`;
-    plannedFiles.push({
-      relativePath: `.opencode/commands/${commandId}.md`,
-      content: loadAssetText(catalog, assetKey),
-      generatedBy: 'asset',
-      assetKey,
-    });
-  }
-
-  for (const workflowSkillId of WORKFLOW_SKILL_IDS) {
-    const assetKey = `opencode/skills/${workflowSkillId}`;
-    plannedFiles.push({
-      relativePath: `.opencode/skills/${workflowSkillId}/SKILL.md`,
-      content: loadAssetText(catalog, assetKey),
-      generatedBy: 'asset',
-      assetKey,
-    });
-  }
-
-  plannedFiles.push(...planCapabilityBundleFiles(catalog));
-
-  return plannedFiles;
 }
 
 function writeOwnedFile(projectRoot: string, file: PlannedFile): OwnedFileRecord {
@@ -310,7 +190,7 @@ function writeOwnedFile(projectRoot: string, file: PlannedFile): OwnedFileRecord
       throw new PackageSurfaceError('install-path-conflict', 'A pack-managed path already exists with different content.', {
         path: absolutePath,
         relativePath: file.relativePath,
-        nextStep: 'Run `npx oh-my-akitagpb doctor` before retrying the install.',
+        nextStep: 'Run `npx oh-my-pactgpb doctor` before retrying the install.',
       });
     }
   } else {
@@ -354,8 +234,8 @@ export function materializeFreshInstall(
       packageName: packageSurface.packageName,
       packageVersion: packageSurface.packageVersion,
       instructions: MANAGED_INSTRUCTION_PATHS,
-      commands: COMMAND_IDS.map((commandId) => `.opencode/commands/${commandId}.md`),
-      skills: WORKFLOW_SKILL_IDS.map((workflowSkillId) => `.opencode/skills/${workflowSkillId}/SKILL.md`),
+      commands: ['.opencode/commands/pact-scan.md'],
+      skills: ['.opencode/skills/pact-scan-workflow/SKILL.md'],
     }),
     applyManagedGitignoreBlock(path.join(projectRoot, '.gitignore')),
   ].map((result) => toManagedSurfaceRecord(result));

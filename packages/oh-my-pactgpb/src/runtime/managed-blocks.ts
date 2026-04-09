@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 
 import { PackageSurfaceError } from './asset-catalog.js';
 
-export const AGENTS_MANAGED_BLOCK_ID = 'oh-my-akitagpb';
+export const AGENTS_MANAGED_BLOCK_ID = 'oh-my-pactgpb';
 
 const REQUIRED_OPENCODE_MANAGED_INSTRUCTIONS = [
   'AGENTS.md',
@@ -133,12 +133,12 @@ export function renderManagedAgentsBlock(packageName: string, packageVersion: st
   const endMarker = createAgentsEndMarker();
   const lines = [
     beginMarker,
-    '# Oh My AkitaGPB bootstrap',
+    '# Oh My PactGPB bootstrap',
     '',
     `Installed from \`${packageName}@${packageVersion}\`.`,
     '',
     'Pack-owned runtime lives under `.oma/` and `.opencode/`.',
-    'Use `npx oh-my-akitagpb update` to refresh managed surfaces and `npx oh-my-akitagpb doctor` to inspect conflicts.',
+    'Use `npx oh-my-pactgpb update` to refresh managed surfaces and `npx oh-my-pactgpb doctor` to inspect conflicts.',
     '',
     'Available commands:',
     ...commands.map((command) => `- \`/${command}\``),
@@ -176,13 +176,13 @@ function buildManagedAgentsContent(
 
   if (inspection.state === 'symlink') {
     throw new PackageSurfaceError('agents-managed-block-symlink', 'AGENTS.md is a symlink, so ownership is unsafe.', {
-      nextStep: 'Run `npx oh-my-akitagpb doctor` after replacing the symlink with a normal file.',
+      nextStep: 'Run `npx oh-my-pactgpb doctor` after replacing the symlink with a normal file.',
     });
   }
 
   if (inspection.state === 'malformed') {
-    throw new PackageSurfaceError('agents-managed-block-malformed', 'AGENTS.md contains malformed oh-my-akitagpb managed markers.', {
-      nextStep: 'Run `npx oh-my-akitagpb doctor` to inspect and repair the managed surface safely.',
+    throw new PackageSurfaceError('agents-managed-block-malformed', 'AGENTS.md contains malformed oh-my-pactgpb managed markers.', {
+      nextStep: 'Run `npx oh-my-pactgpb doctor` to inspect and repair the managed surface safely.',
     });
   }
 
@@ -195,7 +195,7 @@ export function renderManagedAgentsFileContent(currentContent: string, packageNa
   const inspection = inspectAgentsContent(currentContent);
   if (inspection.state !== 'managed') {
     throw new PackageSurfaceError('agents-managed-block-conflict', 'AGENTS.md is not in a managed state, so update cannot safely rewrite it.', {
-      nextStep: 'Run `npx oh-my-akitagpb doctor` to inspect and repair the managed surface safely.',
+      nextStep: 'Run `npx oh-my-pactgpb doctor` to inspect and repair the managed surface safely.',
     });
   }
 
@@ -284,7 +284,7 @@ function buildManagedOpencodeContent(inspection: ManagedSurfaceInspection, paylo
     const parsed = JSON.parse(inspection.content ?? '{}');
     if (!isPlainObject(parsed)) {
       throw new PackageSurfaceError('opencode-config-malformed', 'opencode.json contains malformed managed wiring.', {
-        nextStep: 'Run `npx oh-my-akitagpb doctor` to inspect the config safely.',
+        nextStep: 'Run `npx oh-my-pactgpb doctor` to inspect the config safely.',
       });
     }
     document = parsed;
@@ -294,7 +294,7 @@ function buildManagedOpencodeContent(inspection: ManagedSurfaceInspection, paylo
     });
   } else if (inspection.state === 'malformed') {
     throw new PackageSurfaceError('opencode-config-malformed', 'opencode.json is not valid JSON.', {
-      nextStep: 'Fix the JSON or run `npx oh-my-akitagpb doctor` before reinstalling.',
+      nextStep: 'Fix the JSON or run `npx oh-my-pactgpb doctor` before reinstalling.',
     });
   } else {
     throw new PackageSurfaceError('opencode-config-conflict', 'opencode.json already exists without the pack-managed namespace.', {
@@ -311,7 +311,7 @@ export function renderManagedOpencodeContent(currentContent: string, payload: Ma
   const inspection = inspectOpencodeContent(currentContent);
   if (inspection.state !== 'managed') {
     throw new PackageSurfaceError('opencode-config-conflict', 'opencode.json is not in a managed state, so update cannot safely rewrite it.', {
-      nextStep: 'Run `npx oh-my-akitagpb doctor` to inspect the config safely.',
+      nextStep: 'Run `npx oh-my-pactgpb doctor` to inspect the config safely.',
     });
   }
 

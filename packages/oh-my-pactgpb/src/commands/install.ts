@@ -59,7 +59,7 @@ export function executeInstallCommand(options: ExecuteInstallOptions): CliResult
       options,
       `install-${agentsInspection.state}-agents`,
       'AGENTS.md cannot be safely claimed for pack-managed wiring during install.',
-      'Move the conflicting file aside, clear it, or run `npx oh-my-akitagpb doctor` before retrying.',
+      'Move the conflicting file aside, clear it, or run `npx oh-my-pactgpb doctor` before retrying.',
       {
         classification: 'blocked',
         path: path.join(options.cwd, 'AGENTS.md'),
@@ -75,7 +75,7 @@ export function executeInstallCommand(options: ExecuteInstallOptions): CliResult
       options,
       `install-${opencodeInspection.state}-opencode`,
       'opencode.json cannot be safely claimed for pack-managed wiring during install.',
-      'Move the conflicting file aside, clear it, or run `npx oh-my-akitagpb doctor` before retrying.',
+      'Move the conflicting file aside, clear it, or run `npx oh-my-pactgpb doctor` before retrying.',
       {
         classification: 'blocked',
         path: path.join(options.cwd, 'opencode.json'),
@@ -110,7 +110,7 @@ export function executeInstallCommand(options: ExecuteInstallOptions): CliResult
       availableSubcommands: ['install', 'update', 'doctor'],
       assetCatalogRoot: options.assetCatalog.assetsRoot,
       assetCatalogEntries: Object.keys(options.assetCatalog.entries),
-      nextStep: 'Open OpenCode in this repo and run `/akita-scan`.',
+      nextStep: 'Open OpenCode in this repo and run `/pact-scan`.',
       details: {
         classification: 'fresh',
         projectMode: compatibility.projectMode.mode,
@@ -126,7 +126,7 @@ export function executeInstallCommand(options: ExecuteInstallOptions): CliResult
         options,
         error.code,
         error.message,
-        error.details?.nextStep ?? 'Run `npx oh-my-akitagpb doctor` before retrying.',
+        error.details?.nextStep ?? 'Run `npx oh-my-pactgpb doctor` before retrying.',
         {
           classification: 'blocked',
           ...error.details,

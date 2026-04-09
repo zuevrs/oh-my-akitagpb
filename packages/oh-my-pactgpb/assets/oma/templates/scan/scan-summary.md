@@ -1,41 +1,45 @@
-# Сводка scan
+# Pact provider scan summary
 
-Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние scan живёт в JSON-файлах под `.oma/state/shared/scan/`.
+This file is only a concise summary. Canonical machine-readable scan state lives in JSON under `.oma/state/shared/scan/`.
 
-## Канонические JSON-файлы
+## Canonical JSON files
 
 - `scan-state.json`
 
-## Напоминания по redaction
+## Redaction reminder
 
-Не включайте секреты, credentials, токены, raw auth headers или machine-local values.
+Do not include secrets, credentials, tokens, raw auth headers, or machine-local values.
 
-## Сводка
+## Summary
 
-### Trigger surfaces
-- REST / HTTP:
-- Messaging / broker:
-- Schedulers / batch / CLI entrypoints:
-- Files / documents / exports:
-- Other test-significant entrypoints:
+### Provider under contract
+- Provider candidate:
+- Why this provider is the best fit:
+- Pact relevance verdict:
 
-### Contract evidence
-- OpenAPI:
-- AsyncAPI:
-- Code-first contracts / schemas / DTOs:
-- Existing tests / feature files / prior art:
-- Notes:
+### Verification evidence found
+- Build dependencies (Maven/Gradle):
+- Provider verification tests/annotations:
+- Existing verification setup:
+- Prior-art integration tests worth reusing:
 
-### Target candidates
+### Pact artifact source
+- Local pact files:
+- Broker-related config/env/properties/scripts:
+- Expected artifact source verdict: `local` | `broker` | `unclear`
+
+### Provider state readiness
+- Existing provider state hooks:
+- State setup fixtures/helpers:
+- Notable gaps:
+
+### HTTP provider surface
+- Controllers / request mappings:
+- DTOs / serializers / payload models:
+- Notes on likely contract surface:
+
+### Main blockers
 - 
 
-### Runtime profile
+### Why Pact is relevant or not
 - 
-
-### Flow candidates
-- 
-
-### Assertion opportunities
-- Strongest evidence surfaces:
-- Capability-fit notes:
-- Gaps / blockers:

@@ -78,7 +78,7 @@ function assessInitializedProject(
         projectMode,
         'fresh-install-ready',
         'This repository is ready for a first bootstrap install.',
-        'Run `npx oh-my-akitagpb install` to materialize the managed bootstrap surface.',
+        'Run `npx oh-my-pactgpb install` to materialize the managed bootstrap surface.',
       );
     }
 
@@ -87,7 +87,7 @@ function assessInitializedProject(
       projectMode,
       'update-not-initialized',
       'Update requires an existing install-state ledger and managed bootstrap surfaces.',
-      'Run `npx oh-my-akitagpb install` first.',
+      'Run `npx oh-my-pactgpb install` first.',
     );
   }
 
@@ -106,7 +106,7 @@ function assessInitializedProject(
         projectMode,
         error.code,
         message,
-        'Run `npx oh-my-akitagpb doctor` before retrying.',
+        'Run `npx oh-my-pactgpb doctor` before retrying.',
         error.details ?? {},
       );
     }
@@ -120,7 +120,7 @@ function assessInitializedProject(
       projectMode,
       'install-already-initialized',
       'This repository already contains pack-managed bootstrap surfaces, so install will not refresh them implicitly.',
-      'Run `npx oh-my-akitagpb update` to refresh or `npx oh-my-akitagpb doctor` to inspect the current state.',
+      'Run `npx oh-my-pactgpb update` to refresh or `npx oh-my-pactgpb doctor` to inspect the current state.',
       {
         installStatePath: installState.installStatePath,
         installedPackageVersion: installState.packageVersion,
@@ -135,7 +135,7 @@ function assessInitializedProject(
     projectMode,
     'update-ready',
     'This repository has a trusted install-state ledger, so update can refresh recorded pack-owned artifacts.',
-    'Run `npx oh-my-akitagpb update` to rematerialize recorded pack-owned surfaces.',
+    'Run `npx oh-my-pactgpb update` to rematerialize recorded pack-owned surfaces.',
     {
       installStatePath: installState.installStatePath,
       installedPackageVersion: installState.packageVersion,

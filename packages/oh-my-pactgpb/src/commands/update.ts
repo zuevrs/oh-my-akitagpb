@@ -95,7 +95,7 @@ export function executeUpdateCommand(options: ExecuteUpdateOptions): CliResult {
         'ok',
         'update-noop',
         'All recorded pack-owned artifacts already match the current package surface.',
-        'Run `npx oh-my-akitagpb doctor` if you expected different bootstrap content.',
+        'Run `npx oh-my-pactgpb doctor` if you expected different bootstrap content.',
         details,
       );
     }
@@ -106,7 +106,7 @@ export function executeUpdateCommand(options: ExecuteUpdateOptions): CliResult {
       'ok',
       'update-complete',
       'Recorded pack-owned artifacts were refreshed successfully.',
-      'Open OpenCode in this repo and run `/akita-scan`.',
+      'Open OpenCode in this repo and run `/pact-scan`.',
       details,
     );
   } catch (error) {
@@ -117,7 +117,7 @@ export function executeUpdateCommand(options: ExecuteUpdateOptions): CliResult {
         'blocked',
         error.code,
         error.message,
-        error.details?.nextStep ?? 'Run `npx oh-my-akitagpb doctor` before retrying.',
+        error.details?.nextStep ?? 'Run `npx oh-my-pactgpb doctor` before retrying.',
         {
           classification: error.code === 'update-ownership-conflict' ? 'conflict' : 'blocked',
           ...error.details,

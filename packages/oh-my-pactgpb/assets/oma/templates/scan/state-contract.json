@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contractId": "akita-scan-state",
+  "contractId": "pact-provider-scan-state",
   "sharedStateBasePath": ".oma/state/shared/scan",
   "installedTemplateBasePath": ".oma/templates/scan",
   "requiredMachineState": [
@@ -10,14 +10,15 @@
       "format": "json",
       "required": true,
       "requiredTopLevelFields": [
-        "contracts",
-        "targetCandidates",
-        "priorArt",
-        "serviceRuntimeProfile",
-        "flowCandidates",
-        "assertionOpportunities"
+        "provider",
+        "relevance",
+        "artifactSource",
+        "verificationEvidence",
+        "providerStates",
+        "httpSurface",
+        "gaps"
       ],
-      "description": "Canonical persisted scan snapshot for the target repo as a system under test. It must keep contract evidence, target candidates, prior art, runtime profile, candidate flows, and assertion opportunities together in one durable JSON file so later phases can reason from persisted repo evidence instead of chat memory."
+      "description": "Canonical persisted scan snapshot for Pact provider verification in the target repo. It must identify the most likely provider under contract, explain why Pact provider verification is relevant or irrelevant, capture where pact artifacts are expected from, summarize verification evidence and provider-state hooks, and make blockers explicit enough for later work to reason honestly from disk state."
     }
   ],
   "summaryState": {
@@ -29,7 +30,7 @@
     "mustBeDerivedFrom": [
       "scan-state"
     ],
-    "description": "Human-readable summary only. Canonical machine state stays in the single JSON file above. The summary should help a human understand trigger surfaces, contract evidence sources, candidate flows, strong assertion surfaces, and capability gaps without becoming the source of truth."
+    "description": "Human-readable Pact scan summary only. Canonical machine state stays in scan-state.json. The summary should help a human quickly see provider identity, evidence sources, artifact source expectations, provider-state readiness, and the major gaps/blockers."
   },
   "redaction": {
     "policyPath": ".oma/runtime/shared/data-handling-policy.json",
@@ -44,12 +45,12 @@
     ],
     "allowedSharedData": [
       "repo structure",
-      "trigger surface hints",
-      "contract evidence",
-      "prior-art paths",
-      "runtime profile observations",
-      "side-effect and evidence surfaces",
-      "capability evidence"
+      "dependency evidence",
+      "test and fixture paths",
+      "Spring HTTP surface hints",
+      "provider-state evidence",
+      "pact artifact source hints",
+      "verification blockers"
     ]
   }
 }

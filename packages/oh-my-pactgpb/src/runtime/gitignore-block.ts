@@ -3,17 +3,17 @@ import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { PackageSurfaceError } from './asset-catalog.js';
 import { hashContent, type ManagedSurfaceInspection } from './managed-blocks.js';
 
-export const GITIGNORE_MANAGED_BLOCK_ID = 'oh-my-akitagpb';
+export const GITIGNORE_MANAGED_BLOCK_ID = 'oh-my-pactgpb';
 
 const DURABLE_SURFACE_UNIGNORE_PATTERNS = [
   '!AGENTS.md',
   '!opencode.json',
   '!.opencode/',
   '!.opencode/commands/',
-  '!.opencode/commands/akita-*.md',
+  '!.opencode/commands/pact-*.md',
   '!.opencode/skills/',
-  '!.opencode/skills/akita-*/',
-  '!.opencode/skills/akita-*/**',
+  '!.opencode/skills/pact-*/',
+  '!.opencode/skills/pact-*/**',
   '!.oma/',
   '!.oma/capability-manifest.json',
   '!.oma/instructions/',
@@ -118,7 +118,7 @@ export function renderManagedGitignoreBlock(): string {
   const endMarker = createGitignoreEndMarker();
   const lines = [
     beginMarker,
-    '# Pack-managed VCS policy for oh-my-akitagpb.',
+    '# Pack-managed VCS policy for oh-my-pactgpb.',
     '# Commit durable pack surfaces and shared workflow state.',
     '# Ignore only local machine state, local execution reports, and generated staging artifacts.',
     ...DURABLE_SURFACE_UNIGNORE_PATTERNS,
@@ -162,7 +162,7 @@ function buildManagedGitignoreContent(inspection: ManagedSurfaceInspection): str
     });
   }
 
-  throw new PackageSurfaceError('gitignore-managed-block-malformed', '.gitignore contains malformed oh-my-akitagpb managed markers.', {
+  throw new PackageSurfaceError('gitignore-managed-block-malformed', '.gitignore contains malformed oh-my-pactgpb managed markers.', {
     nextStep: 'Repair or remove the malformed managed block before running install or update again.',
   });
 }

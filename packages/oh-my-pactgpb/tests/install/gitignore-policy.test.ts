@@ -100,32 +100,25 @@ describe('gitignore policy materialization', () => {
     expect(existsSync(gitignorePath)).toBe(true);
     expect(installState.managedSurfaces.some((surface) => surface.relativePath === '.gitignore')).toBe(true);
     expect(gitignoreContent).toContain('.oma/\n.opencode/\n*.md\n*.json\ncustom-user-ignore/\n');
-    expect(gitignoreContent).toContain('# oh-my-akitagpb:begin');
-    expect(gitignoreContent).toContain('# oh-my-akitagpb:end');
+    expect(gitignoreContent).toContain('# oh-my-pactgpb:begin');
+    expect(gitignoreContent).toContain('# oh-my-pactgpb:end');
     expect(gitignoreContent).toContain('.oma/install-state.json');
     expect(gitignoreContent).toContain('.oma/generated/');
     expect(gitignoreContent).toContain('!.oma/state/shared/**');
 
     ensureFile(fixture.rootDir, '.oma/state/shared/scan/scan-state.json', '{"scan":true}\n');
-    ensureFile(fixture.rootDir, '.oma/state/shared/plan/plan-state.json', '{"plan":true}\n');
-    ensureFile(fixture.rootDir, '.oma/state/shared/write/write-report.json', '{"write":true}\n');
-    ensureFile(fixture.rootDir, '.oma/state/local/validate/validation-report.json', '{"validate":true}\n');
-    ensureFile(fixture.rootDir, '.oma/state/local/promote/promote-report.json', '{"promote":true}\n');
+    ensureFile(fixture.rootDir, '.oma/state/local/doctor/debug.json', '{"doctor":true}\n');
     ensureFile(fixture.rootDir, '.oma/generated/features/example.feature', 'Feature: staged\n');
-    ensureFile(fixture.rootDir, '.oma/generated/payloads/example.json', '{}\n');
-    ensureFile(fixture.rootDir, '.oma/generated/fixtures/example.txt', 'fixture\n');
 
     for (const relativePath of [
       'AGENTS.md',
       'opencode.json',
-      '.opencode/commands/akita-write.md',
-      '.opencode/skills/akita-write-workflow/SKILL.md',
+      '.opencode/commands/pact-scan.md',
+      '.opencode/skills/pact-scan-workflow/SKILL.md',
       '.oma/capability-manifest.json',
       '.oma/runtime/shared/version.json',
       '.oma/runtime/shared/data-handling-policy.json',
       '.oma/state/shared/scan/scan-state.json',
-      '.oma/state/shared/plan/plan-state.json',
-      '.oma/state/shared/write/write-report.json',
     ]) {
       expect(isIgnored(fixture.rootDir, relativePath), relativePath).toBe(false);
     }
@@ -133,11 +126,8 @@ describe('gitignore policy materialization', () => {
     for (const relativePath of [
       '.oma/install-state.json',
       '.oma/runtime/local/project-mode.json',
-      '.oma/state/local/validate/validation-report.json',
-      '.oma/state/local/promote/promote-report.json',
+      '.oma/state/local/doctor/debug.json',
       '.oma/generated/features/example.feature',
-      '.oma/generated/payloads/example.json',
-      '.oma/generated/fixtures/example.txt',
     ]) {
       expect(isIgnored(fixture.rootDir, relativePath), relativePath).toBe(true);
     }
@@ -164,7 +154,7 @@ describe('gitignore policy materialization', () => {
     });
     expect(result.details?.changedPaths ?? '').toContain('.gitignore');
     expect(gitignoreContent).toContain('.oma/\ncustom-user-ignore/\n');
-    expect(gitignoreContent).toContain('# oh-my-akitagpb:begin');
+    expect(gitignoreContent).toContain('# oh-my-pactgpb:begin');
     expect(gitignoreContent).toContain('.oma/generated/');
     expect(isIgnored(fixture.rootDir, 'AGENTS.md')).toBe(false);
     expect(isIgnored(fixture.rootDir, '.oma/install-state.json')).toBe(true);
@@ -175,7 +165,7 @@ describe('gitignore policy materialization', () => {
     const gitignorePath = path.join(fixture.rootDir, '.gitignore');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
-    writeFileSync(gitignorePath, '# oh-my-akitagpb:begin\n.oma/generated/\n', 'utf8');
+    writeFileSync(gitignorePath, '# oh-my-pactgpb:begin\n.oma/generated/\n', 'utf8');
 
     const execution = invokeInstalledCli(fixture.rootDir, ['update']);
     const result = parseJsonOutput<CliResult>(execution);
@@ -190,6 +180,6 @@ describe('gitignore policy materialization', () => {
       }),
     });
     expect(result.details?.refusedPaths ?? '').toContain('.gitignore');
-    expect(readFileSync(gitignorePath, 'utf8')).toBe('# oh-my-akitagpb:begin\n.oma/generated/\n');
+    expect(readFileSync(gitignorePath, 'utf8')).toBe('# oh-my-pactgpb:begin\n.oma/generated/\n');
   });
 });

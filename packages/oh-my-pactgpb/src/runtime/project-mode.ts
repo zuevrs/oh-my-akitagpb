@@ -31,7 +31,7 @@ function hasNamespacedEntries(dirPath: string): boolean {
     return false;
   }
 
-  return readdirSync(dirPath).some((entry) => entry.startsWith('akita-'));
+  return readdirSync(dirPath).some((entry) => entry.startsWith('pact-'));
 }
 
 export function classifyProjectMode(projectRoot: string): ProjectModeClassification {
@@ -50,11 +50,11 @@ export function classifyProjectMode(projectRoot: string): ProjectModeClassificat
   }
 
   if (hasNamespacedEntries(path.join(projectRoot, '.opencode', 'commands'))) {
-    reasons.push('.opencode/commands/akita-*');
+    reasons.push('.opencode/commands/pact-*');
   }
 
   if (hasNamespacedEntries(path.join(projectRoot, '.opencode', 'skills'))) {
-    reasons.push('.opencode/skills/akita-*');
+    reasons.push('.opencode/skills/pact-*');
   }
 
   return {

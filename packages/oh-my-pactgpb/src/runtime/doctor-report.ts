@@ -258,10 +258,10 @@ function blockedNextStepForFinding(finding: DoctorFinding): string {
   }
 
   if (finding.path) {
-    return `Repair or move aside \`${finding.path}\`, then rerun \`npx oh-my-akitagpb doctor\`.`;
+    return `Repair or move aside \`${finding.path}\`, then rerun \`npx oh-my-pactgpb doctor\`.`;
   }
 
-  return 'Inspect the findings in the doctor report, repair the conflicting state, then rerun `npx oh-my-akitagpb doctor`.';
+  return 'Inspect the findings in the doctor report, repair the conflicting state, then rerun `npx oh-my-pactgpb doctor`.';
 }
 
 function buildFreshReport(projectRoot: string, packageSurface: PackageSurface, findings: DoctorFinding[], draftBase: Omit<DoctorReportDraft, 'status' | 'reason' | 'summary' | 'nextStep' | 'findings'>): DoctorReportDraft {
@@ -269,7 +269,7 @@ function buildFreshReport(projectRoot: string, packageSurface: PackageSurface, f
     code: 'install-required',
     severity: 'info',
     message: 'This repository has no pack-managed bootstrap state yet.',
-    nextStep: 'Run `npx oh-my-akitagpb install` to materialize the managed bootstrap surface.',
+    nextStep: 'Run `npx oh-my-pactgpb install` to materialize the managed bootstrap surface.',
   });
 
   return {
@@ -277,7 +277,7 @@ function buildFreshReport(projectRoot: string, packageSurface: PackageSurface, f
     status: 'migrate-required',
     reason: 'install-required',
     summary: 'This repository is ready for a first bootstrap install.',
-    nextStep: 'Run `npx oh-my-akitagpb install` to materialize the managed bootstrap surface.',
+    nextStep: 'Run `npx oh-my-pactgpb install` to materialize the managed bootstrap surface.',
     findings,
   };
 }
@@ -339,7 +339,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
         severity: 'error',
         message: `${relativePath} is not in a pack-managed state, so install/update cannot safely claim it.`,
         path: relativePath,
-        nextStep: `Repair or move aside \`${relativePath}\` until it becomes safe to manage, then rerun \`npx oh-my-akitagpb doctor\`.`,
+        nextStep: `Repair or move aside \`${relativePath}\` until it becomes safe to manage, then rerun \`npx oh-my-pactgpb doctor\`.`,
       });
     }
   }
@@ -352,7 +352,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
         severity: 'error',
         message: 'Partial .oma state exists without a trusted install-state ledger.',
         path: '.oma',
-        nextStep: 'Move aside the partial `.oma` state before running `npx oh-my-akitagpb install`.',
+        nextStep: 'Move aside the partial `.oma` state before running `npx oh-my-pactgpb install`.',
       });
     }
 
@@ -363,7 +363,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
         status: 'blocked',
         reason: firstConflict?.code ?? 'ownership-conflict',
         summary: 'Bootstrap state is not safe to install because ownership is ambiguous.',
-        nextStep: firstConflict ? blockedNextStepForFinding(firstConflict) : 'Repair the conflicting ownership state, then rerun `npx oh-my-akitagpb doctor`.',
+        nextStep: firstConflict ? blockedNextStepForFinding(firstConflict) : 'Repair the conflicting ownership state, then rerun `npx oh-my-pactgpb doctor`.',
         findings,
       };
     }
@@ -387,7 +387,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
       nextStep:
         code === 'install-state-missing'
           ? 'Restore `.oma/install-state.json` from a trusted copy or remove the partial bootstrap surfaces before reinstalling.'
-          : 'Repair `.oma/install-state.json` so it contains valid ownership metadata, then rerun `npx oh-my-akitagpb doctor`.',
+          : 'Repair `.oma/install-state.json` so it contains valid ownership metadata, then rerun `npx oh-my-pactgpb doctor`.',
     };
     findings.push(installStateFinding);
 
@@ -451,7 +451,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
         severity: 'error',
         message: `${record.relativePath} is missing or no longer a normal file.`,
         path: record.relativePath,
-        nextStep: `Restore \`${record.relativePath}\` from a trusted copy before running \`npx oh-my-akitagpb update\`.`,
+        nextStep: `Restore \`${record.relativePath}\` from a trusted copy before running \`npx oh-my-pactgpb update\`.`,
       });
       continue;
     }
@@ -476,7 +476,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
         severity: 'error',
         message: `${record.relativePath} is no longer in a safely managed state (${inspection.ownershipState}).`,
         path: record.relativePath,
-        nextStep: `Repair or move aside \`${record.relativePath}\` until it returns to a pack-managed shape, then rerun \`npx oh-my-akitagpb doctor\`.`,
+        nextStep: `Repair or move aside \`${record.relativePath}\` until it returns to a pack-managed shape, then rerun \`npx oh-my-pactgpb doctor\`.`,
       });
       continue;
     }
@@ -511,7 +511,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
       status: 'migrate-required',
       reason: 'update-recommended',
       summary: 'Bootstrap state is trusted, but explicit update work is needed to reconcile drift.',
-      nextStep: 'Run `npx oh-my-akitagpb update` to refresh the recorded pack-owned surfaces.',
+      nextStep: 'Run `npx oh-my-pactgpb update` to refresh the recorded pack-owned surfaces.',
       findings,
     };
   }
@@ -527,7 +527,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
     status: 'compatible',
     reason: 'doctor-compatible',
     summary: 'Bootstrap state is compatible with the current package and ownership ledger.',
-    nextStep: 'No action is required. Rerun `npx oh-my-akitagpb doctor` after future manual edits or package upgrades.',
+    nextStep: 'No action is required. Rerun `npx oh-my-pactgpb doctor` after future manual edits or package upgrades.',
     findings,
   };
 }

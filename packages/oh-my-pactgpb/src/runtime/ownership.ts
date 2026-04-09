@@ -353,7 +353,7 @@ export function applyOwnershipSafeUpdate(
       refusedPaths: joinPaths(refusedPaths),
       changedPaths: joinPaths(changedPaths),
       unchangedPaths: joinPaths(unchangedPaths),
-      nextStep: 'Run `npx oh-my-akitagpb doctor` before retrying the update.',
+      nextStep: 'Run `npx oh-my-pactgpb doctor` before retrying the update.',
     });
   }
 
