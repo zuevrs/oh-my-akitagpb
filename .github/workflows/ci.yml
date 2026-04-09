@@ -7,11 +7,8 @@ on:
       - 'feat/**'
       - 'fix/**'
       - 'chore/**'
+      - 'feature/**'
   pull_request:
-
-env:
-  PACKAGE_NAME: oh-my-akitagpb
-  PACKAGE_DIR: packages/oh-my-akitagpb
 
 jobs:
   verify:
@@ -19,6 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        package-name:
+          - oh-my-akitagpb
+          - oh-my-pactgpb
         node-version:
           - 20
           - 24
@@ -37,13 +37,19 @@ jobs:
         run: npm ci
 
       - name: Build package
-        run: npm run build --workspace $PACKAGE_NAME
+        run: npm run build --workspace ${{ matrix.package-name }}
 
       - name: Run tests
-        run: npm test --workspace $PACKAGE_NAME
+        run: npm test --workspace ${{ matrix.package-name }}
 
   smoke-pack-install:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package-name:
+          - oh-my-akitagpb
+          - oh-my-pactgpb
 
     steps:
       - name: Checkout
@@ -59,4 +65,4 @@ jobs:
         run: npm ci
 
       - name: Run packed install smoke check
-        run: npm run smoke:pack-install --workspace $PACKAGE_NAME
+        run: npm run smoke:pack-install --workspace ${{ matrix.package-name }}
