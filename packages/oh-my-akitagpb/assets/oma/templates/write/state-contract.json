@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "contractId": "akita-write-state",
-  "sharedStateBasePath": ".oma/state/shared/write",
-  "installedTemplateBasePath": ".oma/templates/write",
+  "sharedStateBasePath": ".oma/packs/oh-my-akitagpb/state/shared/write",
+  "installedTemplateBasePath": ".oma/packs/oh-my-akitagpb/templates/write",
   "planPrerequisites": {
-    "contractPath": ".oma/templates/plan/state-contract.json",
-    "sharedStateBasePath": ".oma/state/shared/plan",
+    "contractPath": ".oma/packs/oh-my-akitagpb/templates/plan/state-contract.json",
+    "sharedStateBasePath": ".oma/packs/oh-my-akitagpb/state/shared/plan",
     "requiredStatePaths": [
-      ".oma/state/shared/plan/approved-plan.json"
+      ".oma/packs/oh-my-akitagpb/state/shared/plan/approved-plan.json"
     ],
     "writerMustReadFromDisk": true,
     "description": "akita-write must consume the persisted approved plan snapshot from disk before it decides what the supported subset can materialize."
@@ -15,7 +15,7 @@
   "requiredMachineState": [
     {
       "id": "write-report",
-      "path": ".oma/state/shared/write/write-report.json",
+      "path": ".oma/packs/oh-my-akitagpb/state/shared/write/write-report.json",
       "format": "json",
       "required": true,
       "requiredTopLevelFields": [
@@ -31,11 +31,11 @@
     }
   ],
   "generatedArtifactPolicy": {
-    "safeOutputBasePath": ".oma/generated",
+    "safeOutputBasePath": ".oma/packs/oh-my-akitagpb/generated",
     "allowedOutputRoots": [
-      ".oma/generated/features",
-      ".oma/generated/payloads",
-      ".oma/generated/fixtures"
+      ".oma/packs/oh-my-akitagpb/generated/features",
+      ".oma/packs/oh-my-akitagpb/generated/payloads",
+      ".oma/packs/oh-my-akitagpb/generated/fixtures"
     ],
     "approvedPlanProvidesArtifactIntentOnly": true,
     "writerChoosesSafeOutputPath": true,
@@ -48,9 +48,9 @@
     "description": "akita-write must treat approved-plan as artifact intent only and map each new file into the pack-owned generated namespace above instead of writing directly to live repo destinations."
   },
   "ownership": {
-    "rulePath": ".oma/instructions/rules/respect-pack-ownership.md",
+    "rulePath": ".oma/packs/oh-my-akitagpb/instructions/rules/respect-pack-ownership.md",
     "packManagedStatePaths": [
-      ".oma/state/shared/write/write-report.json"
+      ".oma/packs/oh-my-akitagpb/state/shared/write/write-report.json"
     ],
     "canonicalNewOrPackManagedWritesOnly": true,
     "allowOverwriteOfPackManagedPathsOnly": true,
@@ -58,7 +58,7 @@
     "description": "akita-write may update the pack-managed write state paths above and may create new repo artifacts only under the allowed generated namespace. It must not overwrite non-pack-managed files or publish outside those contract-defined destinations."
   },
   "writeReport": {
-    "path": ".oma/state/shared/write/write-report.json",
+    "path": ".oma/packs/oh-my-akitagpb/state/shared/write/write-report.json",
     "allowedVerdicts": [
       "ok",
       "partial",
@@ -104,8 +104,8 @@
     }
   ],
   "summaryState": {
-    "path": ".oma/state/shared/write/write-summary.md",
-    "templatePath": ".oma/templates/write/write-summary.md",
+    "path": ".oma/packs/oh-my-akitagpb/state/shared/write/write-summary.md",
+    "templatePath": ".oma/packs/oh-my-akitagpb/templates/write/write-summary.md",
     "format": "markdown",
     "required": false,
     "canonical": false,
@@ -115,7 +115,7 @@
     "description": "Human-readable write summary only. Canonical machine state stays in the single JSON file above."
   },
   "redaction": {
-    "policyPath": ".oma/runtime/shared/data-handling-policy.json",
+    "policyPath": ".oma/packs/oh-my-akitagpb/runtime/shared/data-handling-policy.json",
     "redactionRequired": true,
     "markdownIsSummaryOnly": true,
     "forbiddenSharedData": [

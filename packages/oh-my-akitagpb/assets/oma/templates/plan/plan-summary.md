@@ -1,6 +1,6 @@
 # Сводка plan
 
-Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние plan живёт в JSON-файлах под `.oma/state/shared/plan/`.
+Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние plan живёт в JSON-файлах под `.oma/packs/oh-my-akitagpb/state/shared/plan/`.
 
 ## Канонические JSON-файлы
 

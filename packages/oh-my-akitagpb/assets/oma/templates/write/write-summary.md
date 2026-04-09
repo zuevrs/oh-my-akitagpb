@@ -1,6 +1,6 @@
 # Сводка записи
 
-Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние записи живёт в JSON-файлах под `.oma/state/shared/write/`.
+Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние записи живёт в JSON-файлах под `.oma/packs/oh-my-akitagpb/state/shared/write/`.
 
 ## Канонические JSON-файлы
 
@@ -8,8 +8,8 @@
 
 ## Напоминания про ownership
 
-- Обновляйте только pack-managed write state под `.oma/state/shared/write/`.
-- Создавайте новые generated артефакты только внутри `.oma/generated/{features,payloads,fixtures}/`.
+- Обновляйте только pack-managed write state под `.oma/packs/oh-my-akitagpb/state/shared/write/`.
+- Создавайте новые generated артефакты только внутри `.oma/packs/oh-my-akitagpb/generated/{features,payloads,fixtures}/`.
 - Не считайте generated путь live truth; для копирования в рабочие директории используйте явный `/akita-promote`.
 - Не перезаписывайте файлы с неясным ownership.
 

@@ -14,26 +14,26 @@ Use this skill only for the installed `/akita-scan` flow.
 ## Required reads
 
 Read these before reasoning:
-- `.oma/templates/scan/state-contract.json`
-- `.oma/capability-manifest.json`
-- `.oma/runtime/shared/data-handling-policy.json`
-- `.oma/instructions/rules/*.md`
+- `.oma/packs/oh-my-akitagpb/templates/scan/state-contract.json`
+- `.oma/packs/oh-my-akitagpb/capability-manifest.json`
+- `.oma/packs/oh-my-akitagpb/runtime/shared/data-handling-policy.json`
+- `.oma/packs/oh-my-akitagpb/instructions/rules/*.md`
 - every manifest-listed `activeCapabilityBundles[*].skillPath`
 - every manifest-listed `references.*` file for those bundles
 
 ## Required writes
 
 Persist exactly these shared scan outputs:
-- `.oma/state/shared/scan/scan-state.json`
-- optional derived summary: `.oma/state/shared/scan/scan-summary.md`
+- `.oma/packs/oh-my-akitagpb/state/shared/scan/scan-state.json`
+- optional derived summary: `.oma/packs/oh-my-akitagpb/state/shared/scan/scan-summary.md`
 
 ## Procedure
 
-1. Read `.oma/templates/scan/state-contract.json` first and treat it as the canonical persistence contract.
-2. Read `.oma/capability-manifest.json` and resolve every manifest-listed capability bundle plus every manifest-listed `activeCapabilityBundles[*].skillPath` and `references.*` file from disk before reasoning.
+1. Read `.oma/packs/oh-my-akitagpb/templates/scan/state-contract.json` first and treat it as the canonical persistence contract.
+2. Read `.oma/packs/oh-my-akitagpb/capability-manifest.json` and resolve every manifest-listed capability bundle plus every manifest-listed `activeCapabilityBundles[*].skillPath` and `references.*` file from disk before reasoning.
 3. Read the shared data-handling policy and the installed rule files before writing shared state.
 4. Inspect the repo as a system under test. Discover repo-backed trigger surfaces, contract evidence, prior art, runtime profile, flow candidates, and assertion opportunities.
-5. Build a machine-readable evidence map in `.oma/state/shared/scan/scan-state.json` that lets later planning reason honestly about what the system can trigger, what evidence exists, and what side effects can be asserted.
+5. Build a machine-readable evidence map in `.oma/packs/oh-my-akitagpb/state/shared/scan/scan-state.json` that lets later planning reason honestly about what the system can trigger, what evidence exists, and what side effects can be asserted.
 6. Treat OpenAPI and AsyncAPI as first-class contract evidence when present. Also record code-first contracts, DTO or event schemas, feature files, tests, and other repo-backed contract evidence when those are the honest sources.
 7. Do not treat missing OpenAPI or missing AsyncAPI as a special failure mode. When they are absent, continue from repo and code evidence and record the actual contract evidence that exists.
 8. Record target candidates, flow candidates, and assertion opportunities as conclusions drawn from repo evidence plus manifest-listed capability truth. Do not invent a catalog of allowed flow patterns.

@@ -14,36 +14,36 @@ Use this skill only for the installed `/akita-validate` flow.
 ## Required reads
 
 Read these before reasoning:
-- `.oma/templates/validate/state-contract.json`
-- `.oma/templates/write/state-contract.json`
-- `.oma/state/shared/write/write-report.json`
-- `.oma/capability-manifest.json`
-- `.oma/runtime/shared/data-handling-policy.json`
-- `.oma/instructions/rules/explicit-unsupported.md`
+- `.oma/packs/oh-my-akitagpb/templates/validate/state-contract.json`
+- `.oma/packs/oh-my-akitagpb/templates/write/state-contract.json`
+- `.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json`
+- `.oma/packs/oh-my-akitagpb/capability-manifest.json`
+- `.oma/packs/oh-my-akitagpb/runtime/shared/data-handling-policy.json`
+- `.oma/packs/oh-my-akitagpb/instructions/rules/explicit-unsupported.md`
 - every manifest-listed `activeCapabilityBundles[*].skillPath`
 - every manifest-listed `references.*` file for those bundles
 
 ## Required writes
 
 Persist exactly these local validate outputs:
-- `.oma/state/local/validate/validation-report.json`
-- optional derived summary: `.oma/state/local/validate/validate-summary.md`
+- `.oma/packs/oh-my-akitagpb/state/local/validate/validation-report.json`
+- optional derived summary: `.oma/packs/oh-my-akitagpb/state/local/validate/validate-summary.md`
 
 ## Procedure
 
-1. Read `.oma/templates/validate/state-contract.json` first and treat it as the canonical persistence contract.
+1. Read `.oma/packs/oh-my-akitagpb/templates/validate/state-contract.json` first and treat it as the canonical persistence contract.
 2. Read the write-state prerequisites from disk before validating any artifact.
 3. Read the manifest-listed capability bundle surfaces and references from disk before evaluating support coverage. Resolve every manifest-listed `activeCapabilityBundles[*].skillPath` and every required `references.*` file before continuing.
 4. Read the explicit-unsupported rule and the data-handling policy before writing local validation state.
-5. Validate only the artifact set recorded in `.oma/state/shared/write/write-report.json`. Do not validate artifacts outside that bundle or invent missing coverage.
-6. Compare that artifact set against the lineage and capability references recorded in `.oma/state/shared/write/write-report.json` and the active capability truth.
-7. Persist `.oma/state/local/validate/validation-report.json` with explicit `verdict` `pass`, `fail`, or `blocked`; `reviewedArtifacts`; and `findings`.
+5. Validate only the artifact set recorded in `.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json`. Do not validate artifacts outside that bundle or invent missing coverage.
+6. Compare that artifact set against the lineage and capability references recorded in `.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json` and the active capability truth.
+7. Persist `.oma/packs/oh-my-akitagpb/state/local/validate/validation-report.json` with explicit `verdict` `pass`, `fail`, or `blocked`; `reviewedArtifacts`; and `findings`.
 8. Reject unsupported steps, unsupported assertions, and bundle-unknown constructs explicitly, and fail with a `lineage-drift` finding when provenance and artifact contents diverge, instead of silently passing partial coverage.
 
 ## Stop with `blocked` or `needs-review` when
 
 Stop instead of guessing if:
-- `.oma/state/shared/write/write-report.json` is missing
+- `.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json` is missing
 - any manifest-listed bundle file is missing
 - the write-state artifact set is incomplete or cannot be reconciled to provenance
 

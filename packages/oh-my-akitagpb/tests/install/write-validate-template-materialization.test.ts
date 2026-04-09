@@ -58,13 +58,13 @@ describe('write and validate template materialization', () => {
 
   it('materializes the write and validate contract templates on fresh install without claiming unrelated template files', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const userTemplatePath = path.join(fixture.rootDir, '.oma', 'templates', 'user-notes', 'README.md');
+    const userTemplatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'templates', 'user-notes', 'README.md');
     mkdirSync(path.dirname(userTemplatePath), { recursive: true });
     writeFileSync(userTemplatePath, 'user-owned template notes\n', 'utf8');
 
     const execution = invokeInstalledCli(fixture.rootDir, ['install']);
     const result = parseJsonOutput<CliResult>(execution);
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'install-state.json');
     const installState = readJsonFile<InstallState>(installStatePath);
 
     expect(execution.exitCode).toBe(0);
@@ -75,16 +75,16 @@ describe('write and validate template materialization', () => {
     });
 
     for (const relativePath of [
-      '.oma/templates/write/state-contract.json',
-      '.oma/templates/write/write-summary.md',
-      '.oma/templates/validate/state-contract.json',
-      '.oma/templates/validate/validate-summary.md',
+      '.oma/packs/oh-my-akitagpb/templates/write/state-contract.json',
+      '.oma/packs/oh-my-akitagpb/templates/write/write-summary.md',
+      '.oma/packs/oh-my-akitagpb/templates/validate/state-contract.json',
+      '.oma/packs/oh-my-akitagpb/templates/validate/validate-summary.md',
     ]) {
       expect(existsSync(path.join(fixture.rootDir, relativePath)), relativePath).toBe(true);
       expect(installState.ownedFiles.some((file) => file.relativePath === relativePath), relativePath).toBe(true);
     }
 
     expect(readFileSync(userTemplatePath, 'utf8')).toBe('user-owned template notes\n');
-    expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/templates/user-notes/README.md')).toBe(false);
+    expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/packs/oh-my-akitagpb/templates/user-notes/README.md')).toBe(false);
   });
 });

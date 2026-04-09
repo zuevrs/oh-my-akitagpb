@@ -1,6 +1,6 @@
 # Сводка scan
 
-Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние scan живёт в JSON-файлах под `.oma/state/shared/scan/`.
+Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние scan живёт в JSON-файлах под `.oma/packs/oh-my-akitagpb/state/shared/scan/`.
 
 ## Канонические JSON-файлы
 

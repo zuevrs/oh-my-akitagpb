@@ -1,6 +1,6 @@
 # Сводка promote
 
-Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние promote живёт в JSON-файлах под `.oma/state/local/promote/`.
+Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние promote живёт в JSON-файлах под `.oma/packs/oh-my-akitagpb/state/local/promote/`.
 
 ## Канонические JSON-файлы
 
@@ -10,7 +10,7 @@
 
 - Продвигайте только generated артефакты, перечисленные в `write-report.json`.
 - Для каждого артефакта указывайте явный `repo-relative` destination.
-- Копируйте, а не перемещайте: source в `.oma/generated/**` остаётся для traceability.
+- Копируйте, а не перемещайте: source в `.oma/packs/oh-my-akitagpb/generated/**` остаётся для traceability.
 - Не публикуйте в `.oma/`, `.opencode/` и не перезаписывайте существующие файлы.
 
 ## Напоминания по redaction

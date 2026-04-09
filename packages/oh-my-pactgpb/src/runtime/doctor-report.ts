@@ -12,6 +12,7 @@ import {
 } from './layout.js';
 import { readInstallState, resolveInstallStatePath, type InstallState } from './install-state.js';
 import { classifyProjectMode, readProjectModeRecord, resolveProjectModePath } from './project-mode.js';
+import { MANAGED_INSTRUCTION_PATHS } from './materialize-install.js';
 
 export type DoctorStatus = 'compatible' | 'migrate-required' | 'blocked';
 export type DoctorFindingSeverity = 'info' | 'warning' | 'error';
@@ -174,8 +175,23 @@ function inspectManagedSurface(
       };
     }
 
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(inspection.content);
+    } catch {
+      return {
+        kind: 'conflict',
+        ownershipState: 'malformed',
+      };
+    }
+
+    const instructions = parsed && typeof parsed === 'object' && Array.isArray((parsed as { instructions?: unknown }).instructions)
+      ? (parsed as { instructions: unknown[] }).instructions.filter((entry): entry is string => typeof entry === 'string')
+      : [];
+    const hasCurrentPackInstructions = MANAGED_INSTRUCTION_PATHS.every((instructionPath) => instructions.includes(instructionPath));
+
     return {
-      kind: hashContent(inspection.content) === record.sha256 ? 'ok' : 'modified',
+      kind: hasCurrentPackInstructions ? 'ok' : 'modified',
       ownershipState: inspection.state,
     };
   }
@@ -450,7 +466,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
       code: 'install-state-package-mismatch',
       severity: 'error',
       message: 'The install-state ledger belongs to a different bootstrap package.',
-      path: '.oma/install-state.json',
+      path: INSTALL_STATE_RELATIVE_PATH,
       nextStep: 'Reinstall this repository with the correct bootstrap package before running update.',
     });
   }

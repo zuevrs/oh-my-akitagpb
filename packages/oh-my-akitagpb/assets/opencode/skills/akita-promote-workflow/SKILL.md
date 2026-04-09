@@ -14,33 +14,33 @@ Use this skill only for the installed `/akita-promote` flow.
 ## Required reads
 
 Read these before reasoning:
-- `.oma/templates/promote/state-contract.json`
-- `.oma/templates/write/state-contract.json`
-- `.oma/state/shared/write/write-report.json`
-- `.oma/runtime/shared/data-handling-policy.json`
-- `.oma/instructions/rules/respect-pack-ownership.md`
+- `.oma/packs/oh-my-akitagpb/templates/promote/state-contract.json`
+- `.oma/packs/oh-my-akitagpb/templates/write/state-contract.json`
+- `.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json`
+- `.oma/packs/oh-my-akitagpb/runtime/shared/data-handling-policy.json`
+- `.oma/packs/oh-my-akitagpb/instructions/rules/respect-pack-ownership.md`
 
 ## Required writes
 
 Persist exactly these local promote outputs:
-- `.oma/state/local/promote/promote-report.json`
-- optional derived summary: `.oma/state/local/promote/promote-summary.md`
+- `.oma/packs/oh-my-akitagpb/state/local/promote/promote-report.json`
+- optional derived summary: `.oma/packs/oh-my-akitagpb/state/local/promote/promote-summary.md`
 
 ## Procedure
 
-1. Read `.oma/templates/promote/state-contract.json` first and treat it as the canonical persistence contract.
-2. Read `.oma/state/shared/write/write-report.json` from disk before reasoning about any artifact id or source path.
+1. Read `.oma/packs/oh-my-akitagpb/templates/promote/state-contract.json` first and treat it as the canonical persistence contract.
+2. Read `.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json` from disk before reasoning about any artifact id or source path.
 3. Accept only artifacts that appear in the write report and whose emitted paths stay under the contract-defined generated namespace.
 4. Require one explicit repo-relative live destination per accepted artifact. Accept actions only in the shape `promote <artifact-id> to <repo-relative-path>` or `accept <artifact-id> as <repo-relative-path>`.
 5. Never guess a live destination from approved plan intent, filenames, or repo conventions.
-6. Copy accepted artifacts from `.oma/generated/**` into the explicit live destination. Use copy instead of move, and do not delete the generated source file.
+6. Copy accepted artifacts from `.oma/packs/oh-my-akitagpb/generated/**` into the explicit live destination. Use copy instead of move, and do not delete the generated source file.
 7. Never overwrite existing files. Never copy into `.oma/` or `.opencode/`. Never promote from a source path outside the generated namespace.
-8. Persist `.oma/state/local/promote/promote-report.json` with explicit `verdict` `ok`, `partial`, or `blocked`; `requestedPromotions`; `promotedArtifacts`; and `findings`.
+8. Persist `.oma/packs/oh-my-akitagpb/state/local/promote/promote-report.json` with explicit `verdict` `ok`, `partial`, or `blocked`; `requestedPromotions`; `promotedArtifacts`; and `findings`.
 
 ## Stop with `blocked` or `needs-review` when
 
 Stop instead of guessing if:
-- `.oma/state/shared/write/write-report.json` is missing
+- `.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json` is missing
 - a requested artifact id is not present in the write report
 - a requested source file is missing on disk
 - the source path is outside the contract-defined generated namespace

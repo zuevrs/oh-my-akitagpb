@@ -39,7 +39,7 @@ function readJsonFile<T>(filePath: string): T {
 }
 
 function readInstalledContract(projectRoot: string): ScanStateContract {
-  return readJsonFile<ScanStateContract>(path.join(projectRoot, '.oma', 'templates', 'scan', 'state-contract.json'));
+  return readJsonFile<ScanStateContract>(path.join(projectRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'state-contract.json'));
 }
 
 afterEach(() => {

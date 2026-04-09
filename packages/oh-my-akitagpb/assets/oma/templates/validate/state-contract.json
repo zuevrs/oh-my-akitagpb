@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "contractId": "akita-validate-state",
-  "localStateBasePath": ".oma/state/local/validate",
-  "installedTemplateBasePath": ".oma/templates/validate",
+  "localStateBasePath": ".oma/packs/oh-my-akitagpb/state/local/validate",
+  "installedTemplateBasePath": ".oma/packs/oh-my-akitagpb/templates/validate",
   "writePrerequisites": {
-    "contractPath": ".oma/templates/write/state-contract.json",
-    "sharedStateBasePath": ".oma/state/shared/write",
+    "contractPath": ".oma/packs/oh-my-akitagpb/templates/write/state-contract.json",
+    "sharedStateBasePath": ".oma/packs/oh-my-akitagpb/state/shared/write",
     "requiredStatePaths": [
-      ".oma/state/shared/write/write-report.json"
+      ".oma/packs/oh-my-akitagpb/state/shared/write/write-report.json"
     ],
     "validatorMustReadFromDisk": true,
     "description": "akita-validate must consume the persisted write report from disk before it evaluates capability eligibility."
@@ -15,14 +15,14 @@
   "requiredMachineState": [
     {
       "id": "validation-report",
-      "path": ".oma/state/local/validate/validation-report.json",
+      "path": ".oma/packs/oh-my-akitagpb/state/local/validate/validation-report.json",
       "format": "json",
       "required": true,
       "description": "Inspectable validation verdict, reviewed artifact set, and per-artifact findings for supported, unsupported, or bundle-unknown constructs."
     }
   ],
   "validationReport": {
-    "path": ".oma/state/local/validate/validation-report.json",
+    "path": ".oma/packs/oh-my-akitagpb/state/local/validate/validation-report.json",
     "requiredFields": [
       "verdict",
       "reviewedArtifacts",
@@ -78,8 +78,8 @@
     }
   ],
   "summaryState": {
-    "path": ".oma/state/local/validate/validate-summary.md",
-    "templatePath": ".oma/templates/validate/validate-summary.md",
+    "path": ".oma/packs/oh-my-akitagpb/state/local/validate/validate-summary.md",
+    "templatePath": ".oma/packs/oh-my-akitagpb/templates/validate/validate-summary.md",
     "format": "markdown",
     "required": false,
     "canonical": false,
@@ -89,7 +89,7 @@
     "description": "Human-readable validation summary only. Canonical machine state stays in the JSON report above."
   },
   "redaction": {
-    "policyPath": ".oma/runtime/shared/data-handling-policy.json",
+    "policyPath": ".oma/packs/oh-my-akitagpb/runtime/shared/data-handling-policy.json",
     "redactionRequired": true,
     "markdownIsSummaryOnly": true,
     "forbiddenLocalData": [

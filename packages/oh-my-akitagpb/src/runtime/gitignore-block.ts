@@ -1,9 +1,12 @@
 import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
 
 import { PackageSurfaceError } from './asset-catalog.js';
+import { PACK_NAME } from './layout.js';
 import { hashContent, type ManagedSurfaceInspection } from './managed-blocks.js';
 
 export const GITIGNORE_MANAGED_BLOCK_ID = 'oh-my-akitagpb';
+
+const PACK_ROOT = `.oma/packs/${PACK_NAME}`;
 
 const DURABLE_SURFACE_UNIGNORE_PATTERNS = [
   '!AGENTS.md',
@@ -15,25 +18,27 @@ const DURABLE_SURFACE_UNIGNORE_PATTERNS = [
   '!.opencode/skills/akita-*/',
   '!.opencode/skills/akita-*/**',
   '!.oma/',
-  '!.oma/capability-manifest.json',
-  '!.oma/instructions/',
-  '!.oma/instructions/rules/',
-  '!.oma/instructions/rules/**',
-  '!.oma/templates/',
-  '!.oma/templates/**',
-  '!.oma/runtime/',
-  '!.oma/runtime/shared/',
-  '!.oma/runtime/shared/**',
-  '!.oma/state/',
-  '!.oma/state/shared/',
-  '!.oma/state/shared/**',
+  '!.oma/packs/',
+  `!${PACK_ROOT}/`,
+  `!${PACK_ROOT}/capability-manifest.json`,
+  `!${PACK_ROOT}/instructions/`,
+  `!${PACK_ROOT}/instructions/rules/`,
+  `!${PACK_ROOT}/instructions/rules/**`,
+  `!${PACK_ROOT}/templates/`,
+  `!${PACK_ROOT}/templates/**`,
+  `!${PACK_ROOT}/runtime/`,
+  `!${PACK_ROOT}/runtime/shared/`,
+  `!${PACK_ROOT}/runtime/shared/**`,
+  `!${PACK_ROOT}/state/`,
+  `!${PACK_ROOT}/state/shared/`,
+  `!${PACK_ROOT}/state/shared/**`,
 ] as const;
 
 const LOCAL_ONLY_IGNORE_PATTERNS = [
-  '.oma/install-state.json',
-  '.oma/runtime/local/',
-  '.oma/state/local/',
-  '.oma/generated/',
+  `${PACK_ROOT}/install-state.json`,
+  `${PACK_ROOT}/runtime/local/`,
+  `${PACK_ROOT}/state/local/`,
+  `${PACK_ROOT}/generated/`,
 ] as const;
 
 function createGitignoreBeginMarker(blockId: string = GITIGNORE_MANAGED_BLOCK_ID): string {

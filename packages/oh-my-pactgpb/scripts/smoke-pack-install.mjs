@@ -117,16 +117,16 @@ function main() {
     throw new Error(`Published doctor failed: ${doctorResult.message ?? doctorExecution.stderr}`);
   }
 
-  const capabilityManifestPath = path.join(fixtureRoot, '.oma', 'capability-manifest.json');
-  const installStatePath = path.join(fixtureRoot, '.oma', 'install-state.json');
-  const projectModePath = path.join(fixtureRoot, '.oma', 'runtime', 'local', 'project-mode.json');
-  const doctorReportPath = path.join(fixtureRoot, '.oma', 'state', 'local', 'doctor', 'doctor-report.json');
+  const capabilityManifestPath = path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'capability-manifest.json');
+  const installStatePath = path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'install-state.json');
+  const projectModePath = path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'runtime', 'local', 'project-mode.json');
+  const doctorReportPath = path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'state', 'local', 'doctor', 'doctor-report.json');
   const opencodeConfigPath = path.join(fixtureRoot, 'opencode.json');
   const requiredInstalledPaths = [
     '.opencode/commands/pact-scan.md',
     '.opencode/skills/pact-scan-workflow/SKILL.md',
-    '.oma/templates/scan/state-contract.json',
-    '.oma/templates/scan/scan-summary.md',
+    '.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json',
+    '.oma/packs/oh-my-pactgpb/templates/scan/scan-summary.md',
   ];
 
   assertFileExists(path.join(fixtureRoot, 'pom.xml'));
@@ -184,12 +184,12 @@ function main() {
     throw new Error('doctor-report.json did not include a safe next step.');
   }
 
-  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-scan.md'), '.oma/templates/scan/state-contract.json');
+  assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-scan.md'), '.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'commands', 'pact-scan.md'), 'Pact provider verification');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-scan-workflow', 'SKILL.md'), 'artifact source');
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-scan-workflow', 'SKILL.md'), 'provider verification');
-  assertFileContains(path.join(fixtureRoot, '.oma', 'templates', 'scan', 'state-contract.json'), 'artifactSource');
-  assertFileContains(path.join(fixtureRoot, '.oma', 'templates', 'scan', 'scan-summary.md'), '### Provider under contract');
+  assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'state-contract.json'), 'artifactSource');
+  assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'scan-summary.md'), '### Provider under contract');
 
   const summary = {
     status: 'ok',

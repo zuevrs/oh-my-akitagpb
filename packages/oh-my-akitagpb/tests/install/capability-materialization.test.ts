@@ -86,8 +86,8 @@ describe('capability materialization', () => {
 
     const execution = invokeInstalledCli(fixture.rootDir, ['install']);
     const result = parseJsonOutput<CliResult>(execution);
-    const manifestPath = path.join(fixture.rootDir, '.oma', 'capability-manifest.json');
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const manifestPath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'capability-manifest.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'install-state.json');
     const manifest = readJsonFile<CapabilityManifest>(manifestPath);
     const installState = readJsonFile<InstallState>(installStatePath);
     const manifestRuntimePaths = listBundleRuntimePaths(manifest);
@@ -179,7 +179,7 @@ describe('workflow capability loading instructions', () => {
       'akita-validate-workflow',
     ] as const) {
       const skill = readWorkflowSkill(workflowId);
-      expect(skill, workflowId).toContain('.oma/capability-manifest.json');
+      expect(skill, workflowId).toContain('.oma/packs/oh-my-akitagpb/capability-manifest.json');
       expect(skill, workflowId).toMatch(/resolve every manifest-listed capability bundle|resolve every manifest-listed `activeCapabilityBundles/i);
       expect(skill, workflowId).toMatch(/stop/i);
       expect(skill, workflowId).toMatch(/unsupported|missing/);

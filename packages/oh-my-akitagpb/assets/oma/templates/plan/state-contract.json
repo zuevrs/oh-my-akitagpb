@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "contractId": "akita-plan-state",
-  "sharedStateBasePath": ".oma/state/shared/plan",
-  "installedTemplateBasePath": ".oma/templates/plan",
+  "sharedStateBasePath": ".oma/packs/oh-my-akitagpb/state/shared/plan",
+  "installedTemplateBasePath": ".oma/packs/oh-my-akitagpb/templates/plan",
   "scanPrerequisites": {
-    "contractPath": ".oma/templates/scan/state-contract.json",
-    "sharedStateBasePath": ".oma/state/shared/scan",
+    "contractPath": ".oma/packs/oh-my-akitagpb/templates/scan/state-contract.json",
+    "sharedStateBasePath": ".oma/packs/oh-my-akitagpb/state/shared/scan",
     "requiredStatePaths": [
-      ".oma/state/shared/scan/scan-state.json"
+      ".oma/packs/oh-my-akitagpb/state/shared/scan/scan-state.json"
     ],
     "plannerMustReadFromDisk": true,
     "description": "akita-plan must consume the persisted scan snapshot above and stop when it is missing instead of reconstructing repo facts from chat memory."
@@ -15,7 +15,7 @@
   "requiredMachineState": [
     {
       "id": "plan-state",
-      "path": ".oma/state/shared/plan/plan-state.json",
+      "path": ".oma/packs/oh-my-akitagpb/state/shared/plan/plan-state.json",
       "format": "json",
       "required": true,
       "requiredTopLevelFields": [
@@ -32,7 +32,7 @@
     },
     {
       "id": "approved-plan",
-      "path": ".oma/state/shared/plan/approved-plan.json",
+      "path": ".oma/packs/oh-my-akitagpb/state/shared/plan/approved-plan.json",
       "format": "json",
       "required": false,
       "creationGate": "explicit-approve",
@@ -101,7 +101,7 @@
     }
   ],
   "approvalState": {
-    "path": ".oma/state/shared/plan/plan-state.json",
+    "path": ".oma/packs/oh-my-akitagpb/state/shared/plan/plan-state.json",
     "section": "approvalState",
     "initialStatus": "draft",
     "reviewStatus": "in_review",
@@ -113,7 +113,7 @@
       "superseded",
       "needs-review"
     ],
-    "approvedPlanPath": ".oma/state/shared/plan/approved-plan.json",
+    "approvedPlanPath": ".oma/packs/oh-my-akitagpb/state/shared/plan/approved-plan.json",
     "approvedPlanDefaultExists": false,
     "approvedPlanRequiresExplicitAction": true,
     "transitions": [
@@ -218,8 +218,8 @@
     }
   ],
   "summaryState": {
-    "path": ".oma/state/shared/plan/plan-summary.md",
-    "templatePath": ".oma/templates/plan/plan-summary.md",
+    "path": ".oma/packs/oh-my-akitagpb/state/shared/plan/plan-summary.md",
+    "templatePath": ".oma/packs/oh-my-akitagpb/templates/plan/plan-summary.md",
     "format": "markdown",
     "required": false,
     "canonical": false,
@@ -230,7 +230,7 @@
     "description": "Human-readable review packet only. Canonical machine state stays in the two JSON files above."
   },
   "redaction": {
-    "policyPath": ".oma/runtime/shared/data-handling-policy.json",
+    "policyPath": ".oma/packs/oh-my-akitagpb/runtime/shared/data-handling-policy.json",
     "redactionRequired": true,
     "markdownIsSummaryOnly": true,
     "forbiddenSharedData": [

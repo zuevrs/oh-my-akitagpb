@@ -328,7 +328,7 @@ export function renderScanSummary(state: PactProviderScanState): string {
   return [
     '# Pact provider scan summary',
     '',
-    'This file is only a concise summary. Canonical machine-readable scan state lives in JSON under `.oma/state/shared/scan/`.',
+    'This file is only a concise summary. Canonical machine-readable scan state lives in JSON under `.oma/packs/oh-my-pactgpb/state/shared/scan/`.',
     '',
     '## Canonical JSON files',
     '',
@@ -373,7 +373,7 @@ export function renderScanSummary(state: PactProviderScanState): string {
 
 export function writeProofScanArtifacts(projectRoot: string): ProofScanArtifacts {
   const state = scanPactProviderRepo(projectRoot);
-  const outputDir = path.join(projectRoot, '.oma', 'state', 'shared', 'scan');
+  const outputDir = path.join(projectRoot, '.oma', 'packs', 'oh-my-pactgpb', 'state', 'shared', 'scan');
   mkdirSync(outputDir, { recursive: true });
 
   const statePath = path.join(outputDir, 'scan-state.json');
@@ -389,6 +389,6 @@ export function writeProofScanArtifacts(projectRoot: string): ProofScanArtifacts
 }
 
 export function hasInstalledScanContract(projectRoot: string): boolean {
-  return existsSync(path.join(projectRoot, '.oma', 'templates', 'scan', 'state-contract.json')) &&
-    statSync(path.join(projectRoot, '.oma', 'templates', 'scan', 'state-contract.json')).isFile();
+  return existsSync(path.join(projectRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'state-contract.json')) &&
+    statSync(path.join(projectRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'state-contract.json')).isFile();
 }

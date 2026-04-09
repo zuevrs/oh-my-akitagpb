@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "contractId": "pact-provider-scan-state",
-  "sharedStateBasePath": ".oma/state/shared/scan",
-  "installedTemplateBasePath": ".oma/templates/scan",
+  "sharedStateBasePath": ".oma/packs/oh-my-pactgpb/state/shared/scan",
+  "installedTemplateBasePath": ".oma/packs/oh-my-pactgpb/templates/scan",
   "requiredMachineState": [
     {
       "id": "scan-state",
-      "path": ".oma/state/shared/scan/scan-state.json",
+      "path": ".oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json",
       "format": "json",
       "required": true,
       "requiredTopLevelFields": [
@@ -22,8 +22,8 @@
     }
   ],
   "summaryState": {
-    "path": ".oma/state/shared/scan/scan-summary.md",
-    "templatePath": ".oma/templates/scan/scan-summary.md",
+    "path": ".oma/packs/oh-my-pactgpb/state/shared/scan/scan-summary.md",
+    "templatePath": ".oma/packs/oh-my-pactgpb/templates/scan/scan-summary.md",
     "format": "markdown",
     "required": false,
     "canonical": false,
@@ -33,7 +33,7 @@
     "description": "Human-readable Pact scan summary only. Canonical machine state stays in scan-state.json. The summary should help a human quickly see provider identity, evidence sources, artifact source expectations, provider-state readiness, and the major gaps/blockers."
   },
   "redaction": {
-    "policyPath": ".oma/runtime/shared/data-handling-policy.json",
+    "policyPath": ".oma/packs/oh-my-pactgpb/runtime/shared/data-handling-policy.json",
     "redactionRequired": true,
     "markdownIsSummaryOnly": true,
     "forbiddenSharedData": [

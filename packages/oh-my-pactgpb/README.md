@@ -2,10 +2,9 @@
 
 Native-first OpenCode bootstrap pack for **Pact provider verification** workflows.
 
-`oh-my-pactgpb` installs a managed `.oma/` and `.opencode/` surface into a target
-repository so an OpenCode agent can inspect a Java/Spring provider repo, detect
-whether Pact provider verification is actually grounded in repo evidence, and
-persist a Pact-specific scan state plus summary.
+`oh-my-pactgpb` installs a managed pack-scoped runtime under
+`.oma/packs/oh-my-pactgpb/` plus additive shared surfaces under `.opencode/`,
+`AGENTS.md`, `opencode.json`, and `.gitignore`.
 
 This package lives inside the umbrella repository at
 `packages/oh-my-pactgpb`, but the published package name, CLI entrypoint, and
@@ -20,9 +19,10 @@ Slice 1 is intentionally narrow.
 - CLI lifecycle commands: `install`, `update`, `doctor`
 - OpenCode command: `/pact-scan`
 - OpenCode workflow skill: `.opencode/skills/pact-scan-workflow/SKILL.md`
-- Pact scan state contract and summary template under `.oma/templates/scan/`
-- Strict ownership/update safety for pack-managed `.oma/`, `.opencode/`,
-  `AGENTS.md`, `opencode.json`, and the managed `.gitignore` block
+- Pact scan state contract and summary template under
+  `.oma/packs/oh-my-pactgpb/templates/scan/`
+- Strict ownership/update safety for pack-owned runtime plus additive shared
+  surfaces
 - Package-local proof fixtures that verify grounded detection of:
   - Maven/Gradle Pact provider dependencies
   - provider verification tests
@@ -72,77 +72,112 @@ After install, open the target repo in OpenCode and start with:
 /pact-scan
 ```
 
+## Co-install support
+
+Co-install with `oh-my-akitagpb` is supported.
+
+Pact-owned runtime lives only under:
+
+- `.oma/packs/oh-my-pactgpb/**`
+
+Akita-owned runtime lives under its sibling namespaced root:
+
+- `.oma/packs/oh-my-akitagpb/**`
+
+That means both packs can be installed into the same target repo in any order
+without overwriting each other's runtime/state/template trees.
+
 ## CLI commands
 
 ### `install`
 
 Bootstrap-only install. Materializes the managed Pact scan surface into the
-current repository, records local install ownership in `.oma/install-state.json`,
-and updates a pack-managed `.gitignore` block for local/runtime/generated
-surfaces.
+current repository, records local install ownership in
+`.oma/packs/oh-my-pactgpb/install-state.json`, and updates the pack-managed
+shared surfaces safely.
 
 ### `update`
 
-Explicit refresh path. Rewrites only pack-owned artifacts recorded in
-`install-state` and refreshes the pack-managed `.gitignore` block without
-claiming user-owned ignore rules outside that block.
+Explicit refresh path. Rewrites only Pact-owned artifacts recorded in the Pact
+install-state ledger and refreshes shared managed surfaces additively.
 
 ### `doctor`
 
-Diagnose-first command. Writes `.oma/state/local/doctor/doctor-report.json` and
-returns one safe next step.
+Diagnose-first command. Writes
+`.oma/packs/oh-my-pactgpb/state/local/doctor/doctor-report.json`, evaluates
+only Pact-owned runtime/state honestly, and does not treat sibling pack
+presence as drift.
 
 ## Runtime surface
 
-The package materializes these top-level surfaces in a target repository:
+### Pack-owned runtime root
 
-- `.oma/` as the source of truth for scan templates, instructions, manifests, and runtime metadata
-- `.opencode/commands/pact-scan.md`
-- `.opencode/skills/pact-scan-workflow/SKILL.md`
-- `.oma/templates/scan/state-contract.json`
-- `.oma/templates/scan/scan-summary.md`
+Pact owns only:
 
-Ownership is strict. The pack does not silently overwrite user-owned `AGENTS.md`,
-`opencode.json`, unrelated `.opencode/*`, or user-owned `.gitignore` rules
-outside the pack-managed block.
+- `.oma/packs/oh-my-pactgpb/capability-manifest.json`
+- `.oma/packs/oh-my-pactgpb/instructions/**`
+- `.oma/packs/oh-my-pactgpb/templates/**`
+- `.oma/packs/oh-my-pactgpb/runtime/**`
+- `.oma/packs/oh-my-pactgpb/state/**`
+- `.oma/packs/oh-my-pactgpb/generated/**`
+- `.oma/packs/oh-my-pactgpb/install-state.json`
+
+### Shared additive surfaces
+
+These surfaces remain shared and additive across packs:
+
+- `AGENTS.md`
+- `opencode.json`
+- `.gitignore`
+- `.opencode/commands/akita-*.md`
+- `.opencode/commands/pact-*.md`
+- `.opencode/skills/akita-*/**`
+- `.opencode/skills/pact-*/**`
+
+Ownership is strict. Pact does not silently overwrite Akita-owned runtime,
+user-owned `AGENTS.md`, unrelated `.opencode/*`, or user-owned `.gitignore`
+rules outside its managed block.
 
 ## VCS policy for installed repos
 
 After install, the pack-managed `.gitignore` block keeps this split explicit.
 
-### Commit-worthy durable pack surface
+### Commit-worthy durable Pact surface
 
 These files are meant to live in git and be shared across the team:
 
 - `AGENTS.md`
 - `opencode.json`
-- `.opencode/commands/pact-scan.md`
-- `.opencode/skills/pact-scan-workflow/**`
-- `.oma/capability-manifest.json`
-- `.oma/instructions/**`
-- `.oma/templates/**`
-- `.oma/runtime/shared/**`
-- `.oma/state/shared/**`
+- `.opencode/commands/pact-*.md`
+- `.opencode/skills/pact-*/**`
+- `.oma/packs/oh-my-pactgpb/capability-manifest.json`
+- `.oma/packs/oh-my-pactgpb/instructions/**`
+- `.oma/packs/oh-my-pactgpb/templates/**`
+- `.oma/packs/oh-my-pactgpb/runtime/shared/**`
+- `.oma/packs/oh-my-pactgpb/state/shared/**`
 
-This includes shared scan state such as `.oma/state/shared/scan/scan-state.json`
-and `.oma/state/shared/scan/scan-summary.md`.
+This includes durable scan state such as:
 
-### Local-only runtime surface
+- `.oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json`
+- `.oma/packs/oh-my-pactgpb/state/shared/scan/scan-summary.md`
+
+### Local-only Pact runtime surface
 
 These files stay local and are ignored by the managed `.gitignore` block:
 
-- `.oma/install-state.json`
-- `.oma/runtime/local/**`
-- `.oma/state/local/**`
+- `.oma/packs/oh-my-pactgpb/install-state.json`
+- `.oma/packs/oh-my-pactgpb/runtime/local/**`
+- `.oma/packs/oh-my-pactgpb/state/local/**`
 
-`install-state.json` is intentionally local because it contains machine-specific
-install bookkeeping such as the recorded project root and install path.
+The install-state ledger is intentionally local because it contains
+machine-specific install bookkeeping such as the recorded project root and
+install path.
 
 ### Generated staging surface
 
 These files are also ignored:
 
-- `.oma/generated/**`
+- `.oma/packs/oh-my-pactgpb/generated/**`
 
 Slice 1 does not yet materialize any write/promote workflow that uses this
 staging area, but the ignore policy keeps the local/generated split explicit.

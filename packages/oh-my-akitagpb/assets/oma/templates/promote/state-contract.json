@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "contractId": "akita-promote-state",
-  "localStateBasePath": ".oma/state/local/promote",
-  "installedTemplateBasePath": ".oma/templates/promote",
+  "localStateBasePath": ".oma/packs/oh-my-akitagpb/state/local/promote",
+  "installedTemplateBasePath": ".oma/packs/oh-my-akitagpb/templates/promote",
   "writePrerequisites": {
-    "contractPath": ".oma/templates/write/state-contract.json",
-    "sharedStateBasePath": ".oma/state/shared/write",
+    "contractPath": ".oma/packs/oh-my-akitagpb/templates/write/state-contract.json",
+    "sharedStateBasePath": ".oma/packs/oh-my-akitagpb/state/shared/write",
     "requiredStatePaths": [
-      ".oma/state/shared/write/write-report.json"
+      ".oma/packs/oh-my-akitagpb/state/shared/write/write-report.json"
     ],
     "promoterMustReadFromDisk": true,
     "description": "akita-promote must consume the persisted write report above and stop when it is missing instead of guessing which generated artifacts are eligible for promotion."
@@ -15,7 +15,7 @@
   "requiredMachineState": [
     {
       "id": "promote-report",
-      "path": ".oma/state/local/promote/promote-report.json",
+      "path": ".oma/packs/oh-my-akitagpb/state/local/promote/promote-report.json",
       "format": "json",
       "required": true,
       "requiredTopLevelFields": [
@@ -44,12 +44,12 @@
     }
   ],
   "promotionPolicy": {
-    "sourceWriteReportPath": ".oma/state/shared/write/write-report.json",
-    "sourceBasePath": ".oma/generated",
+    "sourceWriteReportPath": ".oma/packs/oh-my-akitagpb/state/shared/write/write-report.json",
+    "sourceBasePath": ".oma/packs/oh-my-akitagpb/generated",
     "allowedSourceRoots": [
-      ".oma/generated/features",
-      ".oma/generated/payloads",
-      ".oma/generated/fixtures"
+      ".oma/packs/oh-my-akitagpb/generated/features",
+      ".oma/packs/oh-my-akitagpb/generated/payloads",
+      ".oma/packs/oh-my-akitagpb/generated/fixtures"
     ],
     "explicitDestinationRequired": true,
     "destinationMustBeRepoRelative": true,
@@ -120,8 +120,8 @@
     }
   ],
   "summaryState": {
-    "path": ".oma/state/local/promote/promote-summary.md",
-    "templatePath": ".oma/templates/promote/promote-summary.md",
+    "path": ".oma/packs/oh-my-akitagpb/state/local/promote/promote-summary.md",
+    "templatePath": ".oma/packs/oh-my-akitagpb/templates/promote/promote-summary.md",
     "format": "markdown",
     "required": false,
     "canonical": false,
@@ -131,7 +131,7 @@
     "description": "Human-readable promotion summary only. Canonical machine state stays in the JSON file above."
   },
   "redaction": {
-    "policyPath": ".oma/runtime/shared/data-handling-policy.json",
+    "policyPath": ".oma/packs/oh-my-akitagpb/runtime/shared/data-handling-policy.json",
     "redactionRequired": true,
     "markdownIsSummaryOnly": true,
     "forbiddenSharedData": [

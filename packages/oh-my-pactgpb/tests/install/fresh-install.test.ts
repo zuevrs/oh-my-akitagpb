@@ -107,7 +107,7 @@ describe('fresh install', () => {
     expect(agentsContent).toContain('<!-- oh-my-pactgpb:begin -->');
     expect(agentsContent).toContain('/pact-scan');
     expect(installedScanCommand).toContain('Pact provider verification');
-    expect(installedScanCommand).toContain('.oma/templates/scan/state-contract.json');
+    expect(installedScanCommand).toContain('.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json');
     expect(installedScanWorkflow).toContain('provider verification');
     expect(installedScanWorkflow).toContain('artifact source');
 

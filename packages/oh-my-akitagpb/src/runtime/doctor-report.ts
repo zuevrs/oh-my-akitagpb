@@ -12,6 +12,7 @@ import {
 } from './layout.js';
 import { readInstallState, resolveInstallStatePath, type InstallState } from './install-state.js';
 import { classifyProjectMode, readProjectModeRecord, resolveProjectModePath } from './project-mode.js';
+import { MANAGED_INSTRUCTION_PATHS } from './materialize-install.js';
 
 export type DoctorStatus = 'compatible' | 'migrate-required' | 'blocked';
 export type DoctorFindingSeverity = 'info' | 'warning' | 'error';
@@ -75,11 +76,11 @@ interface OwnedFileInspection {
 }
 
 function resolveDoctorStateDir(projectRoot: string): string {
-  return path.join(projectRoot, '.oma', 'state', 'local', 'doctor');
+  return path.dirname(resolveDoctorReportAbsolutePath(projectRoot));
 }
 
 export function resolveDoctorReportPath(projectRoot: string): string {
-  return path.join(resolveDoctorStateDir(projectRoot), 'doctor-report.json');
+  return resolveDoctorReportAbsolutePath(projectRoot);
 }
 
 function inspectProjectModeRecord(projectRoot: string): ProjectModeRecordInspection {
@@ -174,8 +175,23 @@ function inspectManagedSurface(
       };
     }
 
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(inspection.content);
+    } catch {
+      return {
+        kind: 'conflict',
+        ownershipState: 'malformed',
+      };
+    }
+
+    const instructions = parsed && typeof parsed === 'object' && Array.isArray((parsed as { instructions?: unknown }).instructions)
+      ? (parsed as { instructions: unknown[] }).instructions.filter((entry): entry is string => typeof entry === 'string')
+      : [];
+    const hasCurrentPackInstructions = MANAGED_INSTRUCTION_PATHS.every((instructionPath) => instructions.includes(instructionPath));
+
     return {
-      kind: hashContent(inspection.content) === record.sha256 ? 'ok' : 'modified',
+      kind: hasCurrentPackInstructions ? 'ok' : 'modified',
       ownershipState: inspection.state,
     };
   }
@@ -461,7 +477,7 @@ export function buildDoctorReport(projectRoot: string, packageSurface: PackageSu
       code: 'package-version-drift',
       severity: 'warning',
       message: `The recorded bootstrap version is ${installState.packageVersion}, but the current package is ${packageSurface.packageVersion}.`,
-      path: '.oma/install-state.json',
+      path: INSTALL_STATE_RELATIVE_PATH,
     });
   }
 

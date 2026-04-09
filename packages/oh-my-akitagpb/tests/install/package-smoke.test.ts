@@ -93,8 +93,8 @@ describe('package smoke fixture', () => {
     const installResult = parseJsonOutput<CliResult>(installExecution);
     const doctorExecution = invokeInstalledCli(fixture.rootDir, ['doctor']);
     const doctorResult = parseJsonOutput<CliResult>(doctorExecution);
-    const manifestPath = path.join(fixture.rootDir, '.oma', 'capability-manifest.json');
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const manifestPath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'capability-manifest.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'install-state.json');
     const opencodeConfigPath = path.join(fixture.rootDir, 'opencode.json');
     const manifest = readJsonFile<CapabilityManifest>(manifestPath);
     const installState = readJsonFile<InstallState>(installStatePath);
@@ -110,23 +110,23 @@ describe('package smoke fixture', () => {
       '.opencode/skills/akita-write-workflow/SKILL.md',
       '.opencode/skills/akita-validate-workflow/SKILL.md',
       '.opencode/skills/akita-promote-workflow/SKILL.md',
-      '.oma/templates/feature/default.feature.md',
-      '.oma/templates/feature/with-background.feature.md',
-      '.oma/templates/feature/with-omissions-note.feature.md',
-      '.oma/templates/payload/json-body.md',
-      '.oma/templates/payload/property-file.md',
-      '.oma/templates/payload/minimal-fixture.md',
-      '.oma/templates/scan/scan-summary.md',
-      '.oma/templates/scan/state-contract.json',
-      '.oma/templates/plan/plan-summary.md',
-      '.oma/templates/plan/state-contract.json',
-      '.oma/templates/write/write-summary.md',
-      '.oma/templates/write/state-contract.json',
-      '.oma/templates/validate/validate-summary.md',
-      '.oma/templates/validate/state-contract.json',
-      '.oma/templates/promote/promote-summary.md',
-      '.oma/templates/promote/state-contract.json',
-      '.oma/instructions/rules/default-language-russian.md',
+      '.oma/packs/oh-my-akitagpb/templates/feature/default.feature.md',
+      '.oma/packs/oh-my-akitagpb/templates/feature/with-background.feature.md',
+      '.oma/packs/oh-my-akitagpb/templates/feature/with-omissions-note.feature.md',
+      '.oma/packs/oh-my-akitagpb/templates/payload/json-body.md',
+      '.oma/packs/oh-my-akitagpb/templates/payload/property-file.md',
+      '.oma/packs/oh-my-akitagpb/templates/payload/minimal-fixture.md',
+      '.oma/packs/oh-my-akitagpb/templates/scan/scan-summary.md',
+      '.oma/packs/oh-my-akitagpb/templates/scan/state-contract.json',
+      '.oma/packs/oh-my-akitagpb/templates/plan/plan-summary.md',
+      '.oma/packs/oh-my-akitagpb/templates/plan/state-contract.json',
+      '.oma/packs/oh-my-akitagpb/templates/write/write-summary.md',
+      '.oma/packs/oh-my-akitagpb/templates/write/state-contract.json',
+      '.oma/packs/oh-my-akitagpb/templates/validate/validate-summary.md',
+      '.oma/packs/oh-my-akitagpb/templates/validate/state-contract.json',
+      '.oma/packs/oh-my-akitagpb/templates/promote/promote-summary.md',
+      '.oma/packs/oh-my-akitagpb/templates/promote/state-contract.json',
+      '.oma/packs/oh-my-akitagpb/instructions/rules/default-language-russian.md',
     ];
 
     expect(installExecution.exitCode).toBe(0);
@@ -143,13 +143,13 @@ describe('package smoke fixture', () => {
     });
 
     expect(existsSync(path.join(fixture.rootDir, 'pom.xml'))).toBe(true);
-    expect(existsSync(path.join(fixture.rootDir, '.oma', 'install-state.json'))).toBe(true);
-    expect(existsSync(path.join(fixture.rootDir, '.oma', 'runtime', 'local', 'project-mode.json'))).toBe(true);
-    expect(existsSync(path.join(fixture.rootDir, '.oma', 'state', 'local', 'doctor', 'doctor-report.json'))).toBe(true);
+    expect(existsSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'install-state.json'))).toBe(true);
+    expect(existsSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'runtime', 'local', 'project-mode.json'))).toBe(true);
+    expect(existsSync(doctorResult.details?.reportPath ?? '')).toBe(true);
     expect(opencodeConfig.ohMyAkitaGpb).toBeUndefined();
     expect(opencodeConfig.instructions).toEqual(
       expect.arrayContaining([
-        '.oma/instructions/rules/default-language-russian.md',
+        '.oma/packs/oh-my-akitagpb/instructions/rules/default-language-russian.md',
       ]),
     );
 
@@ -181,10 +181,10 @@ describe('package smoke fixture', () => {
     const installedValidateWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'akita-validate-workflow', 'SKILL.md'), 'utf8');
     const installedPromoteWorkflow = readFileSync(path.join(fixture.rootDir, '.opencode', 'skills', 'akita-promote-workflow', 'SKILL.md'), 'utf8');
     const installedWriteContract = readJsonFile<WriteStateContract>(
-      path.join(fixture.rootDir, '.oma', 'templates', 'write', 'state-contract.json'),
+      path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'templates', 'write', 'state-contract.json'),
     );
     const installedPromoteContract = readJsonFile<PromoteStateContract>(
-      path.join(fixture.rootDir, '.oma', 'templates', 'promote', 'state-contract.json'),
+      path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'templates', 'promote', 'state-contract.json'),
     );
 
     expect(installedScanCommand).toContain('agent: build');
@@ -195,17 +195,17 @@ describe('package smoke fixture', () => {
     expect(installedPlanCommand).toContain('persisted scan evidence');
     expect(installedPlanCommand).toContain('do not turn plan into a catalog of pre-approved scenario patterns');
     expect(installedPlanWorkflow).toContain('OpenAPI or AsyncAPI evidence may strengthen a candidate');
-    expect(installedPlanWorkflow).toContain('Do not create `.oma/state/shared/plan/approved-plan.json` unless the user explicitly chooses');
-    expect(installedWriteCommand).toContain('.oma/templates/write/state-contract.json');
-    expect(installedWriteCommand).toContain('.oma/generated/');
-    expect(installedWriteWorkflow).toContain('.oma/state/shared/write/write-report.json');
+    expect(installedPlanWorkflow).toContain('Do not create `.oma/packs/oh-my-akitagpb/state/shared/plan/approved-plan.json` unless the user explicitly chooses');
+    expect(installedWriteCommand).toContain('.oma/packs/oh-my-akitagpb/templates/write/state-contract.json');
+    expect(installedWriteCommand).toContain('.oma/packs/oh-my-akitagpb/generated/');
+    expect(installedWriteWorkflow).toContain('.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json');
     expect(installedWriteWorkflow).toContain('capability bundle references');
     expect(installedWriteContract.generatedArtifactPolicy).toMatchObject({
-      safeOutputBasePath: '.oma/generated',
+      safeOutputBasePath: '.oma/packs/oh-my-akitagpb/generated',
       allowedOutputRoots: [
-        '.oma/generated/features',
-        '.oma/generated/payloads',
-        '.oma/generated/fixtures',
+        '.oma/packs/oh-my-akitagpb/generated/features',
+        '.oma/packs/oh-my-akitagpb/generated/payloads',
+        '.oma/packs/oh-my-akitagpb/generated/fixtures',
       ],
       approvedPlanProvidesArtifactIntentOnly: true,
       writerChoosesSafeOutputPath: true,
@@ -217,23 +217,23 @@ describe('package smoke fixture', () => {
       ],
     });
 
-    expect(installedValidateCommand).toContain('.oma/templates/validate/state-contract.json');
-    expect(installedValidateCommand).toContain('.oma/state/shared/write/write-report.json');
+    expect(installedValidateCommand).toContain('.oma/packs/oh-my-akitagpb/templates/validate/state-contract.json');
+    expect(installedValidateCommand).toContain('.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json');
     expect(installedValidateCommand).toContain('/akita-promote');
-    expect(installedValidateWorkflow).toContain('.oma/state/local/validate/validation-report.json');
+    expect(installedValidateWorkflow).toContain('.oma/packs/oh-my-akitagpb/state/local/validate/validation-report.json');
     expect(installedValidateWorkflow).toContain('lineage-drift');
     expect(installedValidateWorkflow).toContain('/akita-promote');
 
-    expect(installedPromoteCommand).toContain('.oma/templates/promote/state-contract.json');
-    expect(installedPromoteCommand).toContain('.oma/state/shared/write/write-report.json');
+    expect(installedPromoteCommand).toContain('.oma/packs/oh-my-akitagpb/templates/promote/state-contract.json');
+    expect(installedPromoteCommand).toContain('.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json');
     expect(installedPromoteCommand).toContain('promote <artifact-id> to <repo-relative-path>');
-    expect(installedPromoteWorkflow).toContain('.oma/state/local/promote/promote-report.json');
+    expect(installedPromoteWorkflow).toContain('.oma/packs/oh-my-akitagpb/state/local/promote/promote-report.json');
     expect(installedPromoteWorkflow).toContain('copy instead of move');
     expect(installedPromoteContract.promotionPolicy).toMatchObject({
       allowedSourceRoots: [
-        '.oma/generated/features',
-        '.oma/generated/payloads',
-        '.oma/generated/fixtures',
+        '.oma/packs/oh-my-akitagpb/generated/features',
+        '.oma/packs/oh-my-akitagpb/generated/payloads',
+        '.oma/packs/oh-my-akitagpb/generated/fixtures',
       ],
       explicitDestinationRequired: true,
       destinationMustBeRepoRelative: true,
@@ -250,6 +250,6 @@ describe('package smoke fixture', () => {
       ],
     });
 
-    expect(doctorResult.details?.reportPath).toContain('.oma/state/local/doctor/doctor-report.json');
+    expect(doctorResult.details?.reportPath).toContain('.oma/packs/oh-my-akitagpb/state/local/doctor/doctor-report.json');
   });
 });

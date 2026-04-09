@@ -17,4 +17,4 @@ Use this template when the approved flow is only partially supported and the gen
 
 - The omissions note must describe only unsupported or intentionally omitted checks.
 - Do not use the omissions note to smuggle in unsupported steps.
-- Every omission listed here must also appear in `.oma/state/shared/write/write-report.json`.
+- Every omission listed here must also appear in `.oma/packs/oh-my-akitagpb/state/shared/write/write-report.json`.

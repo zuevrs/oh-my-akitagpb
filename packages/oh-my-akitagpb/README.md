@@ -2,14 +2,15 @@
 
 Native-first OpenCode bootstrap pack for Akita GPB workflows.
 
-`oh-my-akitagpb` installs a managed `.oma/` and `.opencode/` surface into a target
-repository so an OpenCode agent can scan the repo as a system under test, plan
-high-value meaningful Akita flows from persisted evidence, write Akita-grounded
-artifacts, and validate them against shipped capability bundles.
+`oh-my-akitagpb` installs a managed pack-scoped runtime under
+`.oma/packs/oh-my-akitagpb/` plus additive shared surfaces under `.opencode/`,
+`AGENTS.md`, `opencode.json`, and `.gitignore`.
 
-This package now lives inside the umbrella repository at
+This package lives inside the umbrella repository at
 `packages/oh-my-akitagpb`, but the published package name, CLI entrypoint, and
 runtime behavior stay the same.
+
+## Product worldview
 
 The product worldview is system-behavior-first:
 
@@ -57,43 +58,77 @@ After install, open the target repo in OpenCode and start with:
 /akita-scan
 ```
 
+## Co-install support
+
+Co-install with `oh-my-pactgpb` is supported.
+
+Akita-owned runtime lives only under:
+
+- `.oma/packs/oh-my-akitagpb/**`
+
+Pact-owned runtime lives only under its sibling namespaced root:
+
+- `.oma/packs/oh-my-pactgpb/**`
+
+That means both packs can be installed into the same target repo in any order
+without overwriting each other's runtime/state/template trees.
+
 ## CLI commands
 
 ### `install`
 
-Bootstrap-only install. Materializes the managed pack surface into the current
-repository, records local install ownership in `.oma/install-state.json`, and
-updates a pack-managed `.gitignore` block for local/runtime/generated surfaces.
+Bootstrap-only install. Materializes the managed Akita surface into the current
+repository, records local install ownership in
+`.oma/packs/oh-my-akitagpb/install-state.json`, and updates the pack-managed
+shared surfaces safely.
 
 ### `update`
 
-Explicit refresh path. Rewrites only pack-owned artifacts recorded in
-`install-state` and refreshes the pack-managed `.gitignore` block without
-claiming user-owned ignore rules outside that block.
+Explicit refresh path. Rewrites only Akita-owned artifacts recorded in the
+Akita install-state ledger and refreshes shared managed surfaces additively.
 
 ### `doctor`
 
-Diagnose-first command. Writes `.oma/state/local/doctor/doctor-report.json` and
-returns one safe next step.
+Diagnose-first command. Writes
+`.oma/packs/oh-my-akitagpb/state/local/doctor/doctor-report.json`, evaluates
+only Akita-owned runtime/state honestly, and does not treat sibling pack
+presence as drift.
 
 ## Runtime surface
 
-The package materializes these top-level surfaces in a target repository:
+### Pack-owned runtime root
 
-- `.oma/` as the source of truth for state, templates, manifests, and runtime metadata
+Akita owns only:
+
+- `.oma/packs/oh-my-akitagpb/capability-manifest.json`
+- `.oma/packs/oh-my-akitagpb/instructions/**`
+- `.oma/packs/oh-my-akitagpb/templates/**`
+- `.oma/packs/oh-my-akitagpb/runtime/**`
+- `.oma/packs/oh-my-akitagpb/state/**`
+- `.oma/packs/oh-my-akitagpb/generated/**`
+- `.oma/packs/oh-my-akitagpb/install-state.json`
+
+### Shared additive surfaces
+
+These surfaces remain shared and additive across packs:
+
+- `AGENTS.md`
+- `opencode.json`
+- `.gitignore`
 - `.opencode/commands/akita-*.md`
-- `.opencode/skills/akita-*-workflow/**`
-- `.opencode/skills/akita-capability-*/**`
+- `.opencode/commands/pact-*.md`
+- `.opencode/skills/akita-*/**`
+- `.opencode/skills/pact-*/**`
 
-Ownership is strict. The pack does not silently overwrite user-owned `AGENTS.md`,
-`opencode.json`, unrelated `.opencode/*`, or user-owned `.gitignore` rules
-outside the pack-managed block.
+Ownership is strict. Akita does not silently overwrite Pact-owned runtime,
+user-owned `AGENTS.md`, unrelated `.opencode/*`, or user-owned `.gitignore`
+rules outside its managed block.
 
 ## VCS policy for installed repos
 
 After install, the pack-managed `.gitignore` block keeps this split explicit.
 
-### Commit-worthy durable pack surface
+### Commit-worthy durable Akita surface
 
 These files are meant to live in git and be shared across the team:
 
@@ -101,35 +136,36 @@ These files are meant to live in git and be shared across the team:
 - `opencode.json`
 - `.opencode/commands/akita-*.md`
 - `.opencode/skills/akita-*/**`
-- `.oma/capability-manifest.json`
-- `.oma/instructions/**`
-- `.oma/templates/**`
-- `.oma/runtime/shared/**`
-- `.oma/state/shared/**`
+- `.oma/packs/oh-my-akitagpb/capability-manifest.json`
+- `.oma/packs/oh-my-akitagpb/instructions/**`
+- `.oma/packs/oh-my-akitagpb/templates/**`
+- `.oma/packs/oh-my-akitagpb/runtime/shared/**`
+- `.oma/packs/oh-my-akitagpb/state/shared/**`
 
 This includes shared workflow state such as scan, plan, and write outputs.
 Those files are the durable handoff surface between commands and between
 teammates; they are not treated as local scratch state.
 
-### Local-only runtime surface
+### Local-only Akita runtime surface
 
 These files stay local and are ignored by the managed `.gitignore` block:
 
-- `.oma/install-state.json`
-- `.oma/runtime/local/**`
-- `.oma/state/local/**`
+- `.oma/packs/oh-my-akitagpb/install-state.json`
+- `.oma/packs/oh-my-akitagpb/runtime/local/**`
+- `.oma/packs/oh-my-akitagpb/state/local/**`
 
-`install-state.json` is intentionally local because it contains machine-specific
-install bookkeeping such as the recorded project root and install path. It is
-required for safe `update`, but it is not shareable repo truth.
+The install-state ledger is intentionally local because it contains
+machine-specific install bookkeeping such as the recorded project root and
+install path. It is required for safe `update`, but it is not shareable repo
+truth.
 
 ### Generated staging surface
 
 These files are also ignored:
 
-- `.oma/generated/features/**`
-- `.oma/generated/payloads/**`
-- `.oma/generated/fixtures/**`
+- `.oma/packs/oh-my-akitagpb/generated/features/**`
+- `.oma/packs/oh-my-akitagpb/generated/payloads/**`
+- `.oma/packs/oh-my-akitagpb/generated/fixtures/**`
 
 `/akita-write` stages artifacts there on purpose. They are not final live repo
 outputs. `/akita-promote` is the explicit publish step that copies accepted

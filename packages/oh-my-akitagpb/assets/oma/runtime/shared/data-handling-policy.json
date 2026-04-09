@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sharedStateBasePath": ".oma/state/shared",
-  "localStateBasePath": ".oma/state/local",
+  "sharedStateBasePath": ".oma/packs/oh-my-akitagpb/state/shared",
+  "localStateBasePath": ".oma/packs/oh-my-akitagpb/state/local",
   "redactionRequired": true,
   "markdownIsSummaryOnly": true,
   "forbiddenSharedData": [

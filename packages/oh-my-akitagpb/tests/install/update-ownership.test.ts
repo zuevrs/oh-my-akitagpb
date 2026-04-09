@@ -50,18 +50,18 @@ function listBundleRuntimePaths(manifest: CapabilityManifest): string[] {
   return manifest.activeCapabilityBundles.flatMap((bundle) => [bundle.skillPath, ...Object.values(bundle.references)]);
 }
 
-const languageRuleRuntimePath = '.oma/instructions/rules/default-language-russian.md';
+const languageRuleRuntimePath = '.oma/packs/oh-my-akitagpb/instructions/rules/default-language-russian.md';
 const summaryRuntimePaths = [
-  '.oma/templates/scan/scan-summary.md',
-  '.oma/templates/plan/plan-summary.md',
-  '.oma/templates/write/write-summary.md',
-  '.oma/templates/validate/validate-summary.md',
+  '.oma/packs/oh-my-akitagpb/templates/scan/scan-summary.md',
+  '.oma/packs/oh-my-akitagpb/templates/plan/plan-summary.md',
+  '.oma/packs/oh-my-akitagpb/templates/write/write-summary.md',
+  '.oma/packs/oh-my-akitagpb/templates/validate/validate-summary.md',
 ] as const;
 const promoteRuntimePaths = [
   '.opencode/commands/akita-promote.md',
   '.opencode/skills/akita-promote-workflow/SKILL.md',
-  '.oma/templates/promote/state-contract.json',
-  '.oma/templates/promote/promote-summary.md',
+  '.oma/packs/oh-my-akitagpb/templates/promote/state-contract.json',
+  '.oma/packs/oh-my-akitagpb/templates/promote/promote-summary.md',
 ] as const;
 
 afterEach(() => {
@@ -73,7 +73,7 @@ afterEach(() => {
 describe('update ownership', () => {
   it('refreshes recorded pack-owned artifacts and preserves unrelated user content', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const versionPath = path.join(fixture.rootDir, '.oma', 'runtime', 'shared', 'version.json');
+    const versionPath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'runtime', 'shared', 'version.json');
     const agentsPath = path.join(fixture.rootDir, 'AGENTS.md');
     const opencodePath = path.join(fixture.rootDir, 'opencode.json');
     const customCommandPath = path.join(fixture.rootDir, '.opencode', 'commands', 'custom.md');
@@ -94,8 +94,8 @@ describe('update ownership', () => {
       : [];
     opencodeConfig.instructions = instructions.filter(
       (entry) =>
-        entry !== '.oma/instructions/rules/respect-pack-ownership.md' &&
-        entry !== '.oma/instructions/rules/default-language-russian.md',
+        entry !== '.oma/packs/oh-my-akitagpb/instructions/rules/respect-pack-ownership.md' &&
+        entry !== '.oma/packs/oh-my-akitagpb/instructions/rules/default-language-russian.md',
     );
     opencodeConfig.customSetting = 'keep-me';
     writeFileSync(opencodePath, `${JSON.stringify(opencodeConfig, null, 2)}\n`, 'utf8');
@@ -113,7 +113,7 @@ describe('update ownership', () => {
         refusedCount: '0',
       }),
     });
-    expect(result.details?.changedPaths ?? '').toContain('.oma/runtime/shared/version.json');
+    expect(result.details?.changedPaths ?? '').toContain('.oma/packs/oh-my-akitagpb/runtime/shared/version.json');
     expect(result.details?.changedPaths ?? '').toContain('AGENTS.md');
     expect(result.details?.changedPaths ?? '').toContain('opencode.json');
 
@@ -126,8 +126,8 @@ describe('update ownership', () => {
     );
     expect(readJsonFile<Record<string, unknown>>(opencodePath).instructions).toEqual(
       expect.arrayContaining([
-        '.oma/instructions/rules/respect-pack-ownership.md',
-        '.oma/instructions/rules/default-language-russian.md',
+        '.oma/packs/oh-my-akitagpb/instructions/rules/respect-pack-ownership.md',
+        '.oma/packs/oh-my-akitagpb/instructions/rules/default-language-russian.md',
       ]),
     );
     expect(readFileSync(customCommandPath, 'utf8')).toBe('user-owned command\n');
@@ -135,7 +135,7 @@ describe('update ownership', () => {
 
   it('backfills newly shipped language, summary, and promote assets during update when an older install ledger does not record them yet', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'install-state.json');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
 
@@ -173,8 +173,8 @@ describe('update ownership', () => {
 
   it('adds manifest-listed capability bundle files during update when an older install ledger does not record them yet', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const manifestPath = path.join(fixture.rootDir, '.oma', 'capability-manifest.json');
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const manifestPath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'capability-manifest.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'install-state.json');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
 
@@ -213,8 +213,8 @@ describe('update ownership', () => {
 
   it('blocks when a newly planned capability bundle file already exists with drifted content', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const manifestPath = path.join(fixture.rootDir, '.oma', 'capability-manifest.json');
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const manifestPath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'capability-manifest.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'install-state.json');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
 
@@ -265,7 +265,7 @@ describe('update ownership', () => {
 
   it('blocks on corrupt install-state JSON instead of guessing ownership', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'install-state.json');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
     writeFileSync(installStatePath, '{\n', 'utf8');
@@ -286,13 +286,13 @@ describe('update ownership', () => {
 
   it('blocks on unknown ownership entries in the install-state ledger', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'install-state.json');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
     const installState = readJsonFile<InstallState>(installStatePath);
     installState.ownedFiles[0] = {
       kind: 'mystery',
-      relativePath: installState.ownedFiles[0]?.relativePath ?? '.oma/runtime/shared/version.json',
+      relativePath: installState.ownedFiles[0]?.relativePath ?? '.oma/packs/oh-my-akitagpb/runtime/shared/version.json',
     };
     writeFileSync(installStatePath, `${JSON.stringify(installState, null, 2)}\n`, 'utf8');
 
@@ -312,7 +312,7 @@ describe('update ownership', () => {
 
   it('blocks when a recorded pack-owned file is missing', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
-    const versionPath = path.join(fixture.rootDir, '.oma', 'runtime', 'shared', 'version.json');
+    const versionPath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-akitagpb', 'runtime', 'shared', 'version.json');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
     rmSync(versionPath);
@@ -329,7 +329,7 @@ describe('update ownership', () => {
         classification: 'conflict',
       }),
     });
-    expect(result.details?.refusedPaths ?? '').toContain('.oma/runtime/shared/version.json');
+    expect(result.details?.refusedPaths ?? '').toContain('.oma/packs/oh-my-akitagpb/runtime/shared/version.json');
     expect(existsSync(versionPath)).toBe(false);
   });
 

@@ -9,7 +9,7 @@ metadata:
 
 ## Use this skill when
 
-Use this bundle only when `.oma/capability-manifest.json` activates `akita-capability-ccl-files-module-05e1cf4d5e7`.
+Use this bundle only when `.oma/packs/oh-my-akitagpb/capability-manifest.json` activates `akita-capability-ccl-files-module-05e1cf4d5e7`.
 
 ## Scope
 

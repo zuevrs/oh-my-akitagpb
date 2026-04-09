@@ -14,24 +14,24 @@ Use this skill only for the installed `/pact-scan` flow.
 ## Required reads
 
 Read these before reasoning:
-- `.oma/templates/scan/state-contract.json`
-- `.oma/capability-manifest.json`
-- `.oma/runtime/shared/data-handling-policy.json`
-- `.oma/instructions/rules/*.md`
+- `.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json`
+- `.oma/packs/oh-my-pactgpb/capability-manifest.json`
+- `.oma/packs/oh-my-pactgpb/runtime/shared/data-handling-policy.json`
+- `.oma/packs/oh-my-pactgpb/instructions/rules/*.md`
 
 ## Required writes
 
 Persist exactly these shared scan outputs:
-- `.oma/state/shared/scan/scan-state.json`
-- optional derived summary: `.oma/state/shared/scan/scan-summary.md`
+- `.oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json`
+- optional derived summary: `.oma/packs/oh-my-pactgpb/state/shared/scan/scan-summary.md`
 
 ## Procedure
 
-1. Read `.oma/templates/scan/state-contract.json` first and treat it as the canonical persistence contract.
-2. Read `.oma/capability-manifest.json` and confirm which command and workflow surface is installed.
+1. Read `.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json` first and treat it as the canonical persistence contract.
+2. Read `.oma/packs/oh-my-pactgpb/capability-manifest.json` and confirm which command and workflow surface is installed.
 3. Read the shared data-handling policy and installed rule files before writing shared state.
 4. Inspect the repository as a possible Pact **provider verification** target. Keep the worldview narrow: Java, Spring Boot, HTTP provider verification, broker-optional, provider-first.
-5. Build a machine-readable evidence map in `.oma/state/shared/scan/scan-state.json` that answers at least:
+5. Build a machine-readable evidence map in `.oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json` that answers at least:
    - which provider under contract is most likely
    - why Pact provider verification is relevant or irrelevant here
    - which Pact dependencies, tests, local pact files, broker hints, provider state hooks, Spring HTTP surfaces, DTOs, and prior-art tests were found

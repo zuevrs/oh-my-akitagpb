@@ -1,6 +1,6 @@
 # Сводка validate
 
-Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние validate живёт в JSON-файлах под `.oma/state/local/validate/`.
+Этот файл нужен только для краткой сводки. Каноническое machine-readable состояние validate живёт в JSON-файлах под `.oma/packs/oh-my-akitagpb/state/local/validate/`.
 
 ## Канонические JSON-файлы
 

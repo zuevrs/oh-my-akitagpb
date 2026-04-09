@@ -81,7 +81,7 @@ describe('gitignore policy materialization', () => {
   it('materializes a managed .gitignore block that preserves user rules, unignores durable pack surfaces, and ignores local/generated state', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
     const gitignorePath = path.join(fixture.rootDir, '.gitignore');
-    const installStatePath = path.join(fixture.rootDir, '.oma', 'install-state.json');
+    const installStatePath = path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'install-state.json');
 
     writeFileSync(gitignorePath, '.oma/\n.opencode/\n*.md\n*.json\ncustom-user-ignore/\n', 'utf8');
     initGitRepo(fixture.rootDir);
@@ -102,32 +102,32 @@ describe('gitignore policy materialization', () => {
     expect(gitignoreContent).toContain('.oma/\n.opencode/\n*.md\n*.json\ncustom-user-ignore/\n');
     expect(gitignoreContent).toContain('# oh-my-pactgpb:begin');
     expect(gitignoreContent).toContain('# oh-my-pactgpb:end');
-    expect(gitignoreContent).toContain('.oma/install-state.json');
-    expect(gitignoreContent).toContain('.oma/generated/');
-    expect(gitignoreContent).toContain('!.oma/state/shared/**');
+    expect(gitignoreContent).toContain('.oma/packs/oh-my-pactgpb/install-state.json');
+    expect(gitignoreContent).toContain('.oma/packs/oh-my-pactgpb/generated/');
+    expect(gitignoreContent).toContain('!.oma/packs/oh-my-pactgpb/state/shared/**');
 
-    ensureFile(fixture.rootDir, '.oma/state/shared/scan/scan-state.json', '{"scan":true}\n');
-    ensureFile(fixture.rootDir, '.oma/state/local/doctor/debug.json', '{"doctor":true}\n');
-    ensureFile(fixture.rootDir, '.oma/generated/features/example.feature', 'Feature: staged\n');
+    ensureFile(fixture.rootDir, '.oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json', '{"scan":true}\n');
+    ensureFile(fixture.rootDir, '.oma/packs/oh-my-pactgpb/state/local/doctor/debug.json', '{"doctor":true}\n');
+    ensureFile(fixture.rootDir, '.oma/packs/oh-my-pactgpb/generated/features/example.feature', 'Feature: staged\n');
 
     for (const relativePath of [
       'AGENTS.md',
       'opencode.json',
       '.opencode/commands/pact-scan.md',
       '.opencode/skills/pact-scan-workflow/SKILL.md',
-      '.oma/capability-manifest.json',
-      '.oma/runtime/shared/version.json',
-      '.oma/runtime/shared/data-handling-policy.json',
-      '.oma/state/shared/scan/scan-state.json',
+      '.oma/packs/oh-my-pactgpb/capability-manifest.json',
+      '.oma/packs/oh-my-pactgpb/runtime/shared/version.json',
+      '.oma/packs/oh-my-pactgpb/runtime/shared/data-handling-policy.json',
+      '.oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json',
     ]) {
       expect(isIgnored(fixture.rootDir, relativePath), relativePath).toBe(false);
     }
 
     for (const relativePath of [
-      '.oma/install-state.json',
-      '.oma/runtime/local/project-mode.json',
-      '.oma/state/local/doctor/debug.json',
-      '.oma/generated/features/example.feature',
+      '.oma/packs/oh-my-pactgpb/install-state.json',
+      '.oma/packs/oh-my-pactgpb/runtime/local/project-mode.json',
+      '.oma/packs/oh-my-pactgpb/state/local/doctor/debug.json',
+      '.oma/packs/oh-my-pactgpb/generated/features/example.feature',
     ]) {
       expect(isIgnored(fixture.rootDir, relativePath), relativePath).toBe(true);
     }
@@ -155,9 +155,9 @@ describe('gitignore policy materialization', () => {
     expect(result.details?.changedPaths ?? '').toContain('.gitignore');
     expect(gitignoreContent).toContain('.oma/\ncustom-user-ignore/\n');
     expect(gitignoreContent).toContain('# oh-my-pactgpb:begin');
-    expect(gitignoreContent).toContain('.oma/generated/');
+    expect(gitignoreContent).toContain('.oma/packs/oh-my-pactgpb/generated/');
     expect(isIgnored(fixture.rootDir, 'AGENTS.md')).toBe(false);
-    expect(isIgnored(fixture.rootDir, '.oma/install-state.json')).toBe(true);
+    expect(isIgnored(fixture.rootDir, '.oma/packs/oh-my-pactgpb/install-state.json')).toBe(true);
   });
 
   it('blocks update on malformed managed .gitignore markers instead of rewriting the file destructively', () => {
@@ -165,7 +165,7 @@ describe('gitignore policy materialization', () => {
     const gitignorePath = path.join(fixture.rootDir, '.gitignore');
 
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
-    writeFileSync(gitignorePath, '# oh-my-pactgpb:begin\n.oma/generated/\n', 'utf8');
+    writeFileSync(gitignorePath, '# oh-my-pactgpb:begin\n.oma/packs/oh-my-pactgpb/generated/\n', 'utf8');
 
     const execution = invokeInstalledCli(fixture.rootDir, ['update']);
     const result = parseJsonOutput<CliResult>(execution);
@@ -180,6 +180,6 @@ describe('gitignore policy materialization', () => {
       }),
     });
     expect(result.details?.refusedPaths ?? '').toContain('.gitignore');
-    expect(readFileSync(gitignorePath, 'utf8')).toBe('# oh-my-pactgpb:begin\n.oma/generated/\n');
+    expect(readFileSync(gitignorePath, 'utf8')).toBe('# oh-my-pactgpb:begin\n.oma/packs/oh-my-pactgpb/generated/\n');
   });
 });

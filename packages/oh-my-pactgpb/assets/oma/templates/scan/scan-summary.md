@@ -1,6 +1,6 @@
 # Pact provider scan summary
 
-This file is only a concise summary. Canonical machine-readable scan state lives in JSON under `.oma/state/shared/scan/`.
+This file is only a concise summary. Canonical machine-readable scan state lives in JSON under `.oma/packs/oh-my-pactgpb/state/shared/scan/`.
 
 ## Canonical JSON files
 

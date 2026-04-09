@@ -9,7 +9,7 @@ metadata:
 
 ## Use this skill when
 
-Use this bundle only when `.oma/capability-manifest.json` activates `akita-capability-akita-gpb-kafka-mq-module-ff56f175d8c`.
+Use this bundle only when `.oma/packs/oh-my-akitagpb/capability-manifest.json` activates `akita-capability-akita-gpb-kafka-mq-module-ff56f175d8c`.
 
 ## Scope
 

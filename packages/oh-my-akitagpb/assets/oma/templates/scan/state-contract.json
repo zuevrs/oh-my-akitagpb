@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "contractId": "akita-scan-state",
-  "sharedStateBasePath": ".oma/state/shared/scan",
-  "installedTemplateBasePath": ".oma/templates/scan",
+  "sharedStateBasePath": ".oma/packs/oh-my-akitagpb/state/shared/scan",
+  "installedTemplateBasePath": ".oma/packs/oh-my-akitagpb/templates/scan",
   "requiredMachineState": [
     {
       "id": "scan-state",
-      "path": ".oma/state/shared/scan/scan-state.json",
+      "path": ".oma/packs/oh-my-akitagpb/state/shared/scan/scan-state.json",
       "format": "json",
       "required": true,
       "requiredTopLevelFields": [
@@ -21,8 +21,8 @@
     }
   ],
   "summaryState": {
-    "path": ".oma/state/shared/scan/scan-summary.md",
-    "templatePath": ".oma/templates/scan/scan-summary.md",
+    "path": ".oma/packs/oh-my-akitagpb/state/shared/scan/scan-summary.md",
+    "templatePath": ".oma/packs/oh-my-akitagpb/templates/scan/scan-summary.md",
     "format": "markdown",
     "required": false,
     "canonical": false,
@@ -32,7 +32,7 @@
     "description": "Human-readable summary only. Canonical machine state stays in the single JSON file above. The summary should help a human understand trigger surfaces, contract evidence sources, candidate flows, strong assertion surfaces, and capability gaps without becoming the source of truth."
   },
   "redaction": {
-    "policyPath": ".oma/runtime/shared/data-handling-policy.json",
+    "policyPath": ".oma/packs/oh-my-akitagpb/runtime/shared/data-handling-policy.json",
     "redactionRequired": true,
     "markdownIsSummaryOnly": true,
     "forbiddenSharedData": [
