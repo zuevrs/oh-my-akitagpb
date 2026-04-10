@@ -5,14 +5,20 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace oh-my-akitagpb",
-    "test": "npm test --workspace oh-my-akitagpb",
-    "smoke:pack-install": "npm run smoke:pack-install --workspace oh-my-akitagpb",
-    "release:check": "npm run release:check --workspace oh-my-akitagpb",
-    "pack:akita": "npm pack --workspace oh-my-akitagpb --json",
+    "build": "npm run build:akita && npm run build:pact",
+    "build:akita": "npm run build --workspace oh-my-akitagpb",
     "build:pact": "npm run build --workspace oh-my-pactgpb",
+    "test": "npm run test:akita && npm run test:pact",
+    "test:akita": "npm test --workspace oh-my-akitagpb",
     "test:pact": "npm test --workspace oh-my-pactgpb",
+    "smoke:pack-install": "npm run smoke:akita && npm run smoke:pact",
+    "smoke:akita": "npm run smoke:pack-install --workspace oh-my-akitagpb",
     "smoke:pact": "npm run smoke:pack-install --workspace oh-my-pactgpb",
-    "pack:pact": "npm pack --workspace oh-my-pactgpb --json"
+    "release:check": "npm run release:check:akita && npm run release:check:pact",
+    "release:check:akita": "npm run release:check --workspace oh-my-akitagpb",
+    "release:check:pact": "npm run release:check --workspace oh-my-pactgpb",
+    "pack:akita": "npm pack --workspace oh-my-akitagpb --json",
+    "pack:pact": "npm pack --workspace oh-my-pactgpb --json",
+    "release:verify": "node ./scripts/verify-release-config.mjs"
   }
 }
