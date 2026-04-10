@@ -74,7 +74,6 @@ export interface ProofWriteArtifacts {
 
 interface RepoWritePlan {
   targetPath: string | null;
-  targetKind: 'existing-test' | 'new-test' | 'none';
   targetCoverageSlice: PactProviderWriteState['targetCoverageSlice'];
   remainingCoverageGaps: PactProviderWriteState['remainingCoverageGaps'];
   validationFocus: string[];
@@ -395,10 +394,6 @@ function labelsFromInteractions(
     interactionLabels,
     endpointLabels: uniqueSorted(endpointLabels),
   };
-}
-
-function normalizeEndpointLabel(value: string): string {
-  return value.replace(/\/(?:[0-9]+|[A-Za-z0-9_-]{2,})(?=\/|$)/g, '/{id}');
 }
 
 function deriveTargetCoverageSlice(
@@ -761,7 +756,6 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
     });
     return {
       targetPath: null,
-      targetKind: 'none',
       targetCoverageSlice,
       remainingCoverageGaps,
       validationFocus,
@@ -783,7 +777,6 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
     });
     return {
       targetPath: null,
-      targetKind: 'none',
       targetCoverageSlice,
       remainingCoverageGaps,
       validationFocus,
@@ -806,7 +799,6 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
     });
     return {
       targetPath: null,
-      targetKind: 'none',
       targetCoverageSlice,
       remainingCoverageGaps,
       validationFocus,
@@ -888,7 +880,6 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
 
     return {
       targetPath: existingTargetPath,
-      targetKind: 'existing-test',
       targetCoverageSlice,
       remainingCoverageGaps,
       validationFocus,
@@ -929,7 +920,6 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
 
   return {
     targetPath,
-    targetKind: 'new-test',
     targetCoverageSlice,
     remainingCoverageGaps,
     validationFocus,
