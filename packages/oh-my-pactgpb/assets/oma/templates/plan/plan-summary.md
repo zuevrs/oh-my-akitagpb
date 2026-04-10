@@ -23,6 +23,16 @@ Do not include secrets, credentials, tokens, raw auth headers, or machine-local 
 - Evidence:
 - Assumptions to confirm:
 
+### Coverage snapshot
+- Contract surface confidence:
+- Covered endpoints:
+- Endpoints with gaps:
+- Unverified endpoints:
+- Uncovered endpoints:
+- Covered interactions:
+- Interaction state gaps:
+- Setup-only targets:
+
 ### Verification readiness
 - Planning verdict: `ready-to-scaffold` | `needs-provider-state-work` | `needs-artifact-source-clarification` | `blocked` | `irrelevant`
 - Existing setup:
@@ -30,15 +40,19 @@ Do not include secrets, credentials, tokens, raw auth headers, or machine-local 
 
 ### Provider-state work
 - Existing states:
+- Missing states:
 - Gaps:
 - Recommended actions:
 
 ### Planned tasks
 1.
 
+### Next concrete slice
+-
+
 ### Verification approach
 - Expected test/scaffold direction:
 - What should be extended or created:
 
 ### Blockers
-- 
+-

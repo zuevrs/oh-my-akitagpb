@@ -14,6 +14,7 @@ Do not include secrets, credentials, tokens, raw auth headers, or machine-local 
 
 ### Provider under contract
 - Provider candidate:
+- Provider confidence:
 - Why this provider is the best fit:
 - Pact relevance verdict:
 
@@ -28,18 +29,32 @@ Do not include secrets, credentials, tokens, raw auth headers, or machine-local 
 - Broker-related config/env/properties/scripts:
 - Expected artifact source verdict: `local` | `broker` | `unclear`
 
+### Coverage snapshot
+- Covered endpoints:
+- Endpoints with gaps:
+- Unverified endpoints:
+- Uncovered endpoints:
+- Covered interactions:
+- Interaction state gaps:
+- Unmapped interactions:
+- Setup-only verification targets:
+
 ### Provider state readiness
 - Existing provider state hooks:
+- Referenced provider states:
+- Missing provider states:
 - State setup fixtures/helpers:
-- Notable gaps:
 
 ### HTTP provider surface
 - Controllers / request mappings:
+- Request mapping inventory:
 - DTOs / serializers / payload models:
-- Notes on likely contract surface:
 
 ### Main blockers
-- 
+-
+
+### Next concrete slice
+-
 
 ### Why Pact is relevant or not
-- 
+-

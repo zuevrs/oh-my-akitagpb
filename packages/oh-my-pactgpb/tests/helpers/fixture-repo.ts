@@ -16,7 +16,8 @@ export type FixtureTemplate =
   | 'spring-pact-provider-unclear'
   | 'spring-pact-provider-broker'
   | 'spring-pact-provider-stale'
-  | 'spring-pact-provider-ambiguous';
+  | 'spring-pact-provider-ambiguous'
+  | 'spring-pact-provider-partial';
 
 export interface CommandExecution {
   command: string;
@@ -67,6 +68,7 @@ const fixtureTemplateRoots: Partial<Record<FixtureTemplate, string>> = {
   'spring-pact-provider-broker': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-broker'),
   'spring-pact-provider-stale': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-stale'),
   'spring-pact-provider-ambiguous': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-ambiguous'),
+  'spring-pact-provider-partial': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-partial'),
 };
 let packedTarballPath: string | undefined;
 

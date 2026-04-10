@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { writeProofInitArtifacts } from '../../src/proof/init-proof.js';
 import {
   derivePlanFromScanState,
   hasInstalledPlanContract,
@@ -52,7 +53,7 @@ afterEach(() => {
 
 describe('plan proof', () => {
   it('requires persisted scan-state on disk instead of planning from memory', () => {
-    const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-local' }));
+    const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-partial' }));
     const installResult = parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
 
     expect(installResult).toMatchObject({
@@ -65,8 +66,8 @@ describe('plan proof', () => {
     expect(() => writeProofPlanArtifacts(fixture.rootDir)).toThrow(/Persisted scan-state is missing/);
   });
 
-  it('produces a ready-to-scaffold plan from persisted local pact scan-state', () => {
-    const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-local' }));
+  it('derives concrete missing coverage work from a partial coverage model', () => {
+    const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-partial' }));
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
     writeProofScanArtifacts(fixture.rootDir);
 
@@ -80,28 +81,42 @@ describe('plan proof', () => {
       expect(persistedState).toHaveProperty(field);
     }
 
-    expect(persistedState.providerSelection.name).toBe('payments-provider');
+    expect(persistedState.providerSelection.name).toBe('invoices-provider');
     expect(persistedState.artifactSourceStrategy.verdict).toBe('local');
-    expect(persistedState.verificationReadiness.verdict).toBe('ready-to-scaffold');
+    expect(persistedState.verificationReadiness.verdict).toBe('needs-provider-state-work');
     expect(persistedState.verificationReadiness.existingSetup).toBe('extend-existing-provider-verification');
-    expect(persistedState.providerStateWork.existingStates).toContain('payment exists');
+    expect(persistedState.coverageSummary.coveredEndpoints).toContain('GET /invoices/{id}');
+    expect(persistedState.coverageSummary.endpointsWithGaps).toContain('POST /invoices');
+    expect(persistedState.coverageSummary.uncoveredEndpoints).toContain('DELETE /invoices/{id}');
+    expect(persistedState.providerStateWork.missingStates).toContain('invoice creatable');
     expect(persistedState.plannedTasks.map((task) => task.title)).toContain('Extend the existing provider verification setup');
-    expect(summary).toContain('Planning verdict: ready-to-scaffold');
-    expect(summary).toContain('Selected provider: payments-provider');
-    expect(summary).toContain('Extend the existing provider verification setup');
+    expect(persistedState.plannedTasks.map((task) => task.title)).toContain('Add missing provider states');
+    expect(persistedState.plannedTasks.map((task) => task.title)).toContain('Extend coverage for partially represented endpoints');
+    expect(persistedState.plannedTasks.map((task) => task.title)).toContain('Add coverage for uncovered provider endpoints');
+    expect(persistedState.plannedTasks.map((task) => task.title)).not.toContain('Scaffold a provider verification test');
+    expect(summary).toContain('Planning verdict: needs-provider-state-work');
+    expect(summary).toContain('Covered endpoints: GET /invoices/{id}');
+    expect(summary).toContain('Uncovered endpoints: DELETE /invoices/{id}');
+    expect(summary).toContain('Missing states: invoice creatable');
   });
 
-  it('marks Pact as irrelevant when the persisted scan-state says the repo has no Pact evidence', () => {
-    const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
+  it('keeps bootstrap-only repos in clarification mode instead of pretending they already cover interactions', () => {
+    const fixture = trackFixture(createInstalledFixture({ template: 'spring-provider-init-codefirst' }));
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
+    writeProofInitArtifacts(fixture.rootDir);
+    writeProofScanArtifacts(fixture.rootDir);
 
-    const scanArtifacts = writeProofScanArtifacts(fixture.rootDir);
-    const plan = derivePlanFromScanState(scanArtifacts.state);
+    const artifacts = writeProofPlanArtifacts(fixture.rootDir);
+    const persistedState = readJsonFile<PactProviderPlanState>(artifacts.statePath);
 
-    expect(plan.verificationReadiness.verdict).toBe('irrelevant');
-    expect(plan.providerSelection.name).toBe('fixture-java-service');
-    expect(plan.plannedTasks).toEqual([]);
-    expect(plan.blockedBy).toEqual([]);
+    expect(persistedState.providerSelection.name).toBe('orders-provider');
+    expect(persistedState.artifactSourceStrategy.verdict).toBe('unclear');
+    expect(persistedState.verificationReadiness.verdict).toBe('needs-artifact-source-clarification');
+    expect(persistedState.coverageSummary.setupOnlyTargets.join(' ')).toContain('OrdersProviderPactInitTest.java');
+    expect(persistedState.coverageSummary.uncoveredEndpoints).toContain('GET /orders/{id}');
+    expect(persistedState.plannedTasks.map((task) => task.title)).toContain('Clarify pact artifact source');
+    expect(persistedState.plannedTasks.map((task) => task.title)).toContain('Extend the existing provider verification setup');
+    expect(persistedState.plannedTasks.map((task) => task.title)).toContain('Add coverage for uncovered provider endpoints');
   });
 
   it('keeps broker-only artifact hints in clarification mode instead of claiming runnable verification', () => {
@@ -117,23 +132,6 @@ describe('plan proof', () => {
     expect(persistedState.verificationReadiness.verdict).toBe('needs-artifact-source-clarification');
     expect(persistedState.plannedTasks.map((task) => task.title)).toContain('Clarify broker-backed pact retrieval');
     expect(persistedState.blockedBy.join(' ')).toContain('broker access');
-  });
-
-  it('extends stale existing verification instead of recreating it from scratch', () => {
-    const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-stale' }));
-    parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
-    writeProofScanArtifacts(fixture.rootDir);
-
-    const artifacts = writeProofPlanArtifacts(fixture.rootDir);
-    const persistedState = readJsonFile<PactProviderPlanState>(artifacts.statePath);
-
-    expect(persistedState.providerSelection.name).toBe('orders-provider');
-    expect(persistedState.artifactSourceStrategy.verdict).toBe('local');
-    expect(persistedState.verificationReadiness.verdict).toBe('needs-provider-state-work');
-    expect(persistedState.verificationReadiness.existingSetup).toBe('extend-existing-provider-verification');
-    expect(persistedState.providerStateWork.gaps.join(' ')).toContain('No provider state hooks were detected');
-    expect(persistedState.plannedTasks.map((task) => task.title)).toContain('Extend the existing provider verification setup');
-    expect(persistedState.plannedTasks.map((task) => task.title)).not.toContain('Scaffold a provider verification test');
   });
 
   it('persists provider ambiguity as a blocker instead of silently guessing', () => {
@@ -152,5 +150,18 @@ describe('plan proof', () => {
     expect(persistedState.plannedTasks).toHaveLength(1);
     expect(persistedState.plannedTasks[0]?.title).toBe('Resolve provider binding ambiguity');
     expect(summary).toContain('blocked or unclear');
+  });
+
+  it('marks Pact as irrelevant when the persisted scan-state says the repo has no Pact evidence', () => {
+    const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
+    parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
+
+    const scanArtifacts = writeProofScanArtifacts(fixture.rootDir);
+    const plan = derivePlanFromScanState(scanArtifacts.state);
+
+    expect(plan.verificationReadiness.verdict).toBe('irrelevant');
+    expect(plan.providerSelection.name).toBe('fixture-java-service');
+    expect(plan.plannedTasks).toEqual([]);
+    expect(plan.blockedBy).toEqual([]);
   });
 });

@@ -16,9 +16,10 @@
         "verificationEvidence",
         "providerStates",
         "httpSurface",
+        "coverageModel",
         "gaps"
       ],
-      "description": "Canonical persisted scan snapshot for Pact provider verification in the target repo. It must identify the most likely provider under contract, explain why Pact provider verification is relevant or irrelevant, capture where pact artifacts are expected from, summarize verification evidence and provider-state hooks, and make blockers explicit enough for later work to reason honestly from disk state."
+      "description": "Canonical persisted scan snapshot for Pact provider verification in the target repo. It must identify the most likely provider under contract, explain why Pact provider verification is relevant or irrelevant, capture where pact artifacts are expected from, summarize verification evidence and provider-state hooks, persist a coverage-oriented model of provider surface vs existing Pact coverage, and make blockers explicit enough for later work to reason honestly from disk state."
     }
   ],
   "summaryState": {

@@ -23,11 +23,12 @@
         "artifactSourceStrategy",
         "verificationReadiness",
         "providerStateWork",
+        "coverageSummary",
         "plannedTasks",
         "verificationApproach",
         "blockedBy"
       ],
-      "description": "Canonical persisted planning state for Pact provider verification. It must capture provider selection, artifact-source strategy, verification readiness, provider-state work, safe ordered next tasks, verification approach, and explicit blockers without inventing runnable verification unsupported by scan evidence."
+      "description": "Canonical persisted planning state for Pact provider verification. It must capture provider selection, artifact-source strategy, verification readiness, provider-state work, coverage summary, safe ordered next tasks, verification approach, and explicit blockers without inventing runnable verification unsupported by scan evidence."
     }
   ],
   "verdictTaxonomy": {

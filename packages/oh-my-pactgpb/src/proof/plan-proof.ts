@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import type {
   ArtifactSourceVerdict,
+  CoverageConfidence,
   PactProviderScanState,
   ProviderConfidence,
 } from './scan-proof.js';
@@ -14,8 +15,16 @@ export type PactPlanVerdict =
   | 'blocked'
   | 'irrelevant';
 
+export interface PactProviderPlanTask {
+  id: string;
+  title: string;
+  rationale: string;
+  targets: string[];
+  evidence: string[];
+}
+
 export interface PactProviderPlanState {
-  schemaVersion: 1;
+  schemaVersion: 2;
   generatedAt: string;
   projectRoot: string;
   scanStatePath: string;
@@ -37,14 +46,25 @@ export interface PactProviderPlanState {
   };
   providerStateWork: {
     existingStates: string[];
+    missingStates: string[];
     gaps: string[];
     recommendedActions: string[];
   };
-  plannedTasks: Array<{
-    id: string;
-    title: string;
-    rationale: string;
-  }>;
+  coverageSummary: {
+    coveredEndpoints: string[];
+    endpointsWithGaps: string[];
+    unverifiedEndpoints: string[];
+    uncoveredEndpoints: string[];
+    ambiguousEndpoints: string[];
+    coveredInteractions: string[];
+    interactionStateGaps: string[];
+    unverifiedInteractions: string[];
+    unmappedInteractions: string[];
+    setupOnlyTargets: string[];
+    recommendedNextSlice: string[];
+    contractSurfaceConfidence: CoverageConfidence;
+  };
+  plannedTasks: PactProviderPlanTask[];
   verificationApproach: {
     expectedTestStyle: string;
     scaffoldDirection: string;
@@ -89,22 +109,27 @@ function readJsonFile<T>(filePath: string): T {
   return JSON.parse(readFileSync(filePath, 'utf8')) as T;
 }
 
-function makeTask(id: number, title: string, rationale: string) {
+function makeTask(id: number, title: string, rationale: string, targets: string[] = [], evidence: string[] = []): PactProviderPlanTask {
   return {
     id: `T${String(id).padStart(2, '0')}`,
     title,
     rationale,
+    targets: uniqueSorted(targets),
+    evidence: uniqueSorted(evidence),
   };
 }
 
 function selectProviderAmbiguities(scanState: PactProviderScanState): string[] {
-  const explicitAmbiguities = scanState.gaps.filter((gap) => {
-    const normalized = gap.toLowerCase();
-    return normalized.includes('ambiguous') || normalized.includes('no confident provider');
-  });
+  const explicitAmbiguities = uniqueSorted([
+    ...scanState.coverageModel.ambiguityMarkers,
+    ...scanState.gaps.filter((gap) => {
+      const normalized = gap.toLowerCase();
+      return normalized.includes('ambiguous') || normalized.includes('no confident provider');
+    }),
+  ]);
 
   if (explicitAmbiguities.length > 0) {
-    return uniqueSorted(explicitAmbiguities);
+    return explicitAmbiguities;
   }
 
   if (scanState.provider.name === null) {
@@ -124,9 +149,7 @@ function classifyExistingSetup(scanState: PactProviderScanState): string {
   }
 
   if (scanState.verificationEvidence.providerVerificationTests.length > 0) {
-    return scanState.providerStates.missingStateSupport
-      ? 'extend-existing-provider-verification'
-      : 'extend-existing-provider-verification';
+    return 'extend-existing-provider-verification';
   }
 
   return 'scaffold-new-provider-verification';
@@ -138,29 +161,40 @@ function buildArtifactAssumptions(scanState: PactProviderScanState): string[] {
   }
 
   if (scanState.artifactSource.verdict === 'broker') {
-    return [
+    return uniqueSorted([
       'Broker-related hints exist, but persisted scan-state does not prove broker access, auth, or artifact retrieval wiring.',
-    ];
+      ...scanState.coverageModel.coverageSummary.setupOnlyTargets.length > 0
+        ? ['Existing verification targets still look setup-only until broker-backed pact retrieval is confirmed.']
+        : [],
+    ]);
   }
 
-  return [
+  return uniqueSorted([
     'Persisted scan-state does not identify a runnable pact artifact location yet.',
-  ];
+    ...scanState.coverageModel.coverageSummary.setupOnlyTargets.length > 0
+      ? ['Bootstrap-only verification targets exist, but they do not prove real interaction coverage yet.']
+      : [],
+  ]);
 }
 
 function buildProviderStateGaps(scanState: PactProviderScanState): string[] {
-  const gaps = scanState.gaps.filter((gap) => gap.toLowerCase().includes('state'));
-
   if (scanState.relevance.verdict === 'irrelevant') {
     return [];
   }
 
-  if (scanState.providerStates.missingStateSupport) {
+  const gaps = [...scanState.gaps.filter((gap) => gap.toLowerCase().includes('state'))];
+  const missingStates = scanState.coverageModel.stateInventory.missing;
+
+  if (missingStates.length > 0) {
+    gaps.push(`Missing provider states: ${missingStates.join(', ')}.`);
+  }
+
+  if (scanState.providerStates.stateAnnotations.length === 0) {
     gaps.push('No provider state hooks were detected in persisted scan-state.');
   }
 
-  if (scanState.providerStates.stateAnnotations.length > 0) {
-    gaps.push('Existing provider states are only partially known from scan-state; interaction-to-state coverage still needs review.');
+  if (scanState.coverageModel.stateInventory.referenced.length === 0 && scanState.artifactSource.verdict !== 'local') {
+    gaps.push('No grounded interaction-derived provider-state inventory exists yet.');
   }
 
   return uniqueSorted(gaps);
@@ -168,16 +202,19 @@ function buildProviderStateGaps(scanState: PactProviderScanState): string[] {
 
 function buildProviderStateActions(scanState: PactProviderScanState): string[] {
   const actions: string[] = [];
-  const stateNames = scanState.providerStates.stateAnnotations;
+  const missingStates = scanState.coverageModel.stateInventory.missing;
+  const existingStates = scanState.providerStates.stateAnnotations;
 
   if (scanState.relevance.verdict === 'irrelevant') {
     return actions;
   }
 
-  if (stateNames.length > 0) {
-    actions.push(`Review existing @State handlers and confirm they cover the pact interactions already implied by: ${stateNames.join(', ')}.`);
+  if (missingStates.length > 0) {
+    actions.push(`Add provider state handlers for: ${missingStates.join(', ')}.`);
+  } else if (existingStates.length > 0) {
+    actions.push(`Audit existing @State handlers and keep only the ones still justified by the current interactions: ${existingStates.join(', ')}.`);
   } else {
-    actions.push('Add provider state handlers for the interactions required by the selected provider contracts.');
+    actions.push('Add provider state handlers once grounded pact interactions expose the required state names.');
   }
 
   if (scanState.verificationEvidence.integrationTestPriorArt.length > 0) {
@@ -208,9 +245,16 @@ function buildBlockedBy(
     blockedBy.push(...artifactAssumptions);
   }
 
+  blockedBy.push(...scanState.coverageModel.ambiguityMarkers);
+
   for (const gap of scanState.gaps) {
     const normalized = gap.toLowerCase();
-    if (normalized.includes('controller surface') || normalized.includes('artifact source')) {
+    if (
+      normalized.includes('artifact source')
+      || normalized.includes('ambiguous')
+      || normalized.includes('no spring controller surface')
+      || normalized.includes('could not be mapped')
+    ) {
       blockedBy.push(gap);
     }
   }
@@ -234,7 +278,7 @@ function determineVerificationVerdict(
     return 'needs-artifact-source-clarification';
   }
 
-  if (scanState.providerStates.missingStateSupport) {
+  if (scanState.coverageModel.stateInventory.missing.length > 0 || scanState.providerStates.missingStateSupport) {
     return 'needs-provider-state-work';
   }
 
@@ -247,6 +291,10 @@ function buildReadinessWhy(
   existingSetup: string,
 ): string[] {
   const reasons = [...scanState.relevance.because];
+  const coverageSummary = scanState.coverageModel.coverageSummary;
+
+  reasons.push(`Covered endpoints: ${coverageSummary.coveredEndpoints.join(', ') || '(none)'}.`);
+  reasons.push(`Uncovered endpoints: ${coverageSummary.uncoveredEndpoints.join(', ') || '(none)'}.`);
 
   if (existingSetup === 'extend-existing-provider-verification' && scanState.verificationEvidence.providerVerificationTests.length > 0) {
     reasons.push(`Existing provider verification should be extended instead of recreated: ${scanState.verificationEvidence.providerVerificationTests.join(', ')}.`);
@@ -256,16 +304,20 @@ function buildReadinessWhy(
     reasons.push('No provider verification test class was persisted in scan-state, so the next safe step is to scaffold one rather than assume it already exists.');
   }
 
+  if (coverageSummary.setupOnlyTargets.length > 0) {
+    reasons.push(`Some provider verification targets are setup-only today: ${coverageSummary.setupOnlyTargets.join(', ')}.`);
+  }
+
   if (verdict === 'needs-provider-state-work') {
     reasons.push('Artifact access looks grounded enough to continue, but provider-state support is too weak to treat verification as runnable.');
   }
 
   if (verdict === 'needs-artifact-source-clarification') {
-    reasons.push('Provider binding is not enough on its own; pact artifact retrieval still needs proof before runnable verification can be claimed.');
+    reasons.push('Provider binding alone is not enough; pact artifact retrieval still needs proof before runnable verification can be claimed.');
   }
 
   if (verdict === 'ready-to-scaffold') {
-    reasons.push('Provider binding, local pact artifacts, and provider-state evidence are strong enough to scaffold the next verification slice safely.');
+    reasons.push('Provider binding, local pact artifacts, and current state coverage are strong enough to plan the next verification slice concretely.');
   }
 
   if (verdict === 'blocked') {
@@ -276,12 +328,13 @@ function buildReadinessWhy(
 }
 
 function buildVerificationApproach(scanState: PactProviderScanState, existingSetup: string): PactProviderPlanState['verificationApproach'] {
+  const coverageSummary = scanState.coverageModel.coverageSummary;
   const scaffoldDirection = existingSetup === 'extend-existing-provider-verification'
     ? `Extend the existing provider verification entrypoint instead of creating a parallel flow: ${scanState.verificationEvidence.providerVerificationTests.join(', ') || '(no test path persisted)'}.`
-    : `Create a new Spring Pact provider verification test scaffold for ${scanState.provider.name ?? 'the selected provider'} using repo-backed HTTP surface evidence.`;
+    : `Create a new Spring Pact provider verification test scaffold for ${scanState.provider.name ?? 'the selected provider'} using repo-backed endpoint inventory.`;
 
   const expectedTestStyle = scanState.artifactSource.verdict === 'local'
-    ? 'Spring HTTP provider verification using local pact artifacts.'
+    ? 'Spring HTTP provider verification using local pact artifacts with endpoint-by-endpoint coverage expansion.'
     : scanState.artifactSource.verdict === 'broker'
       ? 'Spring HTTP provider verification, but only after broker-backed artifact retrieval is confirmed.'
       : 'Spring HTTP provider verification is still conditional because artifact source is unclear.';
@@ -289,7 +342,10 @@ function buildVerificationApproach(scanState: PactProviderScanState, existingSet
   const evidence = uniqueSorted([
     ...scanState.verificationEvidence.providerVerificationTests,
     ...scanState.verificationEvidence.localPactFiles,
-    ...scanState.httpSurface.controllerFiles,
+    ...scanState.httpSurface.requestMappings,
+    ...coverageSummary.coveredEndpoints,
+    ...coverageSummary.uncoveredEndpoints,
+    ...coverageSummary.endpointsWithGaps,
     ...scanState.verificationEvidence.integrationTestPriorArt,
   ]);
 
@@ -300,16 +356,37 @@ function buildVerificationApproach(scanState: PactProviderScanState, existingSet
   };
 }
 
+function buildCoverageSummary(scanState: PactProviderScanState): PactProviderPlanState['coverageSummary'] {
+  const summary = scanState.coverageModel.coverageSummary;
+
+  return {
+    coveredEndpoints: summary.coveredEndpoints,
+    endpointsWithGaps: summary.endpointsWithGaps,
+    unverifiedEndpoints: summary.unverifiedEndpoints,
+    uncoveredEndpoints: summary.uncoveredEndpoints,
+    ambiguousEndpoints: summary.ambiguousEndpoints,
+    coveredInteractions: summary.coveredInteractions,
+    interactionStateGaps: summary.interactionStateGaps,
+    unverifiedInteractions: summary.unverifiedInteractions,
+    unmappedInteractions: summary.unmappedInteractions,
+    setupOnlyTargets: summary.setupOnlyTargets,
+    recommendedNextSlice: summary.recommendedNextSlice,
+    contractSurfaceConfidence: scanState.coverageModel.contractSurfaceInventory.confidence,
+  };
+}
+
 function buildPlannedTasks(
   scanState: PactProviderScanState,
   verdict: PactPlanVerdict,
   existingSetup: string,
-): PactProviderPlanState['plannedTasks'] {
+): PactProviderPlanTask[] {
   if (verdict === 'irrelevant') {
     return [];
   }
 
-  const tasks: PactProviderPlanState['plannedTasks'] = [];
+  const tasks: PactProviderPlanTask[] = [];
+  const coverageSummary = scanState.coverageModel.coverageSummary;
+  const missingStates = scanState.coverageModel.stateInventory.missing;
 
   if (verdict === 'blocked') {
     tasks.push(
@@ -317,6 +394,8 @@ function buildPlannedTasks(
         1,
         'Resolve provider binding ambiguity',
         'Compare the competing provider candidates in persisted scan-state and choose the provider under contract explicitly before any verification scaffolding.',
+        [],
+        [...scanState.coverageModel.ambiguityMarkers, ...scanState.provider.evidence],
       ),
     );
     return tasks;
@@ -327,7 +406,9 @@ function buildPlannedTasks(
       makeTask(
         tasks.length + 1,
         'Clarify broker-backed pact retrieval',
-        `Persist how broker artifacts are expected to be resolved and authenticated before treating verification as runnable. Evidence: ${scanState.verificationEvidence.brokerConfigHints.join(', ') || '(broker hints only)'}.`,
+        `Persist how broker artifacts are expected to be resolved and authenticated before treating verification as runnable. Evidence: ${scanState.artifactSource.evidence.join(', ') || '(broker hints only)'}.`,
+        scanState.artifactSource.evidence,
+        scanState.artifactSource.evidence,
       ),
     );
   }
@@ -337,7 +418,9 @@ function buildPlannedTasks(
       makeTask(
         tasks.length + 1,
         'Clarify pact artifact source',
-        'Determine whether pact files come from local fixtures or a broker before scaffolding provider verification.',
+        'Determine whether pact files come from local fixtures or a broker before treating any provider endpoint as truly covered.',
+        [],
+        [...coverageSummary.setupOnlyTargets, ...scanState.httpSurface.requestMappings],
       ),
     );
   }
@@ -348,6 +431,8 @@ function buildPlannedTasks(
         tasks.length + 1,
         'Extend the existing provider verification setup',
         `Reuse and remediate the existing Pact provider test instead of recreating it: ${scanState.verificationEvidence.providerVerificationTests.join(', ')}.`,
+        scanState.verificationEvidence.providerVerificationTests,
+        scanState.verificationEvidence.providerVerificationTests,
       ),
     );
   } else {
@@ -356,24 +441,54 @@ function buildPlannedTasks(
         tasks.length + 1,
         'Scaffold a provider verification test',
         `Create a Spring Pact provider verification entrypoint for ${scanState.provider.name ?? 'the selected provider'} using the persisted HTTP surface and artifact-source evidence.`,
+        scanState.httpSurface.controllerFiles,
+        scanState.httpSurface.requestMappings,
       ),
     );
   }
 
-  if (scanState.providerStates.missingStateSupport) {
+  if (missingStates.length > 0) {
     tasks.push(
       makeTask(
         tasks.length + 1,
-        'Add provider state handlers',
-        'Implement the @State-driven fixture/bootstrap hooks needed to make provider verification runnable instead of relying on empty happy-path scaffolding.',
+        'Add missing provider states',
+        `Implement the missing provider-state support surfaced by scan-state: ${missingStates.join(', ')}.`,
+        missingStates,
+        coverageSummary.interactionStateGaps,
       ),
     );
-  } else {
+  } else if (scanState.providerStates.stateAnnotations.length > 0) {
     tasks.push(
       makeTask(
         tasks.length + 1,
         'Audit provider state coverage',
         `Start from the known provider states and verify they still match the target interactions: ${scanState.providerStates.stateAnnotations.join(', ')}.`,
+        scanState.providerStates.stateAnnotations,
+        coverageSummary.coveredInteractions,
+      ),
+    );
+  }
+
+  if (coverageSummary.endpointsWithGaps.length > 0 || coverageSummary.unverifiedEndpoints.length > 0) {
+    tasks.push(
+      makeTask(
+        tasks.length + 1,
+        'Extend coverage for partially represented endpoints',
+        'Close the gap between existing Pact interactions and runnable provider verification for endpoints that are represented but still weak, state-gapped, or setup-only.',
+        [...coverageSummary.endpointsWithGaps, ...coverageSummary.unverifiedEndpoints],
+        [...coverageSummary.interactionStateGaps, ...coverageSummary.unverifiedInteractions, ...coverageSummary.setupOnlyTargets],
+      ),
+    );
+  }
+
+  if (coverageSummary.uncoveredEndpoints.length > 0) {
+    tasks.push(
+      makeTask(
+        tasks.length + 1,
+        'Add coverage for uncovered provider endpoints',
+        'Implement the next provider contract-test slice for the endpoints that are present in the Spring HTTP surface but not represented by current Pact verification.',
+        coverageSummary.uncoveredEndpoints,
+        scanState.httpSurface.requestMappings,
       ),
     );
   }
@@ -384,6 +499,8 @@ function buildPlannedTasks(
         tasks.length + 1,
         'Reuse existing integration bootstrap',
         `Lift stable fixture/bootstrap patterns from existing tests instead of inventing a new harness: ${scanState.verificationEvidence.integrationTestPriorArt.join(', ')}.`,
+        scanState.verificationEvidence.integrationTestPriorArt,
+        scanState.verificationEvidence.integrationTestPriorArt,
       ),
     );
   }
@@ -397,9 +514,10 @@ export function derivePlanFromScanState(scanState: PactProviderScanState): PactP
   const artifactAssumptions = buildArtifactAssumptions(scanState);
   const existingSetup = classifyExistingSetup(scanState);
   const verdict = determineVerificationVerdict(scanState, providerAmbiguities);
+  const coverageSummary = buildCoverageSummary(scanState);
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     projectRoot: scanState.projectRoot,
     scanStatePath,
@@ -421,9 +539,11 @@ export function derivePlanFromScanState(scanState: PactProviderScanState): PactP
     },
     providerStateWork: {
       existingStates: scanState.providerStates.stateAnnotations,
+      missingStates: scanState.coverageModel.stateInventory.missing,
       gaps: buildProviderStateGaps(scanState),
       recommendedActions: buildProviderStateActions(scanState),
     },
+    coverageSummary,
     plannedTasks: buildPlannedTasks(scanState, verdict, existingSetup),
     verificationApproach: buildVerificationApproach(scanState, existingSetup),
     blockedBy: buildBlockedBy(scanState, providerAmbiguities, artifactAssumptions),
@@ -453,6 +573,16 @@ export function renderPlanSummary(state: PactProviderPlanState): string {
     `- Evidence: ${state.artifactSourceStrategy.evidence.join(', ') || '(none)'}`,
     `- Assumptions to confirm: ${state.artifactSourceStrategy.assumptions.join('; ') || '(none)'}`,
     '',
+    '### Coverage snapshot',
+    `- Contract surface confidence: ${state.coverageSummary.contractSurfaceConfidence}`,
+    `- Covered endpoints: ${state.coverageSummary.coveredEndpoints.join(', ') || '(none)'}`,
+    `- Endpoints with gaps: ${state.coverageSummary.endpointsWithGaps.join(', ') || '(none)'}`,
+    `- Unverified endpoints: ${state.coverageSummary.unverifiedEndpoints.join(', ') || '(none)'}`,
+    `- Uncovered endpoints: ${state.coverageSummary.uncoveredEndpoints.join(', ') || '(none)'}`,
+    `- Covered interactions: ${state.coverageSummary.coveredInteractions.join(', ') || '(none)'}`,
+    `- Interaction state gaps: ${state.coverageSummary.interactionStateGaps.join(', ') || '(none)'}`,
+    `- Setup-only targets: ${state.coverageSummary.setupOnlyTargets.join(', ') || '(none)'}`,
+    '',
     '### Verification readiness',
     `- Planning verdict: ${state.verificationReadiness.verdict}`,
     `- Existing setup: ${state.verificationReadiness.existingSetup}`,
@@ -460,6 +590,7 @@ export function renderPlanSummary(state: PactProviderPlanState): string {
     '',
     '### Provider-state work',
     `- Existing states: ${state.providerStateWork.existingStates.join(', ') || '(none)'}`,
+    `- Missing states: ${state.providerStateWork.missingStates.join(', ') || '(none)'}`,
     `- Gaps: ${state.providerStateWork.gaps.join('; ') || '(none)'}`,
     `- Recommended actions: ${state.providerStateWork.recommendedActions.join('; ') || '(none)'}`,
     '',
@@ -467,6 +598,11 @@ export function renderPlanSummary(state: PactProviderPlanState): string {
     ...(state.plannedTasks.length > 0
       ? state.plannedTasks.map((task) => `${task.id}. ${task.title} — ${task.rationale}`)
       : ['(none)']),
+    '',
+    '### Next concrete slice',
+    ...(state.coverageSummary.recommendedNextSlice.length > 0
+      ? state.coverageSummary.recommendedNextSlice.map((entry) => `- ${entry}`)
+      : ['- None.']),
     '',
     '### Verification approach',
     `- Expected test/scaffold direction: ${state.verificationApproach.expectedTestStyle}`,

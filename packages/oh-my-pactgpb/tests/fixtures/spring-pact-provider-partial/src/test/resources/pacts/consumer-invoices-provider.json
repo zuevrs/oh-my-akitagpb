@@ -1,0 +1,25 @@
+{
+  "consumer": { "name": "billing-ui" },
+  "provider": { "name": "invoices-provider" },
+  "interactions": [
+    {
+      "description": "get invoice by id",
+      "providerStates": [
+        { "name": "invoice exists" }
+      ],
+      "request": { "method": "GET", "path": "/invoices/123" },
+      "response": { "status": 200 }
+    },
+    {
+      "description": "create invoice",
+      "providerStates": [
+        { "name": "invoice creatable" }
+      ],
+      "request": { "method": "POST", "path": "/invoices" },
+      "response": { "status": 201 }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": { "version": "4.0" }
+  }
+}

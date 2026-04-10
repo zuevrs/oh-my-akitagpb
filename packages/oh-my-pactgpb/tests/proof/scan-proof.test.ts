@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { writeProofInitArtifacts } from '../../src/proof/init-proof.js';
 import {
   hasInstalledScanContract,
   scanPactProviderRepo,
@@ -49,8 +50,8 @@ afterEach(() => {
 });
 
 describe('scan proof', () => {
-  it('produces grounded scan artifacts for a Spring provider with local pact files', () => {
-    const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-local' }));
+  it('persists a coverage model for a partially covered Pact provider repo', () => {
+    const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-partial' }));
     const installResult = parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
 
     expect(installResult).toMatchObject({
@@ -70,41 +71,61 @@ describe('scan proof', () => {
       expect(persistedState).toHaveProperty(field);
     }
 
-    expect(persistedState.provider.name).toBe('payments-provider');
+    expect(persistedState.provider.name).toBe('invoices-provider');
     expect(persistedState.artifactSource.verdict).toBe('local');
-    expect(persistedState.verificationEvidence.pactDependencies).toContain('pom.xml');
     expect(persistedState.verificationEvidence.providerVerificationTests).toContain(
-      'src/test/java/com/example/payments/contract/PaymentProviderPactTest.java',
+      'src/test/java/com/example/invoices/contract/InvoiceProviderPactTest.java',
     );
-    expect(persistedState.verificationEvidence.localPactFiles).toContain(
-      'src/test/resources/pacts/consumer-payments-provider.json',
-    );
-    expect(persistedState.providerStates.stateAnnotations).toContain('payment exists');
-    expect(persistedState.httpSurface.controllerFiles).toContain(
-      'src/main/java/com/example/payments/api/PaymentController.java',
-    );
-    expect(summary).toContain('Provider candidate: payments-provider');
-    expect(summary).toContain('Expected artifact source verdict: local');
-    expect(summary).toContain('payment exists');
+    expect(persistedState.coverageModel.coverageSummary.coveredEndpoints).toContain('GET /invoices/{id}');
+    expect(persistedState.coverageModel.coverageSummary.endpointsWithGaps).toContain('POST /invoices');
+    expect(persistedState.coverageModel.coverageSummary.uncoveredEndpoints).toContain('DELETE /invoices/{id}');
+    expect(persistedState.coverageModel.coverageSummary.coveredInteractions.join(' ')).toContain('GET /invoices/123');
+    expect(persistedState.coverageModel.coverageSummary.interactionStateGaps.join(' ')).toContain('POST /invoices');
+    expect(persistedState.coverageModel.stateInventory.missing).toContain('invoice creatable');
+    expect(summary).toContain('Covered endpoints: GET /invoices/{id}');
+    expect(summary).toContain('Endpoints with gaps: POST /invoices');
+    expect(summary).toContain('Uncovered endpoints: DELETE /invoices/{id}');
+    expect(summary).toContain('Missing provider states: invoice creatable');
   });
 
-  it('surfaces an honest blocker when Pact artifact source is unclear', () => {
-    const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-unclear' }));
+  it('treats init bootstrap as setup-only and does not invent covered interactions', () => {
+    const fixture = trackFixture(createInstalledFixture({ template: 'spring-provider-init-codefirst' }));
+    parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
+    writeProofInitArtifacts(fixture.rootDir);
+
+    const artifacts = writeProofScanArtifacts(fixture.rootDir);
+    const persistedState = readJsonFile<PactProviderScanState>(artifacts.statePath);
+    const summary = readFileSync(artifacts.summaryPath, 'utf8');
+
+    expect(persistedState.provider.name).toBe('orders-provider');
+    expect(persistedState.relevance.verdict).toBe('relevant');
+    expect(persistedState.artifactSource.verdict).toBe('unclear');
+    expect(persistedState.verificationEvidence.providerVerificationTests).toContain(
+      'src/test/java/com/example/orders/contract/OrdersProviderPactInitTest.java',
+    );
+    expect(persistedState.coverageModel.coverageSummary.setupOnlyTargets.join(' ')).toContain('OrdersProviderPactInitTest.java');
+    expect(persistedState.coverageModel.coverageSummary.coveredEndpoints).toEqual([]);
+    expect(persistedState.coverageModel.coverageSummary.uncoveredEndpoints).toContain('GET /orders/{id}');
+    expect(persistedState.coverageModel.stateInventory.referenced).toEqual([]);
+    expect(persistedState.gaps.join(' ')).toContain('Bootstrap provider verification exists');
+    expect(summary).toContain('Setup-only verification targets');
+    expect(summary).toContain('Uncovered endpoints: GET /orders/{id}');
+  });
+
+  it('preserves provider ambiguity instead of claiming fake coverage', () => {
+    const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-ambiguous' }));
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
 
     const artifacts = writeProofScanArtifacts(fixture.rootDir);
     const persistedState = readJsonFile<PactProviderScanState>(artifacts.statePath);
 
-    expect(persistedState.provider.name).toBe('billing-provider');
-    expect(persistedState.relevance.verdict).toBe('relevant');
-    expect(persistedState.artifactSource.verdict).toBe('unclear');
-    expect(persistedState.gaps).toContain(
-      'Pact artifact source is unclear: no local pact files or broker-related config were detected.',
-    );
-    expect(persistedState.providerStates.stateAnnotations).toContain('invoice exists');
+    expect(persistedState.provider.name).toBeNull();
+    expect(persistedState.relevance.verdict).toBe('needs-review');
+    expect(persistedState.coverageModel.ambiguityMarkers.join(' ')).toContain('ambiguous');
+    expect(persistedState.gaps.join(' ')).toContain('ambiguous');
   });
 
-  it('marks a plain Java/Spring repo without Pact evidence as irrelevant instead of inventing verification setup', () => {
+  it('marks a plain Java/Spring repo without Pact evidence as irrelevant instead of inventing coverage', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'java-service' }));
     parseJsonOutput<CliResult>(invokeInstalledCli(fixture.rootDir, ['install']));
 
@@ -112,6 +133,8 @@ describe('scan proof', () => {
 
     expect(state.relevance.verdict).toBe('irrelevant');
     expect(state.provider.name).toBe('fixture-java-service');
+    expect(state.coverageModel.coverageSummary.coveredEndpoints).toEqual([]);
+    expect(state.coverageModel.coverageSummary.uncoveredEndpoints).toEqual([]);
     expect(state.verificationEvidence.pactDependencies).toEqual([]);
     expect(state.verificationEvidence.providerVerificationTests).toEqual([]);
     expect(state.artifactSource.verdict).toBe('unclear');
