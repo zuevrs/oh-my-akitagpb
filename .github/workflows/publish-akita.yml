@@ -1,18 +1,17 @@
-name: publish
+name: publish akita
 
 on:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
+      - 'akita-v*'
 
 permissions:
   contents: write
   id-token: write
 
 env:
-  PACKAGE_NAME: oh-my-akitagpb
   PACKAGE_DIR: packages/oh-my-akitagpb
+  PACKAGE_TAG_PREFIX: akita-v
 
 jobs:
   publish:
@@ -37,10 +36,25 @@ jobs:
         run: |
           PACKAGE_NAME=$(node -p "JSON.parse(require('node:fs').readFileSync(process.env.PACKAGE_JSON_PATH, 'utf8')).name")
           PACKAGE_VERSION=$(node -p "JSON.parse(require('node:fs').readFileSync(process.env.PACKAGE_JSON_PATH, 'utf8')).version")
+          TAG_VERSION="${GITHUB_REF_NAME#${PACKAGE_TAG_PREFIX}}"
+          EXPECTED_TAG="${PACKAGE_TAG_PREFIX}${PACKAGE_VERSION}"
+
           echo "name=${PACKAGE_NAME}" >> "$GITHUB_OUTPUT"
           echo "version=${PACKAGE_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag_version=${TAG_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "expected_tag=${EXPECTED_TAG}" >> "$GITHUB_OUTPUT"
         env:
           PACKAGE_JSON_PATH: ${{ env.PACKAGE_DIR }}/package.json
+
+      - name: Validate tag matches package version
+        run: |
+          if [ "${GITHUB_REF_NAME}" != "${{ steps.package.outputs.expected_tag }}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match ${PACKAGE_TAG_PREFIX}${{ steps.package.outputs.version }} for ${{ steps.package.outputs.name }}." >&2
+            exit 1
+          fi
+
+      - name: Run release check
+        run: npm run release:check --workspace oh-my-akitagpb
 
       - name: Check npm publish status
         id: npm_publish_status
@@ -54,14 +68,13 @@ jobs:
       - name: Publish package
         if: steps.npm_publish_status.outputs.already_published != 'true'
         working-directory: ${{ env.PACKAGE_DIR }}
-        run: npm publish
+        run: npm publish --provenance
 
       - name: Skip npm publish when version already exists
         if: steps.npm_publish_status.outputs.already_published == 'true'
         run: echo "Package version ${{ steps.package.outputs.version }} is already published, skipping npm publish."
 
       - name: Check GitHub release status
-        if: startsWith(github.ref, 'refs/tags/v')
         id: github_release_status
         env:
           GH_TOKEN: ${{ github.token }}
@@ -73,11 +86,16 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v') && steps.github_release_status.outputs.already_exists != 'true'
+        if: steps.github_release_status.outputs.already_exists != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --generate-notes --verify-tag
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "${{ steps.package.outputs.name }}@${{ steps.package.outputs.version }}" \
+            --generate-notes \
+            --verify-tag
 
       - name: Skip GitHub Release creation when release already exists
-        if: startsWith(github.ref, 'refs/tags/v') && steps.github_release_status.outputs.already_exists == 'true'
+        if: steps.github_release_status.outputs.already_exists == 'true'
         run: echo "GitHub release ${GITHUB_REF_NAME} already exists, skipping release creation."
