@@ -2,12 +2,26 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'no
 import path from 'node:path';
 
 import type { PactProviderPlanState, PactPlanVerdict } from './plan-proof.js';
-import type { ArtifactSourceVerdict, PactProviderScanState, ProviderConfidence } from './scan-proof.js';
+import type {
+  ArtifactSourceVerdict,
+  PactProviderEndpointCoverage,
+  PactProviderInteractionCoverage,
+  PactProviderScanState,
+  ProviderConfidence,
+} from './scan-proof.js';
 
 export type PactWriteOutcome = 'written' | 'partial' | 'blocked' | 'no-op';
+export type PactWriteCategory =
+  | 'extend-existing-provider-verification'
+  | 'add-missing-provider-states'
+  | 'extend-partial-endpoint-coverage'
+  | 'prepare-uncovered-endpoint-coverage'
+  | 'partial-preparation'
+  | 'blocked'
+  | 'irrelevant';
 
 export interface PactProviderWriteState {
-  schemaVersion: 1;
+  schemaVersion: 2;
   generatedAt: string;
   projectRoot: string;
   scanStatePath: string;
@@ -20,6 +34,25 @@ export interface PactProviderWriteState {
   };
   inputPlanVerdict: PactPlanVerdict;
   writeOutcome: PactWriteOutcome;
+  targetCoverageSlice: {
+    category: PactWriteCategory;
+    summary: string;
+    verificationTarget: string | null;
+    endpoints: string[];
+    interactions: string[];
+    providerStates: string[];
+    plannedTaskIds: string[];
+    plannedTaskTitles: string[];
+  };
+  remainingCoverageGaps: {
+    endpointsWithGaps: string[];
+    unverifiedEndpoints: string[];
+    uncoveredEndpoints: string[];
+    interactionStateGaps: string[];
+    unverifiedInteractions: string[];
+    missingProviderStates: string[];
+  };
+  validationFocus: string[];
   filesPlanned: string[];
   filesWritten: string[];
   filesModified: string[];
@@ -42,6 +75,9 @@ export interface ProofWriteArtifacts {
 interface RepoWritePlan {
   targetPath: string | null;
   targetKind: 'existing-test' | 'new-test' | 'none';
+  targetCoverageSlice: PactProviderWriteState['targetCoverageSlice'];
+  remainingCoverageGaps: PactProviderWriteState['remainingCoverageGaps'];
+  validationFocus: string[];
   filesPlanned: string[];
   filesWritten: string[];
   filesModified: string[];
@@ -52,6 +88,18 @@ interface RepoWritePlan {
   unresolvedBlockers: string[];
   manualFollowUps: string[];
   notes: string[];
+  coverageImplemented: boolean;
+}
+
+interface CoverageSliceDraft {
+  category: PactWriteCategory;
+  summary: string;
+  endpoints: string[];
+  interactions: string[];
+  providerStates: string[];
+  plannedTaskIds: string[];
+  plannedTaskTitles: string[];
+  coverageImplemented: boolean;
 }
 
 const INSTALLED_WRITE_CONTRACT_RELATIVE_PATH = path.join(
@@ -300,11 +348,245 @@ function ensureComment(content: string, commentLines: readonly string[]): string
   return insertBeforeClassClosingBrace(content, commentLines.join('\n'));
 }
 
+function interactionLabel(interaction: PactProviderInteractionCoverage): string {
+  const requestLabel = interaction.method && interaction.path ? `${interaction.method} ${interaction.path}` : interaction.description;
+  return `${requestLabel} (${interaction.sourceFile})`;
+}
+
+function endpointLabel(endpoint: PactProviderEndpointCoverage): string {
+  return `${endpoint.method} ${endpoint.path}`;
+}
+
+function isLocalContractGrounding(scanState: PactProviderScanState): boolean {
+  return scanState.artifactSource.verdict === 'local' && scanState.verificationEvidence.localPactFiles.length > 0;
+}
+
+function pickTaskLinks(planState: PactProviderPlanState, preferredTitles: readonly string[]): Pick<CoverageSliceDraft, 'plannedTaskIds' | 'plannedTaskTitles'> {
+  const preferred = new Set(preferredTitles);
+  const matchingTasks = planState.plannedTasks.filter((task) => preferred.has(task.title));
+
+  return {
+    plannedTaskIds: uniqueSorted(matchingTasks.map((task) => task.id)),
+    plannedTaskTitles: uniqueSorted(matchingTasks.map((task) => task.title)),
+  };
+}
+
+function labelsFromInteractions(
+  interactions: readonly PactProviderInteractionCoverage[],
+  endpointIndex: Map<string, PactProviderEndpointCoverage>,
+): { interactionLabels: string[]; endpointLabels: string[] } {
+  const interactionLabels = uniqueSorted(interactions.map((interaction) => interactionLabel(interaction)));
+  const endpointLabels = new Set<string>();
+
+  for (const interaction of interactions) {
+    for (const endpointId of interaction.matchedEndpointIds) {
+      const endpoint = endpointIndex.get(endpointId);
+      if (endpoint) {
+        endpointLabels.add(endpointLabel(endpoint));
+      }
+    }
+
+    if (interaction.method && interaction.path) {
+      endpointLabels.add(`${interaction.method} ${interaction.path.replace(/\/[^/]+(?=\/|$)/g, '{id}').replace(/\/{2,}/g, '/')}`);
+    }
+  }
+
+  return {
+    interactionLabels,
+    endpointLabels: uniqueSorted(endpointLabels),
+  };
+}
+
+function normalizeEndpointLabel(value: string): string {
+  return value.replace(/\/(?:[0-9]+|[A-Za-z0-9_-]{2,})(?=\/|$)/g, '/{id}');
+}
+
+function deriveTargetCoverageSlice(
+  scanState: PactProviderScanState,
+  planState: PactProviderPlanState,
+  verificationTarget: string | null,
+  concreteStateNames: readonly string[],
+): CoverageSliceDraft {
+  const planVerdict = planState.verificationReadiness.verdict;
+  const endpointIndex = new Map(scanState.coverageModel.contractSurfaceInventory.endpoints.map((endpoint) => [endpoint.id, endpoint]));
+  const interactions = scanState.coverageModel.interactionInventory;
+  const missingStates = scanState.coverageModel.stateInventory.missing;
+  const groundedMissingStates = missingStates.filter((stateName) => concreteStateNames.includes(stateName));
+  const localGrounding = isLocalContractGrounding(scanState);
+  const coveredEndpointFocus = planState.coverageSummary.coveredEndpoints[0] ?? scanState.httpSurface.requestMappings[0] ?? '(unknown endpoint)';
+
+  if (planVerdict === 'blocked') {
+    const taskLinks = pickTaskLinks(planState, ['Resolve provider binding ambiguity']);
+    return {
+      category: 'blocked',
+      summary: 'Write stayed blocked because persisted plan state did not identify a safe provider contract target.',
+      endpoints: [],
+      interactions: [],
+      providerStates: [],
+      coverageImplemented: false,
+      ...taskLinks,
+    };
+  }
+
+  if (planVerdict === 'irrelevant') {
+    return {
+      category: 'irrelevant',
+      summary: 'Write stayed a no-op because Pact provider verification is irrelevant for this repo.',
+      endpoints: [],
+      interactions: [],
+      providerStates: [],
+      plannedTaskIds: [],
+      plannedTaskTitles: [],
+      coverageImplemented: false,
+    };
+  }
+
+  if (groundedMissingStates.length > 0) {
+    const relatedInteractions = interactions.filter((interaction) =>
+      interaction.providerStates.some((stateName) => groundedMissingStates.includes(stateName)),
+    );
+    const labels = labelsFromInteractions(relatedInteractions, endpointIndex);
+    const taskLinks = pickTaskLinks(planState, [
+      'Extend the existing provider verification setup',
+      'Scaffold a provider verification test',
+      'Add missing provider states',
+      'Extend coverage for partially represented endpoints',
+    ]);
+
+    return {
+      category: 'add-missing-provider-states',
+      summary: `Implement the missing provider state coverage for ${groundedMissingStates.join(', ')}${labels.endpointLabels.length > 0 ? ` on ${labels.endpointLabels.join(', ')}` : ''}.`,
+      endpoints: labels.endpointLabels,
+      interactions: labels.interactionLabels,
+      providerStates: uniqueSorted(groundedMissingStates),
+      coverageImplemented: localGrounding,
+      ...taskLinks,
+    };
+  }
+
+  const partialInteractions = interactions.filter((interaction) => interaction.status === 'state-gap' || interaction.status === 'unverified');
+  if (partialInteractions.length > 0) {
+    const labels = labelsFromInteractions(partialInteractions, endpointIndex);
+    const taskLinks = pickTaskLinks(planState, [
+      'Extend the existing provider verification setup',
+      'Scaffold a provider verification test',
+      'Extend coverage for partially represented endpoints',
+    ]);
+
+    return {
+      category: 'extend-partial-endpoint-coverage',
+      summary: `Extend the next partially represented provider contract slice for ${labels.endpointLabels.join(', ') || 'the persisted interaction gaps'}.`,
+      endpoints: labels.endpointLabels,
+      interactions: labels.interactionLabels,
+      providerStates: uniqueSorted(partialInteractions.flatMap((interaction) => interaction.providerStates.filter((stateName) => concreteStateNames.includes(stateName)))),
+      coverageImplemented: localGrounding && labels.interactionLabels.length > 0,
+      ...taskLinks,
+    };
+  }
+
+  if (planState.coverageSummary.uncoveredEndpoints.length > 0) {
+    const nextEndpoint = planState.coverageSummary.uncoveredEndpoints[0]!;
+    const taskLinks = pickTaskLinks(planState, [
+      'Extend the existing provider verification setup',
+      'Scaffold a provider verification test',
+      'Add coverage for uncovered provider endpoints',
+      'Clarify pact artifact source',
+      'Clarify broker-backed pact retrieval',
+    ]);
+
+    const category: PactWriteCategory = planVerdict === 'needs-artifact-source-clarification'
+      ? 'partial-preparation'
+      : 'prepare-uncovered-endpoint-coverage';
+
+    return {
+      category,
+      summary: planVerdict === 'needs-artifact-source-clarification'
+        ? `Keep ${nextEndpoint} as the next uncovered endpoint slice, but stay in preparation mode until the pact artifact source is grounded.`
+        : `Prepare the next uncovered provider endpoint slice for ${nextEndpoint} without widening beyond that endpoint.`,
+      endpoints: [nextEndpoint],
+      interactions: [],
+      providerStates: [],
+      coverageImplemented: false,
+      ...taskLinks,
+    };
+  }
+
+  const taskLinks = pickTaskLinks(planState, [
+    'Extend the existing provider verification setup',
+    'Scaffold a provider verification test',
+  ]);
+
+  return {
+    category: verificationTarget ? 'extend-existing-provider-verification' : 'partial-preparation',
+    summary: verificationTarget
+      ? `Extend the existing provider verification target in place for ${coveredEndpointFocus}.`
+      : `Create the minimal provider verification entrypoint needed to start the next coverage-aware write increment for ${coveredEndpointFocus}.`,
+    endpoints: [coveredEndpointFocus],
+    interactions: uniqueSorted(scanState.coverageModel.coverageSummary.coveredInteractions.slice(0, 1)),
+    providerStates: uniqueSorted(scanState.providerStates.stateAnnotations),
+    coverageImplemented: localGrounding && scanState.coverageModel.coverageSummary.coveredInteractions.length > 0,
+    ...taskLinks,
+  };
+}
+
+function deriveRemainingCoverageGaps(
+  scanState: PactProviderScanState,
+  targetCoverageSlice: CoverageSliceDraft,
+): PactProviderWriteState['remainingCoverageGaps'] {
+  const summary = scanState.coverageModel.coverageSummary;
+  const resolvedEndpoints = new Set<string>(targetCoverageSlice.coverageImplemented ? targetCoverageSlice.endpoints : []);
+  const resolvedInteractions = new Set<string>(targetCoverageSlice.coverageImplemented ? targetCoverageSlice.interactions : []);
+  const resolvedProviderStates = new Set<string>(targetCoverageSlice.coverageImplemented ? targetCoverageSlice.providerStates : []);
+
+  return {
+    endpointsWithGaps: uniqueSorted(summary.endpointsWithGaps.filter((entry) => !resolvedEndpoints.has(entry))),
+    unverifiedEndpoints: uniqueSorted(summary.unverifiedEndpoints.filter((entry) => !resolvedEndpoints.has(entry))),
+    uncoveredEndpoints: uniqueSorted(summary.uncoveredEndpoints.filter((entry) => !resolvedEndpoints.has(entry))),
+    interactionStateGaps: uniqueSorted(summary.interactionStateGaps.filter((entry) => !resolvedInteractions.has(entry))),
+    unverifiedInteractions: uniqueSorted(summary.unverifiedInteractions.filter((entry) => !resolvedInteractions.has(entry))),
+    missingProviderStates: uniqueSorted(scanState.coverageModel.stateInventory.missing.filter((entry) => !resolvedProviderStates.has(entry))),
+  };
+}
+
+function buildValidationFocus(
+  targetCoverageSlice: CoverageSliceDraft,
+  remainingCoverageGaps: PactProviderWriteState['remainingCoverageGaps'],
+  verificationTarget: string | null,
+): string[] {
+  return uniqueSorted([
+    `Validate the targeted coverage slice: ${targetCoverageSlice.summary}`,
+    verificationTarget ? `Confirm ${verificationTarget} was used as the write target.` : '',
+    targetCoverageSlice.endpoints.length > 0 ? `Recheck target endpoints: ${targetCoverageSlice.endpoints.join(', ')}.` : '',
+    targetCoverageSlice.interactions.length > 0 ? `Recheck target interactions: ${targetCoverageSlice.interactions.join(', ')}.` : '',
+    targetCoverageSlice.providerStates.length > 0 ? `Recheck target provider states: ${targetCoverageSlice.providerStates.join(', ')}.` : '',
+    remainingCoverageGaps.uncoveredEndpoints.length > 0 ? `Keep remaining uncovered endpoints explicit: ${remainingCoverageGaps.uncoveredEndpoints.join(', ')}.` : '',
+    remainingCoverageGaps.missingProviderStates.length > 0 ? `Keep remaining missing provider states explicit: ${remainingCoverageGaps.missingProviderStates.join(', ')}.` : '',
+  ].filter((entry) => entry.length > 0));
+}
+
+function buildCoverageSliceCommentLines(
+  targetCoverageSlice: CoverageSliceDraft,
+  coverageImplemented: boolean,
+): string[] {
+  return [
+    `  // Coverage slice: ${targetCoverageSlice.category}`,
+    `  // Summary: ${targetCoverageSlice.summary}`,
+    `  // Target endpoints: ${targetCoverageSlice.endpoints.join(', ') || '(none)'}`,
+    `  // Target interactions: ${targetCoverageSlice.interactions.join(', ') || '(none)'}`,
+    `  // Target provider states: ${targetCoverageSlice.providerStates.join(', ') || '(none)'}`,
+    coverageImplemented
+      ? '  // Coverage slice status: provider-side coverage was extended from persisted scan/plan evidence.'
+      : '  // Coverage slice status: preparation only; do not claim full endpoint or interaction coverage yet.',
+  ];
+}
+
 function renderNewProviderVerificationTest(
   scanState: PactProviderScanState,
   planState: PactProviderPlanState,
   packageName: string,
   stateNames: readonly string[],
+  targetCoverageSlice: CoverageSliceDraft,
+  coverageImplemented: boolean,
 ): string {
   const artifactSourceAnnotation = scanState.artifactSource.verdict === 'local'
     ? `@PactFolder("${localPactFolderPath(scanState) ?? 'src/test/resources/pacts'}")`
@@ -320,12 +602,18 @@ function renderNewProviderVerificationTest(
     ].join('\n')).join('\n\n')}`
     : '';
 
-  const unresolvedStateComment = stateNames.length === 0
+  const coverageComment = `\n\n${buildCoverageSliceCommentLines(targetCoverageSlice, coverageImplemented).join('\n')}`;
+
+  const unresolvedStateComment = planState.verificationReadiness.verdict === 'needs-provider-state-work' && stateNames.length === 0
     ? '\n\n  // Manual follow-up: persisted write inputs did not expose concrete provider state names.\n  // Add @State handlers here once the pact interaction state names are confirmed.'
     : '';
 
   const artifactClarificationComment = planState.verificationReadiness.verdict === 'needs-artifact-source-clarification'
     ? '\n\n  // Manual follow-up: pact artifact retrieval is still unresolved.\n  // Confirm local pact inputs or broker access before treating this verification as runnable.'
+    : '';
+
+  const uncoveredEndpointComment = targetCoverageSlice.category === 'prepare-uncovered-endpoint-coverage' || targetCoverageSlice.category === 'partial-preparation'
+    ? `\n\n  // Manual follow-up: obtain or author grounded Pact interactions before claiming coverage for ${targetCoverageSlice.endpoints.join(', ') || 'the targeted endpoint slice'}.`
     : '';
 
   return [
@@ -360,8 +648,10 @@ function renderNewProviderVerificationTest(
     '    context.verifyInteraction();',
     '  }',
     stateMethods,
+    coverageComment,
     unresolvedStateComment,
     artifactClarificationComment,
+    uncoveredEndpointComment,
     '}',
     '',
   ].filter((line, index, all) => !(line === '' && all[index - 1] === '')).join('\n');
@@ -416,7 +706,7 @@ function maybePatchPom(projectRoot: string, targetPath: string, filesModified: s
     if (!filesModified.includes(relativePomPath) && relativePomPath !== targetPath) {
       filesModified.push(relativePomPath);
     }
-    notes.push('Patched pom.xml only for minimal Pact/Spring test dependencies required by the written scaffold.');
+    notes.push('Patched pom.xml only for minimal Pact/Spring test dependencies required by the targeted coverage slice.');
   }
 }
 
@@ -447,6 +737,23 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
   const filesModified: string[] = [];
   const filesPlanned: string[] = [];
 
+  const concreteStateNames = extractConcreteStateNames(projectRoot, scanState);
+  const existingTargetPath = selectExistingProviderTest(projectRoot, scanState, planState);
+  const targetPath = existingTargetPath ?? deriveNewProviderTestPath(scanState, planState);
+  const targetCoverageSliceDraft = deriveTargetCoverageSlice(scanState, planState, targetPath, concreteStateNames);
+  const targetCoverageSlice: PactProviderWriteState['targetCoverageSlice'] = {
+    category: targetCoverageSliceDraft.category,
+    summary: targetCoverageSliceDraft.summary,
+    verificationTarget: targetPath,
+    endpoints: targetCoverageSliceDraft.endpoints,
+    interactions: targetCoverageSliceDraft.interactions,
+    providerStates: targetCoverageSliceDraft.providerStates,
+    plannedTaskIds: targetCoverageSliceDraft.plannedTaskIds,
+    plannedTaskTitles: targetCoverageSliceDraft.plannedTaskTitles,
+  };
+  const remainingCoverageGaps = deriveRemainingCoverageGaps(scanState, targetCoverageSliceDraft);
+  const validationFocus = buildValidationFocus(targetCoverageSliceDraft, remainingCoverageGaps, targetPath);
+
   if (inputPlanVerdict === 'blocked') {
     writesSkipped.push({
       path: 'provider-verification-scaffold',
@@ -455,6 +762,9 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
     return {
       targetPath: null,
       targetKind: 'none',
+      targetCoverageSlice,
+      remainingCoverageGaps,
+      validationFocus,
       filesPlanned,
       filesWritten,
       filesModified,
@@ -462,6 +772,7 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
       unresolvedBlockers: uniqueSorted(unresolvedBlockers),
       manualFollowUps,
       notes,
+      coverageImplemented: false,
     };
   }
 
@@ -473,6 +784,9 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
     return {
       targetPath: null,
       targetKind: 'none',
+      targetCoverageSlice,
+      remainingCoverageGaps,
+      validationFocus,
       filesPlanned,
       filesWritten,
       filesModified,
@@ -480,12 +794,9 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
       unresolvedBlockers: [],
       manualFollowUps,
       notes,
+      coverageImplemented: false,
     };
   }
-
-  const concreteStateNames = extractConcreteStateNames(projectRoot, scanState);
-  const existingTargetPath = selectExistingProviderTest(projectRoot, scanState, planState);
-  const targetPath = existingTargetPath ?? deriveNewProviderTestPath(scanState, planState);
 
   if (!targetPath) {
     unresolvedBlockers.push('No safe provider verification target file could be identified from persisted plan and scan state.');
@@ -496,6 +807,9 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
     return {
       targetPath: null,
       targetKind: 'none',
+      targetCoverageSlice,
+      remainingCoverageGaps,
+      validationFocus,
       filesPlanned,
       filesWritten,
       filesModified,
@@ -503,27 +817,46 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
       unresolvedBlockers: uniqueSorted(unresolvedBlockers),
       manualFollowUps,
       notes,
+      coverageImplemented: false,
     };
   }
 
   filesPlanned.push(targetPath);
+
+  const targetStatesToAdd = targetCoverageSlice.providerStates.filter((stateName) => concreteStateNames.includes(stateName));
+
+  if (targetCoverageSlice.category === 'prepare-uncovered-endpoint-coverage' || targetCoverageSlice.category === 'partial-preparation') {
+    const uncoveredMessage = `No grounded Pact interaction exists yet for: ${targetCoverageSlice.endpoints.join(', ') || 'the targeted endpoint slice'}.`;
+    unresolvedBlockers.push(uncoveredMessage);
+    manualFollowUps.push(`Obtain or author grounded Pact interactions before claiming coverage for ${targetCoverageSlice.endpoints.join(', ') || 'the targeted endpoint slice'}.`);
+  }
+
+  if (inputPlanVerdict === 'needs-provider-state-work' && targetStatesToAdd.length === 0) {
+    manualFollowUps.push('Confirm pact interaction provider state names, then add concrete @State handlers to the provider verification target.');
+    unresolvedBlockers.push('Provider state names are still unresolved, so verification must not be claimed ready yet.');
+  }
+
+  if (inputPlanVerdict === 'needs-artifact-source-clarification') {
+    manualFollowUps.push('Confirm the Pact artifact source before treating provider verification as runnable.');
+    unresolvedBlockers.push('Pact artifact source still needs clarification before runnable verification can be claimed.');
+  }
 
   if (existingTargetPath) {
     const absoluteTargetPath = path.join(projectRoot, existingTargetPath);
     const original = readFileSync(absoluteTargetPath, 'utf8');
     let nextContent = ensureHttpTargetSetup(original);
 
-    if (concreteStateNames.length > 0) {
-      nextContent = ensureStateMethods(nextContent, concreteStateNames);
+    if (targetStatesToAdd.length > 0) {
+      nextContent = ensureStateMethods(nextContent, targetStatesToAdd);
     }
 
-    if (inputPlanVerdict === 'needs-provider-state-work' && concreteStateNames.length === 0) {
+    nextContent = ensureComment(nextContent, buildCoverageSliceCommentLines(targetCoverageSliceDraft, targetCoverageSliceDraft.coverageImplemented));
+
+    if (inputPlanVerdict === 'needs-provider-state-work' && targetStatesToAdd.length === 0) {
       nextContent = ensureComment(nextContent, [
         '  // Manual follow-up: persisted pact inputs did not expose concrete provider state names.',
         '  // Add @State handlers here once interaction state names are confirmed.',
       ]);
-      manualFollowUps.push('Confirm pact interaction provider state names, then add concrete @State handlers to the provider verification test.');
-      unresolvedBlockers.push('Provider state names are still unresolved, so verification must not be claimed ready yet.');
     }
 
     if (inputPlanVerdict === 'needs-artifact-source-clarification') {
@@ -531,20 +864,24 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
         '  // Manual follow-up: pact artifact retrieval is still unresolved.',
         '  // Confirm local pact inputs or broker access before treating this verification as runnable.',
       ]);
-      manualFollowUps.push('Confirm the Pact artifact source before treating provider verification as runnable.');
-      unresolvedBlockers.push('Pact artifact source still needs clarification before runnable verification can be claimed.');
+    }
+
+    if (targetCoverageSlice.category === 'prepare-uncovered-endpoint-coverage' || targetCoverageSlice.category === 'partial-preparation') {
+      nextContent = ensureComment(nextContent, [
+        `  // Manual follow-up: obtain or author grounded Pact interactions before claiming coverage for ${targetCoverageSlice.endpoints.join(', ') || 'the targeted endpoint slice'}.`,
+      ]);
     }
 
     if (nextContent !== original) {
       writeFileSync(absoluteTargetPath, nextContent, 'utf8');
       filesModified.push(existingTargetPath);
-      notes.push('Extended the existing provider verification test instead of creating a parallel suite.');
+      notes.push('Extended the existing provider verification target in place instead of creating a parallel suite.');
     } else {
       writesSkipped.push({
         path: existingTargetPath,
-        reason: 'Existing provider verification test already contained the minimal scaffold this writer would add.',
+        reason: 'Existing provider verification target already contained the narrow coverage-aware changes this writer would add.',
       });
-      notes.push('Existing provider verification test was already close to the minimal scaffold shape.');
+      notes.push('Existing provider verification target already reflected the selected coverage slice.');
     }
 
     maybePatchPom(projectRoot, existingTargetPath, filesModified, notes);
@@ -552,13 +889,20 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
     return {
       targetPath: existingTargetPath,
       targetKind: 'existing-test',
+      targetCoverageSlice,
+      remainingCoverageGaps,
+      validationFocus,
       filesPlanned: uniqueSorted(filesPlanned),
       filesWritten: uniqueSorted(filesWritten),
       filesModified: uniqueSorted(filesModified),
       writesSkipped,
       unresolvedBlockers: uniqueSorted(unresolvedBlockers),
       manualFollowUps: uniqueSorted(manualFollowUps),
-      notes: uniqueSorted(notes),
+      notes: uniqueSorted([
+        ...notes,
+        `Targeted coverage slice: ${targetCoverageSlice.category} — ${targetCoverageSlice.summary}`,
+      ]),
+      coverageImplemented: targetCoverageSliceDraft.coverageImplemented,
     };
   }
 
@@ -569,33 +913,37 @@ function applyRepoWrites(projectRoot: string, scanState: PactProviderScanState, 
     .replace(/\/[^/]+$/, '')
     .split('/')
     .join('.');
-  const rendered = renderNewProviderVerificationTest(scanState, planState, packagePath, concreteStateNames);
+  const rendered = renderNewProviderVerificationTest(
+    scanState,
+    planState,
+    packagePath,
+    targetStatesToAdd,
+    targetCoverageSliceDraft,
+    targetCoverageSliceDraft.coverageImplemented,
+  );
   writeFileSync(absoluteTargetPath, rendered, 'utf8');
   filesWritten.push(targetPath);
-  notes.push('Created a new provider verification test scaffold because persisted plan state did not point to an existing one.');
-
-  if (inputPlanVerdict === 'needs-provider-state-work' && concreteStateNames.length === 0) {
-    manualFollowUps.push('Confirm pact interaction provider state names, then replace the placeholder note with concrete @State handlers.');
-    unresolvedBlockers.push('Provider state names are still unresolved, so verification must not be claimed ready yet.');
-  }
-
-  if (inputPlanVerdict === 'needs-artifact-source-clarification') {
-    manualFollowUps.push('Confirm the Pact artifact source before treating the new scaffold as runnable verification.');
-    unresolvedBlockers.push('Pact artifact source still needs clarification before runnable verification can be claimed.');
-  }
+  notes.push('Created a new provider verification target because persisted plan/scan state did not expose a safe existing extension point.');
 
   maybePatchPom(projectRoot, targetPath, filesModified, notes);
 
   return {
     targetPath,
     targetKind: 'new-test',
+    targetCoverageSlice,
+    remainingCoverageGaps,
+    validationFocus,
     filesPlanned: uniqueSorted(filesPlanned),
     filesWritten: uniqueSorted(filesWritten),
     filesModified: uniqueSorted(filesModified),
     writesSkipped,
     unresolvedBlockers: uniqueSorted(unresolvedBlockers),
     manualFollowUps: uniqueSorted(manualFollowUps),
-    notes: uniqueSorted(notes),
+    notes: uniqueSorted([
+      ...notes,
+      `Targeted coverage slice: ${targetCoverageSlice.category} — ${targetCoverageSlice.summary}`,
+    ]),
+    coverageImplemented: targetCoverageSliceDraft.coverageImplemented,
   };
 }
 
@@ -610,11 +958,19 @@ function determineWriteOutcome(inputPlanVerdict: PactPlanVerdict, repoWritePlan:
 
   const changedCount = repoWritePlan.filesWritten.length + repoWritePlan.filesModified.length;
 
-  if (inputPlanVerdict === 'ready-to-scaffold') {
-    return changedCount > 0 ? 'written' : 'no-op';
+  if (repoWritePlan.coverageImplemented && changedCount > 0) {
+    return 'written';
   }
 
-  return changedCount > 0 ? 'partial' : 'blocked';
+  if (changedCount > 0) {
+    return 'partial';
+  }
+
+  if (repoWritePlan.unresolvedBlockers.length > 0) {
+    return 'blocked';
+  }
+
+  return 'no-op';
 }
 
 export function deriveWriteFromPersistedState(projectRoot: string): PactProviderWriteState {
@@ -625,7 +981,7 @@ export function deriveWriteFromPersistedState(projectRoot: string): PactProvider
   const writeOutcome = determineWriteOutcome(inputPlanVerdict, repoWritePlan);
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     projectRoot,
     scanStatePath: toPosixPath(PERSISTED_SCAN_STATE_RELATIVE_PATH),
@@ -638,6 +994,9 @@ export function deriveWriteFromPersistedState(projectRoot: string): PactProvider
     },
     inputPlanVerdict,
     writeOutcome,
+    targetCoverageSlice: repoWritePlan.targetCoverageSlice,
+    remainingCoverageGaps: repoWritePlan.remainingCoverageGaps,
+    validationFocus: repoWritePlan.validationFocus,
     filesPlanned: repoWritePlan.filesPlanned,
     filesWritten: repoWritePlan.filesWritten,
     filesModified: repoWritePlan.filesModified,
@@ -647,17 +1006,17 @@ export function deriveWriteFromPersistedState(projectRoot: string): PactProvider
     expectedVerificationCommand: determineVerificationCommand(projectRoot, repoWritePlan.targetPath),
     notes: uniqueSorted([
       ...repoWritePlan.notes,
-      inputPlanVerdict === 'needs-provider-state-work'
-        ? 'Write stayed in partial mode because provider state work remains unresolved.'
+      writeOutcome === 'written'
+        ? 'Write recorded a real provider-side coverage extension for the targeted slice.'
         : '',
-      inputPlanVerdict === 'needs-artifact-source-clarification'
-        ? 'Write stayed in partial mode because pact artifact retrieval is not yet proven.'
+      writeOutcome === 'partial'
+        ? 'Write recorded only a preparatory partial increment for the targeted slice.'
         : '',
-      inputPlanVerdict === 'blocked'
+      writeOutcome === 'blocked'
         ? 'Write persisted a blocked outcome instead of generating misleading scaffolding.'
         : '',
-      inputPlanVerdict === 'irrelevant'
-        ? 'Write persisted an honest no-op outcome because Pact provider verification is irrelevant here.'
+      writeOutcome === 'no-op'
+        ? 'Write persisted an honest no-op outcome because no safe Pact provider increment could be applied.'
         : '',
     ].filter((value) => value.length > 0)),
   };
@@ -665,17 +1024,17 @@ export function deriveWriteFromPersistedState(projectRoot: string): PactProvider
 
 export function renderWriteSummary(state: PactProviderWriteState): string {
   const readinessClaim = state.writeOutcome === 'written'
-    ? 'Scaffold was written or extended and is ready for the next verification attempt.'
+    ? 'A real provider-side coverage increment was written for the targeted slice.'
     : state.writeOutcome === 'partial'
-      ? 'Only partial scaffold/remediation was written; verification is not ready to be claimed complete.'
+      ? 'Only partial preparation or remediation was written; do not claim full contract coverage yet.'
       : state.writeOutcome === 'blocked'
-        ? 'No provider verification scaffold was written because the plan remained blocked.'
-        : 'No Pact provider verification scaffold was written because the plan verdict was irrelevant.';
+        ? 'No provider verification changes were written because the write stayed blocked.'
+        : 'No Pact provider verification changes were written because the outcome was an honest no-op.';
 
   return [
     '# Pact provider write summary',
     '',
-    'This file is only a concise summary. Canonical machine-readable write state lives in JSON under `.oma/packs/oh-my-pactgpb/state/shared/write/`.',
+    'This file is only a concise summary. Canonical machine-readable write state lives in JSON under `.oma/packs/oh-my-pactgpb/state/shared/write/.`',
     '',
     '## Canonical JSON files',
     '',
@@ -688,15 +1047,33 @@ export function renderWriteSummary(state: PactProviderWriteState): string {
     `- Input plan verdict: ${state.inputPlanVerdict}`,
     `- Write outcome: ${state.writeOutcome}`,
     '',
+    '### Target coverage slice',
+    `- Category: ${state.targetCoverageSlice.category}`,
+    `- Summary: ${state.targetCoverageSlice.summary}`,
+    `- Verification target: ${state.targetCoverageSlice.verificationTarget ?? '(none)'}`,
+    `- Target endpoints: ${state.targetCoverageSlice.endpoints.join(', ') || '(none)'}`,
+    `- Target interactions: ${state.targetCoverageSlice.interactions.join(', ') || '(none)'}`,
+    `- Target provider states: ${state.targetCoverageSlice.providerStates.join(', ') || '(none)'}`,
+    `- Planned task links: ${state.targetCoverageSlice.plannedTaskTitles.map((title, index) => `${state.targetCoverageSlice.plannedTaskIds[index] ?? '(task)'} ${title}`).join('; ') || '(none)'}`,
+    '',
     '### Files planned and changed',
     `- Files planned: ${state.filesPlanned.join(', ') || '(none)'}`,
     `- Files written: ${state.filesWritten.join(', ') || '(none)'}`,
     `- Files modified: ${state.filesModified.join(', ') || '(none)'}`,
     `- Writes skipped: ${state.writesSkipped.map((entry) => `${entry.path} — ${entry.reason}`).join('; ') || '(none)'}`,
     '',
-    '### Remaining gaps',
+    '### Remaining coverage gaps',
+    `- Endpoints with gaps: ${state.remainingCoverageGaps.endpointsWithGaps.join(', ') || '(none)'}`,
+    `- Unverified endpoints: ${state.remainingCoverageGaps.unverifiedEndpoints.join(', ') || '(none)'}`,
+    `- Uncovered endpoints: ${state.remainingCoverageGaps.uncoveredEndpoints.join(', ') || '(none)'}`,
+    `- Interaction state gaps: ${state.remainingCoverageGaps.interactionStateGaps.join(', ') || '(none)'}`,
+    `- Unverified interactions: ${state.remainingCoverageGaps.unverifiedInteractions.join(', ') || '(none)'}`,
+    `- Missing provider states: ${state.remainingCoverageGaps.missingProviderStates.join(', ') || '(none)'}`,
+    '',
+    '### Remaining blockers and follow-up',
     `- Unresolved blockers: ${state.unresolvedBlockers.join('; ') || '(none)'}`,
     `- Manual follow-ups: ${state.manualFollowUps.join('; ') || '(none)'}`,
+    `- Validation focus: ${state.validationFocus.join('; ') || '(none)'}`,
     `- Notes: ${state.notes.join('; ') || '(none)'}`,
     '',
     '### Verification next step',

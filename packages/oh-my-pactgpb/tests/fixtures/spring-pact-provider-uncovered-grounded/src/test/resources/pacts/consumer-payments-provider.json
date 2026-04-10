@@ -1,0 +1,17 @@
+{
+  "consumer": { "name": "mobile-app" },
+  "provider": { "name": "payments-provider" },
+  "interactions": [
+    {
+      "description": "get payment by id",
+      "providerStates": [
+        { "name": "payment exists" }
+      ],
+      "request": { "method": "GET", "path": "/payments/123" },
+      "response": { "status": 200 }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": { "version": "4.0" }
+  }
+}

@@ -17,15 +17,33 @@ Do not include secrets, credentials, tokens, raw auth headers, or machine-local 
 - Input plan verdict:
 - Write outcome:
 
+### Target coverage slice
+- Category:
+- Summary:
+- Verification target:
+- Target endpoints:
+- Target interactions:
+- Target provider states:
+- Planned task links:
+
 ### Files planned and changed
 - Files planned:
 - Files written:
 - Files modified:
 - Writes skipped:
 
-### Remaining gaps
+### Remaining coverage gaps
+- Endpoints with gaps:
+- Unverified endpoints:
+- Uncovered endpoints:
+- Interaction state gaps:
+- Unverified interactions:
+- Missing provider states:
+
+### Remaining blockers and follow-up
 - Unresolved blockers:
 - Manual follow-ups:
+- Validation focus:
 - Notes:
 
 ### Verification next step

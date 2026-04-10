@@ -69,6 +69,7 @@ const fixtureTemplateRoots: Partial<Record<FixtureTemplate, string>> = {
   'spring-pact-provider-stale': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-stale'),
   'spring-pact-provider-ambiguous': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-ambiguous'),
   'spring-pact-provider-partial': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-partial'),
+  'spring-pact-provider-uncovered-grounded': path.join(repoRoot, 'tests', 'fixtures', 'spring-pact-provider-uncovered-grounded'),
 };
 let packedTarballPath: string | undefined;
 

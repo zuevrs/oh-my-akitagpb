@@ -249,11 +249,28 @@ function evaluateStateConsistency(
     }
   }
 
-  if (planVerdict === 'needs-provider-state-work' || planVerdict === 'needs-artifact-source-clarification') {
+  if (planVerdict === 'needs-provider-state-work') {
+    const providerStateStillUnresolved = [
+      ...writeState.unresolvedBlockers,
+      ...writeState.manualFollowUps,
+    ].some((entry) => /provider state/i.test(entry));
+
     if (writeOutcome === 'written') {
-      issues.push(`Plan-state verdict ${planVerdict} should not be promoted to a fully written outcome.`);
+      if (providerStateStillUnresolved) {
+        issues.push('Plan-state required provider-state work, but write-state claimed a written outcome while provider-state gaps still remained unresolved.');
+      } else {
+        checks.push('Write-state resolved the targeted provider-state slice and recorded a written outcome.');
+      }
     } else if (writeOutcome === 'partial') {
-      checks.push(`Write-state preserved the partial nature of the ${planVerdict} verdict.`);
+      checks.push('Write-state preserved the partial nature of the needs-provider-state-work verdict.');
+    }
+  }
+
+  if (planVerdict === 'needs-artifact-source-clarification') {
+    if (writeOutcome === 'written') {
+      issues.push('Plan-state still required artifact-source clarification, so write-state should not promote the outcome to fully written.');
+    } else if (writeOutcome === 'partial') {
+      checks.push('Write-state preserved the partial nature of the needs-artifact-source-clarification verdict.');
     }
   }
 
@@ -539,7 +556,13 @@ function evaluateRunnableVerification(
     };
   }
 
-  if (planState.verificationReadiness.verdict === 'needs-provider-state-work' || writeState.writeOutcome === 'partial') {
+  const providerStateStillUnresolved = [
+    ...writeState.unresolvedBlockers,
+    ...writeState.manualFollowUps,
+  ].some((entry) => /provider state/i.test(entry));
+
+  if ((planState.verificationReadiness.verdict === 'needs-provider-state-work' && providerStateStillUnresolved)
+    || (writeState.writeOutcome === 'partial' && providerStateStillUnresolved)) {
     return {
       verdict: 'unproven',
       command: writeState.expectedVerificationCommand,
