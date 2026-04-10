@@ -48,7 +48,7 @@ export interface ProofScanArtifacts {
   summaryPath: string;
 }
 
-const IGNORED_DIRS = new Set(['.git', 'node_modules', 'target', 'dist', 'build']);
+const IGNORED_DIRS = new Set(['.git', '.oma', '.opencode', 'node_modules', 'target', 'dist', 'build']);
 
 function toPosixPath(value: string): string {
   return value.split(path.sep).join(path.posix.sep);

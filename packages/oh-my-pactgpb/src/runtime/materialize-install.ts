@@ -61,6 +61,8 @@ const PACK_OWNED_ASSET_KEYS = [
   'oma/instructions/rules/respect-pack-ownership',
   'oma/templates/init/state-contract',
   'oma/templates/init/init-summary',
+  'oma/templates/init/provider-harness',
+  'oma/templates/init/neutral-provider-state-support',
   'oma/templates/scan/state-contract',
   'oma/templates/scan/scan-summary',
   'oma/templates/plan/state-contract',

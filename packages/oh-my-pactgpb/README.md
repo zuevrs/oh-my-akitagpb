@@ -91,8 +91,9 @@ here at all.
 /pact-init
 ```
 
-`/pact-init` is usually a one-time bootstrap step. If it completes, the next
-step is the normal verification track.
+`/pact-init` is usually a one-time bootstrap step. If it completes, the result is
+still only bootstrap-level proof: you must ground the pact artifact source before
+entering the normal verification track.
 
 ### Verification track
 

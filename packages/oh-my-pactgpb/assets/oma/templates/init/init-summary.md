@@ -14,6 +14,10 @@ Do not include secrets, credentials, tokens, raw auth headers, or machine-local 
 
 ### Outcome
 - Init verdict:
+- Proof level:
+- Artifact source status:
+- Verification grounding:
+- Recommended next step type:
 - Recommended next step:
 - Expected follow-up command:
 
@@ -40,6 +44,10 @@ Do not include secrets, credentials, tokens, raw auth headers, or machine-local 
 - Why init is justified or not:
 - Planned bootstrap writes:
 - Writes performed:
+- Writes skipped:
+
+### What is not proven
+- 
 
 ### Remaining blockers
 - 

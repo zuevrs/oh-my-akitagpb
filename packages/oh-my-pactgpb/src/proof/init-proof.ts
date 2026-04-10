@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { scanPactProviderRepo, type ProviderConfidence } from './scan-proof.js';
 
@@ -57,8 +58,25 @@ export interface PactProviderInitState {
       reason: string;
     }>;
   };
+  proofLevel: 'bootstrap-only' | 'redirect-existing-evidence' | 'none';
+  artifactSourceStatus: {
+    verdict:
+      | 'unresolved-no-artifact-source-evidence'
+      | 'existing-local-pact-evidence'
+      | 'existing-broker-evidence'
+      | 'existing-local-and-broker-evidence';
+    reason: string;
+  };
+  verificationGrounding: {
+    verdict: 'not-grounded' | 'grounded-by-existing-pact-evidence' | 'not-applicable';
+    reason: string;
+  };
+  whatIsNotProven: string[];
   remainingBlockers: string[];
-  recommendedNextStep: string;
+  recommendedNextStep: {
+    type: 'ground-artifact-source' | 'run-pact-scan' | 'resolve-provider-boundary' | 'stop';
+    reason: string;
+  };
   expectedFollowUpCommand: string | null;
   notes: string[];
 }
@@ -96,8 +114,24 @@ const INSTALLED_INIT_CONTRACT_RELATIVE_PATH = path.join(
   'init',
   'state-contract.json',
 );
+const INSTALLED_INIT_TEMPLATE_BASE_RELATIVE_PATH = path.join(
+  '.oma',
+  'packs',
+  'oh-my-pactgpb',
+  'templates',
+  'init',
+);
+const SOURCE_INIT_TEMPLATE_BASE_ABSOLUTE_PATH = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  'assets',
+  'oma',
+  'templates',
+  'init',
+);
 
-const IGNORED_DIRS = new Set(['.git', 'node_modules', 'target', 'dist', 'build']);
+const IGNORED_DIRS = new Set(['.git', '.oma', '.opencode', 'node_modules', 'target', 'dist', 'build']);
 const INTERNAL_SURFACE_SEGMENTS = ['/internal', '/admin', '/actuator'];
 
 function toPosixPath(value: string): string {
@@ -106,6 +140,34 @@ function toPosixPath(value: string): string {
 
 function uniqueSorted(values: Iterable<string>): string[] {
   return [...new Set(values)].sort((left, right) => left.localeCompare(right));
+}
+
+function readInitTemplate(projectRoot: string, templateFilename: string): string {
+  const installedPath = path.join(projectRoot, INSTALLED_INIT_TEMPLATE_BASE_RELATIVE_PATH, templateFilename);
+  if (existsSync(installedPath)) {
+    return readFileSync(installedPath, 'utf8');
+  }
+
+  const sourcePath = path.join(SOURCE_INIT_TEMPLATE_BASE_ABSOLUTE_PATH, templateFilename);
+  if (existsSync(sourcePath)) {
+    return readFileSync(sourcePath, 'utf8');
+  }
+
+  throw new Error(`Missing init template baseline: ${templateFilename}`);
+}
+
+function renderTemplate(template: string, replacements: Record<string, string>): string {
+  let rendered = template;
+
+  for (const [key, value] of Object.entries(replacements)) {
+    rendered = rendered.replaceAll(`{{${key}}}`, value);
+  }
+
+  return rendered;
+}
+
+function escapeJavaString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 function walkFiles(rootDir: string, currentDir: string = rootDir): string[] {
@@ -495,51 +557,13 @@ function deriveNewProviderTestPath(controllerPath: string | undefined, providerN
   return `src/test/java/${contractPackagePath}/${toJavaClassName(providerName)}.java`;
 }
 
-function renderProviderVerificationTest(packageName: string, providerName: string, stateNames: readonly string[]): string {
-  const stateMethods = stateNames.length > 0
-    ? `\n\n${stateNames.map((stateName) => [
-      `  @State("${stateName}")`,
-      `  void ${toJavaMethodName(stateName)}() {`,
-      '  }',
-    ].join('\n')).join('\n\n')}`
-    : '\n\n  // Manual follow-up: add concrete @State handlers once interaction state names are known.';
-
-  return [
-    `package ${packageName};`,
-    '',
-    'import au.com.dius.pact.provider.junitsupport.Provider;',
-    'import au.com.dius.pact.provider.junitsupport.State;',
-    'import au.com.dius.pact.provider.junitsupport.loader.PactFolder;',
-    'import au.com.dius.pact.provider.junitsupport.target.HttpTestTarget;',
-    'import au.com.dius.pact.provider.junit5.PactVerificationContext;',
-    'import au.com.dius.pact.provider.junit5.PactVerificationInvocationContextProvider;',
-    'import org.junit.jupiter.api.BeforeEach;',
-    'import org.junit.jupiter.api.TestTemplate;',
-    'import org.junit.jupiter.api.extension.ExtendWith;',
-    'import org.springframework.boot.test.context.SpringBootTest;',
-    '',
-    `@Provider("${providerName}")`,
-    '@PactFolder("src/test/resources/pacts")',
-    '@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)',
-    `class ${toJavaClassName(providerName)} {`,
-    '',
-    '  @BeforeEach',
-    '  void beforeEach(PactVerificationContext context) {',
-    '    context.setTarget(new HttpTestTarget("localhost", 8080));',
-    '  }',
-    '',
-    '  @TestTemplate',
-    '  @ExtendWith(PactVerificationInvocationContextProvider.class)',
-    '  void verifyPacts(PactVerificationContext context) {',
-    '    context.verifyInteraction();',
-    '  }',
-    '',
-    '  // Bootstrap note: this harness prepares provider-side verification only.',
-    '  // Add local pact files or broker-backed retrieval before expecting runnable verification.',
-    stateMethods,
-    '}',
-    '',
-  ].join('\n');
+function renderProviderVerificationTest(projectRoot: string, packageName: string, providerName: string): string {
+  const template = readInitTemplate(projectRoot, 'provider-harness.java.tpl');
+  return renderTemplate(template, {
+    PACKAGE_NAME: packageName,
+    PROVIDER_NAME: escapeJavaString(providerName),
+    HARNESS_CLASS_NAME: toJavaClassName(providerName),
+  });
 }
 
 function ensurePomDependency(content: string, dependencyBlock: string): string {
@@ -595,7 +619,6 @@ function applyBootstrapWrites(
   verdict: PactInitVerdict,
   providerName: string | null,
   controllerFiles: readonly string[],
-  providerStates: readonly string[],
 ): BootstrapWritePlan {
   const writesSkipped: PactProviderInitState['writesPerformed']['writesSkipped'] = [];
   const filesWritten: string[] = [];
@@ -637,7 +660,7 @@ function applyBootstrapWrites(
     .split('/')
     .join('.');
 
-  writeFileSync(absoluteTargetPath, renderProviderVerificationTest(packageName, providerName, providerStates), 'utf8');
+  writeFileSync(absoluteTargetPath, renderProviderVerificationTest(projectRoot, packageName, providerName), 'utf8');
   filesWritten.push(targetPath);
   maybePatchPom(projectRoot, filesModified);
 
@@ -663,7 +686,11 @@ function renderInitSummary(state: PactProviderInitState): string {
     '',
     '### Outcome',
     `- Init verdict: ${state.verdict}`,
-    `- Recommended next step: ${state.recommendedNextStep}`,
+    `- Proof level: ${state.proofLevel}`,
+    `- Artifact source status: ${state.artifactSourceStatus.verdict}`,
+    `- Verification grounding: ${state.verificationGrounding.verdict}`,
+    `- Recommended next step type: ${state.recommendedNextStep.type}`,
+    `- Recommended next step: ${state.recommendedNextStep.reason}`,
     `- Expected follow-up command: ${state.expectedFollowUpCommand ?? '(none)'}`,
     '',
     '### Provider boundary',
@@ -689,6 +716,10 @@ function renderInitSummary(state: PactProviderInitState): string {
     `- Why init is justified or not: ${state.initJustification.reasons.join('; ') || '(none)'}`,
     `- Planned bootstrap writes: ${state.bootstrapPlan.plannedWrites.join(', ') || '(none)'}`,
     `- Writes performed: ${[...state.writesPerformed.filesWritten, ...state.writesPerformed.filesModified].join(', ') || '(none)'}`,
+    `- Writes skipped: ${state.writesPerformed.writesSkipped.map((entry) => `${entry.path} (${entry.reason})`).join('; ') || '(none)'}`,
+    '',
+    '### What is not proven',
+    ...(state.whatIsNotProven.length > 0 ? state.whatIsNotProven.map((entry) => `- ${entry}`) : ['- None.']),
     '',
     '### Remaining blockers',
     ...(state.remainingBlockers.length > 0 ? state.remainingBlockers.map((entry) => `- ${entry}`) : ['- None.']),
@@ -697,6 +728,127 @@ function renderInitSummary(state: PactProviderInitState): string {
     ...(state.notes.length > 0 ? state.notes.map((entry) => `- ${entry}`) : ['- None.']),
     '',
   ].join('\n');
+}
+
+function deriveArtifactSourceStatus(scanState: ReturnType<typeof scanPactProviderRepo>): PactProviderInitState['artifactSourceStatus'] {
+  const hasLocal = scanState.verificationEvidence.localPactFiles.length > 0;
+  const hasBroker = scanState.verificationEvidence.brokerConfigHints.length > 0;
+
+  if (hasLocal && hasBroker) {
+    return {
+      verdict: 'existing-local-and-broker-evidence',
+      reason: 'Both local pact files and broker-oriented repo hints already exist.',
+    };
+  }
+
+  if (hasLocal) {
+    return {
+      verdict: 'existing-local-pact-evidence',
+      reason: 'Local pact files already exist in the repo.',
+    };
+  }
+
+  if (hasBroker) {
+    return {
+      verdict: 'existing-broker-evidence',
+      reason: 'Broker-oriented configuration hints already exist in the repo.',
+    };
+  }
+
+  return {
+    verdict: 'unresolved-no-artifact-source-evidence',
+    reason: 'No local pact artifacts or broker evidence were found, so init cannot ground artifact retrieval yet.',
+  };
+}
+
+function deriveProofLevel(verdict: PactInitVerdict): PactProviderInitState['proofLevel'] {
+  if (verdict === 'init-completed') {
+    return 'bootstrap-only';
+  }
+
+  if (verdict === 'existing-pact-evidence-detected') {
+    return 'redirect-existing-evidence';
+  }
+
+  return 'none';
+}
+
+function deriveVerificationGrounding(
+  verdict: PactInitVerdict,
+  artifactSourceStatus: PactProviderInitState['artifactSourceStatus'],
+): PactProviderInitState['verificationGrounding'] {
+  if (verdict === 'existing-pact-evidence-detected') {
+    return {
+      verdict: 'grounded-by-existing-pact-evidence',
+      reason: artifactSourceStatus.reason,
+    };
+  }
+
+  if (verdict === 'init-completed') {
+    return {
+      verdict: 'not-grounded',
+      reason: 'Init wrote deterministic bootstrap only; pact artifact retrieval and concrete provider interaction grounding are still unresolved.',
+    };
+  }
+
+  return {
+    verdict: 'not-applicable',
+    reason: 'Init did not produce a bootstrap that could ground provider verification.',
+  };
+}
+
+function deriveWhatIsNotProven(
+  verdict: PactInitVerdict,
+  scanState: ReturnType<typeof scanPactProviderRepo>,
+  artifactSourceStatus: PactProviderInitState['artifactSourceStatus'],
+): string[] {
+  if (verdict !== 'init-completed') {
+    return [];
+  }
+
+  return uniqueSorted([
+    'Runnable Pact verification is not proven.',
+    artifactSourceStatus.verdict === 'unresolved-no-artifact-source-evidence'
+      ? 'No pact artifact source is grounded yet; neither local pact inputs nor broker usage is proven.'
+      : '',
+    'Concrete provider-state names are not proven because no real pact interactions were available during init.',
+    scanState.verificationEvidence.integrationTestPriorArt.length === 0
+      ? 'A Pact-aligned runtime verification path is not proven by existing integration-test prior art.'
+      : 'Integration-test prior art exists, but Pact interaction wiring is still not proven.',
+  ].filter((value) => value.length > 0));
+}
+
+function deriveRecommendedNextStep(
+  verdict: PactInitVerdict,
+  artifactSourceStatus: PactProviderInitState['artifactSourceStatus'],
+): PactProviderInitState['recommendedNextStep'] {
+  if (verdict === 'existing-pact-evidence-detected') {
+    return {
+      type: 'run-pact-scan',
+      reason: 'Existing Pact evidence is already present, so the repo belongs on the verification track. Persist the grounded evidence with `/pact-scan`.',
+    };
+  }
+
+  if (verdict === 'init-completed') {
+    return {
+      type: 'ground-artifact-source',
+      reason: artifactSourceStatus.verdict === 'unresolved-no-artifact-source-evidence'
+        ? 'Ground the pact artifact source first: add real local pact artifacts or real broker configuration, then enter the verification track.'
+        : 'Confirm the detected artifact source and then enter the verification track.',
+    };
+  }
+
+  if (verdict === 'insufficient-boundary-evidence') {
+    return {
+      type: 'resolve-provider-boundary',
+      reason: 'Resolve the provider boundary ambiguity before attempting Pact bootstrap again.',
+    };
+  }
+
+  return {
+    type: 'stop',
+    reason: 'Do not scaffold further until the recorded blocker or justification changes.',
+  };
 }
 
 export function deriveInitState(projectRoot: string): PactProviderInitState {
@@ -715,17 +867,27 @@ export function deriveInitState(projectRoot: string): PactProviderInitState {
     bootstrapDecision.verdict,
     providerCandidate.name,
     scanState.httpSurface.controllerFiles,
-    scanState.providerStates.stateAnnotations,
   );
 
-  const plannedWrites = uniqueSorted([
-    writePlan.targetPath ?? '',
-    existsSync(path.join(projectRoot, 'pom.xml')) ? 'pom.xml' : '',
-  ].filter((value) => value.length > 0));
+  const artifactSourceStatus = deriveArtifactSourceStatus(scanState);
+  const proofLevel = deriveProofLevel(bootstrapDecision.verdict);
+  const verificationGrounding = deriveVerificationGrounding(bootstrapDecision.verdict, artifactSourceStatus);
+  const whatIsNotProven = deriveWhatIsNotProven(bootstrapDecision.verdict, scanState, artifactSourceStatus);
+  const recommendedNextStep = deriveRecommendedNextStep(bootstrapDecision.verdict, artifactSourceStatus);
+
+  const plannedWrites = bootstrapDecision.verdict === 'init-completed'
+    ? uniqueSorted([
+      writePlan.targetPath ?? '',
+      existsSync(path.join(projectRoot, 'pom.xml')) ? 'pom.xml' : '',
+    ].filter((value) => value.length > 0))
+    : [];
 
   const notes = uniqueSorted([
     bootstrapDecision.verdict === 'init-completed'
       ? 'Bootstrap prepares provider-side Pact verification only; it does not prove that verification is already runnable or passing.'
+      : '',
+    bootstrapDecision.verdict === 'init-completed' && artifactSourceStatus.verdict === 'unresolved-no-artifact-source-evidence'
+      ? 'Init stayed artifact-source neutral because the repo did not provide local pact files or broker evidence.'
       : '',
     bootstrapDecision.verdict === 'existing-pact-evidence-detected'
       ? 'Init stopped because the repo already belongs on the normal verification track.'
@@ -740,12 +902,6 @@ export function deriveInitState(projectRoot: string): PactProviderInitState {
       ? `Bootstrap test harness written to ${writePlan.targetPath}.`
       : '',
   ].filter((value) => value.length > 0));
-
-  const recommendedNextStep = bootstrapDecision.verdict === 'init-completed'
-    ? 'Continue on the normal verification track, starting with `/pact-scan` to persist grounded Pact evidence after bootstrap.'
-    : bootstrapDecision.verdict === 'existing-pact-evidence-detected'
-      ? 'Use `/pact-scan` instead of `/pact-init` so the existing Pact evidence drives the normal verification track.'
-      : 'Do not scaffold further until the recorded blocker or justification is resolved.';
 
   return {
     schemaVersion: 1,
@@ -781,17 +937,18 @@ export function deriveInitState(projectRoot: string): PactProviderInitState {
     },
     bootstrapPlan: {
       allowed: bootstrapDecision.verdict === 'init-completed',
-      dependencyTargets: existsSync(path.join(projectRoot, 'pom.xml')) ? ['pom.xml'] : [],
+      dependencyTargets: bootstrapDecision.verdict === 'init-completed' && existsSync(path.join(projectRoot, 'pom.xml')) ? ['pom.xml'] : [],
       testTargetPath: writePlan.targetPath,
-      providerStateSkeletons: uniqueSorted(scanState.providerStates.stateAnnotations),
+      providerStateSkeletons: [],
       plannedWrites,
       notes: uniqueSorted([
         bootstrapDecision.verdict === 'init-completed'
-          ? 'After bootstrap, move to `/pact-scan` instead of creating more init-specific state.'
+          ? 'Bootstrap output is deterministic and pack-owned; it is not a readiness claim.'
           : '',
-        scanState.providerStates.stateAnnotations.length === 0
-          ? 'No concrete provider state names were available during init bootstrap.'
+        bootstrapDecision.verdict === 'init-completed' && artifactSourceStatus.verdict === 'unresolved-no-artifact-source-evidence'
+          ? 'Ground pact artifact source before entering the normal verification track.'
           : '',
+        'No concrete provider state names were generated during init bootstrap.'
       ].filter((value) => value.length > 0)),
     },
     writesPerformed: {
@@ -799,16 +956,22 @@ export function deriveInitState(projectRoot: string): PactProviderInitState {
       filesModified: writePlan.filesModified,
       writesSkipped: writePlan.writesSkipped,
     },
+    proofLevel,
+    artifactSourceStatus,
+    verificationGrounding,
+    whatIsNotProven,
     remainingBlockers: uniqueSorted([
       ...bootstrapDecision.blockers,
       ...(bootstrapDecision.verdict === 'init-completed'
-        ? ['Pact artifacts are still not grounded; use the normal verification track to determine local files or broker-backed inputs.']
+        ? [
+          'Pact artifact source is not grounded yet.',
+          'Runnable verification has not been demonstrated yet.',
+          'Concrete provider-state mappings still need real pact interactions.',
+        ]
         : []),
     ]),
     recommendedNextStep,
-    expectedFollowUpCommand: bootstrapDecision.verdict === 'init-completed' || bootstrapDecision.verdict === 'existing-pact-evidence-detected'
-      ? '/pact-scan'
-      : null,
+    expectedFollowUpCommand: recommendedNextStep.type === 'run-pact-scan' ? '/pact-scan' : null,
     notes,
   };
 }

@@ -44,11 +44,11 @@ Persist exactly these shared init outputs:
 9. Distinguish weak/internal/admin-only HTTP seams from meaningful external contract surfaces. Persist `init-not-justified` when the repo does not show a strong enough reason to start Pact now.
 10. Only for `init-completed`, write the narrowest safe bootstrap:
     - minimal Pact provider test dependency patching
-    - a provider verification test harness
-    - optional `@State(...)` skeletons only when the repo evidence justifies them
+    - a provider verification test harness derived from the shipped baseline
+    - an optional neutral state-support shell when the repo evidence justifies it
     - persisted init state and derived summary
 11. Never claim verification is already grounded or passing just because bootstrap files were written.
-12. After `init-completed`, recommend the normal verification track, typically starting with `/pact-scan`.
+12. After `init-completed`, recommend the exact missing grounding step. Do not point directly to `/pact-scan` unless pact artifact source evidence already exists.
 
 ## Outcome taxonomy
 
@@ -78,5 +78,5 @@ When you stop, persist the blocker or justification in init-state instead of gue
 
 ## Handoff
 
-If init completes, tell the user the init state is persisted, summarize the selected provider boundary and scaffolded files, and point to the verification track.
+If init completes, tell the user the init state is persisted, summarize the selected provider boundary and scaffolded files, make the remaining grounding gaps explicit, and point to the next grounding step.
 If init stops, say the persisted outcome plainly and explain why bootstrap was refused.

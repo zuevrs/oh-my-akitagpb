@@ -135,6 +135,8 @@ function main() {
     '.opencode/skills/pact-validate-workflow/SKILL.md',
     '.oma/packs/oh-my-pactgpb/templates/init/state-contract.json',
     '.oma/packs/oh-my-pactgpb/templates/init/init-summary.md',
+    '.oma/packs/oh-my-pactgpb/templates/init/provider-harness.java.tpl',
+    '.oma/packs/oh-my-pactgpb/templates/init/neutral-provider-state-support.java.tpl',
     '.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json',
     '.oma/packs/oh-my-pactgpb/templates/scan/scan-summary.md',
     '.oma/packs/oh-my-pactgpb/templates/plan/state-contract.json',
@@ -238,7 +240,10 @@ function main() {
   assertFileContains(path.join(fixtureRoot, '.opencode', 'skills', 'pact-validate-workflow', 'SKILL.md'), 'validate-state.json');
   assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'state-contract.json'), 'existingPactEvidence');
   assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'state-contract.json'), 'bootstrapPlan');
-  assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'init-summary.md'), '### Bootstrap decision');
+  assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'state-contract.json'), 'proofLevel');
+  assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'init-summary.md'), '### What is not proven');
+  assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'provider-harness.java.tpl'), 'Add @PactFolder or @PactBroker only after repo evidence grounds the artifact source.');
+  assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'neutral-provider-state-support.java.tpl'), 'Optional bootstrap shell only.');
   assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'state-contract.json'), 'artifactSource');
   assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'scan-summary.md'), '### Provider under contract');
   assertFileContains(path.join(fixtureRoot, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'plan', 'state-contract.json'), 'providerSelection');

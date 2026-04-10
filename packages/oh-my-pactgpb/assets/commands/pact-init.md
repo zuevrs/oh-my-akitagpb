@@ -24,9 +24,9 @@ Then:
 - identify the best candidate provider boundary and the best candidate HTTP contract surface using Spring controllers, request mappings, DTOs, integration-test prior art, and OpenAPI when present
 - keep ambiguity explicit; if multiple provider boundaries are plausible, persist that as `insufficient-boundary-evidence` instead of guessing
 - if the repo only exposes weak/internal/admin-style HTTP seams or otherwise lacks a strong contract boundary, persist `init-not-justified` instead of scaffolding
-- only when init is justified, write a **minimal provider-side bootstrap**: narrow build dependency patching, a provider verification harness, optional `@State(...)` skeletons when justified, and the persisted init outputs
+- only when init is justified, write a **minimal provider-side bootstrap**: narrow build dependency patching, a provider verification harness derived from the shipped baseline, optional neutral state-support shell when justified, and the persisted init outputs
 - do not generate consumer pact files, broker publish automation, can-i-deploy automation, message pact support, or generic contract-platform abstractions
 - keep shared JSON and markdown redaction-first per `.oma/packs/oh-my-pactgpb/runtime/shared/data-handling-policy.json`; never persist secrets, credentials, tokens, raw auth headers, or machine-local values
-- after `init-completed`, recommend the normal verification track rather than more init-only commands
+- after `init-completed`, recommend the exact missing grounding step; do not imply that `/pact-scan` is ready until pact artifact source evidence actually exists
 
-If init succeeds, say the init state is persisted and call out the outcome, selected boundary, what bootstrap was written, and the next verification-track step plainly.
+If init succeeds, say the init state is persisted and call out the outcome, selected boundary, what bootstrap was written, what is still unproven, and the next grounding step plainly.

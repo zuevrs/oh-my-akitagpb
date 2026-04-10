@@ -86,6 +86,8 @@ const ASSET_ENTRIES = Object.freeze({
   'oma/instructions/rules/respect-pack-ownership': 'oma/instructions/rules/respect-pack-ownership.md',
   'oma/templates/init/state-contract': 'oma/templates/init/state-contract.json',
   'oma/templates/init/init-summary': 'oma/templates/init/init-summary.md',
+  'oma/templates/init/provider-harness': 'oma/templates/init/provider-harness.java.tpl',
+  'oma/templates/init/neutral-provider-state-support': 'oma/templates/init/neutral-provider-state-support.java.tpl',
   'oma/templates/scan/state-contract': 'oma/templates/scan/state-contract.json',
   'oma/templates/scan/scan-summary': 'oma/templates/scan/scan-summary.md',
   'oma/templates/plan/state-contract': 'oma/templates/plan/state-contract.json',

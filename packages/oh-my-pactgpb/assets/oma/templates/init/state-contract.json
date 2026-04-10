@@ -17,12 +17,16 @@
         "initJustification",
         "bootstrapPlan",
         "writesPerformed",
+        "proofLevel",
+        "artifactSourceStatus",
+        "verificationGrounding",
+        "whatIsNotProven",
         "remainingBlockers",
         "recommendedNextStep",
         "expectedFollowUpCommand",
         "notes"
       ],
-      "description": "Canonical persisted one-shot init result for zero-Pact Java/Spring provider repos. It must capture whether init was completed, not justified, blocked by insufficient boundary evidence, or redirected because existing Pact evidence already exists; identify the provider candidate and HTTP surface; record the existing Pact evidence check; explain the bootstrap justification and narrow write plan; and persist what was written without pretending verification is already grounded or passing."
+      "description": "Canonical persisted one-shot init result for zero-Pact Java/Spring provider repos. It must capture whether init completed, was not justified, was blocked by insufficient boundary evidence, or was redirected because existing Pact evidence already exists; identify the provider candidate and HTTP surface; record existing Pact evidence honestly; explain the narrow bootstrap plan and writes; and persist proof level, artifact-source status, verification grounding, what is still unproven, blockers, and the correct next step without implying runnable verification."
     }
   ],
   "outcomeTaxonomy": {
@@ -34,13 +38,43 @@
       "insufficient-boundary-evidence",
       "existing-pact-evidence-detected"
     ],
-    "description": "pact-init must classify its one-shot bootstrap outcome using this narrow verdict set."
+    "description": "pact-init must classify its one-shot bootstrap outcome using this narrow verdict set. `init-completed` means deterministic bootstrap was written, not that Pact verification is already grounded or runnable."
+  },
+  "proofSemantics": {
+    "proofLevelAllowed": [
+      "bootstrap-only",
+      "redirect-existing-evidence",
+      "none"
+    ],
+    "artifactSourceStatusAllowed": [
+      "unresolved-no-artifact-source-evidence",
+      "existing-local-pact-evidence",
+      "existing-broker-evidence",
+      "existing-local-and-broker-evidence"
+    ],
+    "verificationGroundingAllowed": [
+      "not-grounded",
+      "grounded-by-existing-pact-evidence",
+      "not-applicable"
+    ],
+    "recommendedNextStepTypes": [
+      "ground-artifact-source",
+      "run-pact-scan",
+      "resolve-provider-boundary",
+      "stop"
+    ],
+    "description": "Zero-Pact init completion must persist `proofLevel: bootstrap-only`, explicit unresolved artifact-source status when no broker or local pact evidence exists, and a next-step type that reflects the exact missing proof instead of greenwashing readiness."
+  },
+  "bootstrapBaselines": {
+    "providerHarnessTemplatePath": ".oma/packs/oh-my-pactgpb/templates/init/provider-harness.java.tpl",
+    "neutralStateSupportTemplatePath": ".oma/packs/oh-my-pactgpb/templates/init/neutral-provider-state-support.java.tpl",
+    "description": "Bootstrap scaffold shape must come from these pack-owned init baselines rather than ad hoc freeform generation. The provider harness must stay artifact-source neutral unless repo evidence already grounds broker or local pact inputs."
   },
   "writePolicy": {
     "allowedRepoWrites": [
       "minimal Pact provider test dependency patching in pom.xml or build.gradle when clearly needed",
-      "one narrow provider verification harness",
-      "minimal provider-state skeletons when justified",
+      "one deterministic provider verification harness derived from the pack-owned baseline",
+      "an optional neutral provider-state support shell derived from the pack-owned baseline when justified",
       "canonical init shared state outputs"
     ],
     "forbiddenRepoWrites": [
@@ -49,9 +83,11 @@
       "message pact support",
       "broad build refactors",
       "generic contract platform scaffolding",
-      "claims that provider verification is already proven or passing"
+      "@PactBroker without broker evidence",
+      "invented concrete @State(...) names without real pact grounding",
+      "claims that provider verification is already proven, runnable, or passing"
     ],
-    "description": "pact-init may write only narrow provider-side bootstrap artifacts and must leave the repo prepared for the normal verification track, not pretend the full verification lifecycle is already complete."
+    "description": "pact-init may write only narrow provider-side bootstrap artifacts and must leave the repo in an honest bootstrap-only state unless existing repo evidence already grounds Pact verification."
   },
   "stopConditions": [
     {
@@ -82,7 +118,7 @@
     "mustBeDerivedFrom": [
       "init-state"
     ],
-    "description": "Human-readable Pact init summary only. Canonical machine state stays in init-state.json."
+    "description": "Human-readable Pact init summary only. Canonical machine state stays in init-state.json. The summary must make bootstrap-only outcomes, unproven areas, blockers, and next-step grounding needs obvious to an engineer."
   },
   "redaction": {
     "policyPath": ".oma/packs/oh-my-pactgpb/runtime/shared/data-handling-policy.json",

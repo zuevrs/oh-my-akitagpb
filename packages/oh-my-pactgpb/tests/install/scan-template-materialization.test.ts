@@ -55,6 +55,8 @@ describe('init, scan, plan, write, and validate template materialization', () =>
       'opencode/skills/pact-validate-workflow': path.join(repoRoot, 'assets', 'opencode', 'skills', 'pact-validate-workflow', 'SKILL.md'),
       'oma/templates/init/state-contract': path.join(repoRoot, 'assets', 'oma', 'templates', 'init', 'state-contract.json'),
       'oma/templates/init/init-summary': path.join(repoRoot, 'assets', 'oma', 'templates', 'init', 'init-summary.md'),
+      'oma/templates/init/provider-harness': path.join(repoRoot, 'assets', 'oma', 'templates', 'init', 'provider-harness.java.tpl'),
+      'oma/templates/init/neutral-provider-state-support': path.join(repoRoot, 'assets', 'oma', 'templates', 'init', 'neutral-provider-state-support.java.tpl'),
       'oma/templates/scan/state-contract': path.join(repoRoot, 'assets', 'oma', 'templates', 'scan', 'state-contract.json'),
       'oma/templates/scan/scan-summary': path.join(repoRoot, 'assets', 'oma', 'templates', 'scan', 'scan-summary.md'),
       'oma/templates/plan/state-contract': path.join(repoRoot, 'assets', 'oma', 'templates', 'plan', 'state-contract.json'),
@@ -93,6 +95,8 @@ describe('init, scan, plan, write, and validate template materialization', () =>
     for (const relativePath of [
       '.oma/packs/oh-my-pactgpb/templates/init/state-contract.json',
       '.oma/packs/oh-my-pactgpb/templates/init/init-summary.md',
+      '.oma/packs/oh-my-pactgpb/templates/init/provider-harness.java.tpl',
+      '.oma/packs/oh-my-pactgpb/templates/init/neutral-provider-state-support.java.tpl',
       '.oma/packs/oh-my-pactgpb/templates/scan/state-contract.json',
       '.oma/packs/oh-my-pactgpb/templates/scan/scan-summary.md',
       '.oma/packs/oh-my-pactgpb/templates/plan/state-contract.json',
@@ -108,6 +112,8 @@ describe('init, scan, plan, write, and validate template materialization', () =>
 
     const installedInitContract = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'state-contract.json'), 'utf8');
     const installedInitSummary = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'init-summary.md'), 'utf8');
+    const installedInitProviderHarness = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'provider-harness.java.tpl'), 'utf8');
+    const installedInitNeutralStateSupport = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'init', 'neutral-provider-state-support.java.tpl'), 'utf8');
     const installedScanContract = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'state-contract.json'), 'utf8');
     const installedScanSummary = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'scan', 'scan-summary.md'), 'utf8');
     const installedPlanContract = readFileSync(path.join(fixture.rootDir, '.oma', 'packs', 'oh-my-pactgpb', 'templates', 'plan', 'state-contract.json'), 'utf8');
@@ -119,8 +125,14 @@ describe('init, scan, plan, write, and validate template materialization', () =>
 
     expect(installedInitContract).toContain('existingPactEvidence');
     expect(installedInitContract).toContain('bootstrapPlan');
+    expect(installedInitContract).toContain('proofLevel');
+    expect(installedInitContract).toContain('verificationGrounding');
     expect(installedInitSummary).toContain('### Outcome');
+    expect(installedInitSummary).toContain('### What is not proven');
     expect(installedInitSummary).toContain('### Bootstrap decision');
+    expect(installedInitProviderHarness).toContain('deterministic provider-side baseline only');
+    expect(installedInitProviderHarness).toContain('Add @PactFolder or @PactBroker only after repo evidence grounds the artifact source.');
+    expect(installedInitNeutralStateSupport).toContain('Optional bootstrap shell only.');
     expect(installedScanContract).toContain('provider');
     expect(installedScanContract).toContain('artifactSource');
     expect(installedScanSummary).toContain('## Summary');
