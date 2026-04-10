@@ -17,9 +17,34 @@ Do not include secrets, credentials, tokens, raw auth headers, or machine-local 
 - Plan verdict:
 - Write outcome:
 
-### Validation outcome
-- Outcome: `ready` | `partial` | `blocked` | `irrelevant` | `inconsistent`
+### Validated coverage slice
+- Category:
+- Summary:
+- Verification target:
+- Endpoints:
+- Interactions:
+- Provider states:
+
+### Technical validation outcome
+- Outcome: `validated` | `partial` | `blocked` | `irrelevant` | `inconsistent`
 - Why:
+
+### Iteration outcome
+- Outcome: `validated-enough-for-now` | `validated-but-more-coverage-remains` | `partial` | `blocked` | `irrelevant` | `inconsistent`
+- Why:
+
+### Stop-point decision
+- Decision: `stop-for-now` | `continue-with-another-coverage-slice` | `repair-before-continuing` | `not-applicable`
+- Recommended next step:
+- Expected follow-up command:
+
+### Remaining coverage gaps
+- Endpoints with gaps:
+- Unverified endpoints:
+- Uncovered endpoints:
+- Interaction state gaps:
+- Unverified interactions:
+- Missing provider states:
 
 ### State consistency
 - Verdict:
@@ -42,7 +67,7 @@ Do not include secrets, credentials, tokens, raw auth headers, or machine-local 
 - Command:
 - Evidence:
 
-### Remaining blockers
+### Unresolved blockers
 - 
 
 ### Manual follow-ups

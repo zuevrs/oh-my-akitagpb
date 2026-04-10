@@ -1,6 +1,6 @@
 ---
 name: pact-validate-workflow
-description: Verify persisted Pact scan/plan/write outcomes against current repo reality for the installed /pact-validate command.
+description: Verify persisted Pact scan/plan/write outcomes against current repo reality for the installed /pact-validate command, then report whether the current coverage slice is enough for now or another coverage cycle is still required.
 compatibility: opencode
 metadata:
   audience: runtime
@@ -38,15 +38,20 @@ Persist exactly these shared validate outputs:
 3. Keep the worldview narrow: Java, Spring Boot providers, HTTP Pact provider verification, provider-first, broker-optional, read/verify/report-first.
 4. Build a machine-readable validate state that answers at least:
    - which persisted scan/plan/write verdicts were validated
+   - which coverage slice was just validated
    - whether the prior verdict chain is internally consistent
    - whether files claimed in write-state still exist and still contain the expected provider-verification scaffold substance
    - whether structural/compile proof succeeded, failed, or stayed blocked
    - whether runnable Pact verification is actually proven, merely ready, blocked, or still unproven
+   - what remaining endpoint, interaction, and provider-state gaps are still open after this slice
+   - whether the current iteration is enough for now or another coverage cycle is still required
    - which blockers and manual follow-ups remain
 5. Respect the prior persisted verdict chain instead of inventing a new one:
    - `irrelevant` stays an honest no-op
    - `blocked` stays blocked
    - `partial` stays partial unless repo drift turns it inconsistent
+   - a validated slice is not the same as full provider completion
+   - bootstrap-only scaffolding is not a positive provider-verification stop point
    - never promote unresolved artifact/provider-state gaps into a fake success
 6. Do not rescan the repo and do not re-plan implicitly inside validate.
 7. Do not silently repair repo files inside validate. Report drift and inconsistency instead.

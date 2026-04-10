@@ -147,11 +147,14 @@ describe('init, scan, plan, write, and validate template materialization', () =>
     expect(installedWriteContract).toContain('writeOutcome');
     expect(installedWriteSummary).toContain('### Files planned and changed');
     expect(installedWriteSummary).toContain('### Verification next step');
-    expect(installedValidateContract).toContain('validationOutcome');
+    expect(installedValidateContract).toContain('technicalValidationOutcome');
+    expect(installedValidateContract).toContain('iterationOutcome');
+    expect(installedValidateContract).toContain('stopPointDecision');
     expect(installedValidateContract).toContain('runnableVerificationCheck');
     expect(installedValidateSummary).toContain('### Input verdict chain');
+    expect(installedValidateSummary).toContain('### Stop-point decision');
     expect(installedValidateSummary).toContain('### Runnable verification');
-    expect(installedValidateSummary).toContain('### Remaining blockers');
+    expect(installedValidateSummary).toContain('### Unresolved blockers');
 
     expect(readFileSync(userTemplatePath, 'utf8')).toBe('user-owned template notes\n');
     expect(installState.ownedFiles.some((file) => file.relativePath === '.oma/packs/oh-my-pactgpb/templates/user-notes/README.md')).toBe(false);

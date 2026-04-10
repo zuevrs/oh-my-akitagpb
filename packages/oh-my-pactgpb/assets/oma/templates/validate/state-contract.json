@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "contractId": "pact-provider-validate-state",
   "sharedStateBasePath": ".oma/packs/oh-my-pactgpb/state/shared/validate",
   "installedTemplateBasePath": ".oma/packs/oh-my-pactgpb/templates/validate",
@@ -10,7 +10,7 @@
       ".oma/packs/oh-my-pactgpb/state/shared/write/write-state.json"
     ],
     "validatorMustReadFromDisk": true,
-    "description": "pact-validate must consume the persisted write snapshot from disk before deciding whether provider verification is honestly ready, partial, blocked, irrelevant, or inconsistent."
+    "description": "pact-validate must consume the persisted write snapshot from disk before deciding whether the current provider-verification slice is validated, partial, blocked, irrelevant, or inconsistent, and whether that slice is enough for now or another cycle is still required."
   },
   "planSupportInputs": {
     "contractPath": ".oma/packs/oh-my-pactgpb/templates/plan/state-contract.json",
@@ -19,7 +19,7 @@
       ".oma/packs/oh-my-pactgpb/state/shared/plan/plan-state.json"
     ],
     "validatorMustReadFromDisk": true,
-    "description": "pact-validate must read the persisted plan snapshot from disk as the canonical prior verdict and scaffold budget for validation."
+    "description": "pact-validate must read the persisted plan snapshot from disk as the canonical prior verdict, coverage intent, and scaffold budget for validation."
   },
   "scanSupportInputs": {
     "contractPath": ".oma/packs/oh-my-pactgpb/templates/scan/state-contract.json",
@@ -28,7 +28,7 @@
       ".oma/packs/oh-my-pactgpb/state/shared/scan/scan-state.json"
     ],
     "validatorMustReadFromDisk": true,
-    "description": "pact-validate must read the persisted scan snapshot from disk as supporting evidence for provider identity, artifact source expectations, and provider-state readiness."
+    "description": "pact-validate must read the persisted scan snapshot from disk as supporting evidence for provider identity, artifact source expectations, provider-state readiness, and remaining coverage."
   },
   "requiredMachineState": [
     {
@@ -38,30 +38,60 @@
       "required": true,
       "requiredTopLevelFields": [
         "inputVerdicts",
-        "validationOutcome",
+        "validatedCoverageSlice",
+        "technicalValidationOutcome",
+        "iterationOutcome",
+        "stopPointDecision",
+        "recommendedNextStep",
+        "expectedFollowUpCommand",
+        "remainingCoverageGaps",
         "stateConsistency",
         "repoRealityChecks",
         "compileCheck",
         "runnableVerificationCheck",
-        "remainingBlockers",
+        "unresolvedBlockers",
         "manualFollowUps",
         "evidence",
         "notes"
       ],
-      "description": "Canonical persisted validation result for Pact provider verification. It must capture the validated input verdict chain, repo reality checks, compile/structural proof, runnable verification proof, remaining blockers, and honest notes without pretending readiness unsupported by persisted state and repo evidence."
+      "description": "Canonical persisted validation result for coverage-aware Pact provider verification. It must capture which coverage slice was validated, whether that slice validated technically, what coverage still remains open, whether the current iteration is enough for now, whether another write/validate cycle is required, and any blockers or drift that prevent an honest stop-point claim."
     }
   ],
-  "validationOutcomeTaxonomy": {
+  "technicalValidationOutcomeTaxonomy": {
     "path": ".oma/packs/oh-my-pactgpb/state/shared/validate/validate-state.json",
-    "section": "validationOutcome",
+    "section": "technicalValidationOutcome",
     "allowed": [
-      "ready",
+      "validated",
       "partial",
       "blocked",
       "irrelevant",
       "inconsistent"
     ],
-    "description": "pact-validate must distinguish truly ready repos from partial, blocked, irrelevant, and inconsistent/drifted states."
+    "description": "Technical outcome for the current slice only. This answers whether the written provider-verification increment holds up structurally and is runnable enough to validate honestly."
+  },
+  "iterationOutcomeTaxonomy": {
+    "path": ".oma/packs/oh-my-pactgpb/state/shared/validate/validate-state.json",
+    "section": "iterationOutcome",
+    "allowed": [
+      "validated-enough-for-now",
+      "validated-but-more-coverage-remains",
+      "partial",
+      "blocked",
+      "irrelevant",
+      "inconsistent"
+    ],
+    "description": "Engineering stop-point outcome for the current iteration. A validated slice is not the same as full service completion; remaining coverage must stay explicit."
+  },
+  "stopPointDecisionTaxonomy": {
+    "path": ".oma/packs/oh-my-pactgpb/state/shared/validate/validate-state.json",
+    "section": "stopPointDecision",
+    "allowed": [
+      "stop-for-now",
+      "continue-with-another-coverage-slice",
+      "repair-before-continuing",
+      "not-applicable"
+    ],
+    "description": "Explicit stop/continue guidance for an engineer after validate. Inconsistency or unresolved blockers dominate optimistic slice reporting."
   },
   "stopConditions": [
     {
@@ -80,13 +110,19 @@
       "id": "write-drift-detected",
       "classification": "inconsistent",
       "reportIn": "validate-state",
-      "description": "Files claimed as written or modified no longer match the recorded Pact scaffold outcome."
+      "description": "Files claimed as written or modified no longer match the recorded Pact scaffold or target coverage slice."
     },
     {
-      "id": "runnable-verification-unproven",
+      "id": "bootstrap-only-is-not-stop-point",
       "classification": "partial",
       "reportIn": "validate-state",
-      "description": "Repo reality may be structurally sound, but runnable Pact verification remains blocked or unproven by the available evidence."
+      "description": "Bootstrap-only verification scaffolding cannot be reported as an implemented provider contract-test stop point."
+    },
+    {
+      "id": "remaining-coverage-explicit",
+      "classification": "validated-but-more-coverage-remains",
+      "reportIn": "validate-state",
+      "description": "A concrete slice can validate successfully while later endpoint or provider-state coverage still remains open. Validate must keep those gaps explicit instead of implying overall completion."
     },
     {
       "id": "irrelevant-verdict-chain",
@@ -104,7 +140,7 @@
     "mustBeDerivedFrom": [
       "validate-state"
     ],
-    "description": "Human-readable Pact validate summary only. Canonical machine state stays in validate-state.json."
+    "description": "Human-readable Pact validate summary only. Canonical machine state stays in validate-state.json. The summary should read like an engineering checkpoint, not just a file-diff report."
   },
   "redaction": {
     "policyPath": ".oma/packs/oh-my-pactgpb/runtime/shared/data-handling-policy.json",
@@ -122,6 +158,9 @@
       "provider identity",
       "repo-relative file paths",
       "artifact source reasoning",
+      "validated coverage slice",
+      "remaining coverage gaps",
+      "stop-point decision",
       "compile/structural proof",
       "runnable verification status",
       "validation blockers",

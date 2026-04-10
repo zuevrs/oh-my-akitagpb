@@ -1,5 +1,5 @@
 ---
-description: Read persisted Pact scan/plan/write state and verify whether the recorded provider-verification outcome is actually ready, partial, blocked, irrelevant, or inconsistent.
+description: Read persisted Pact scan/plan/write state and determine whether the current provider-verification slice validates successfully, what coverage remains open, and whether the engineer can stop for now or should start another coverage cycle.
 agent: build
 subtask: false
 ---
@@ -29,11 +29,14 @@ Then:
 - do not silently fix repo files during validate; default to read/verify/report only
 - verify that the recorded write outcome matches the prior plan verdict honestly
 - verify that files claimed in write-state still exist and still contain the expected Pact scaffold substance
-- distinguish structural/compile proof from runnable Pact verification proof
+- distinguish technical validation of the current slice from the iteration stop-point decision
+- report which coverage slice was just validated, what remains uncovered, and whether another `/pact-plan` → `/pact-write` cycle is still required
+- keep remaining endpoints, interactions, and provider-state gaps explicit after a successful narrow slice; do not imply overall provider completion unless the persisted state supports it
+- treat bootstrap-only scaffolding as insufficient for a positive provider-verification stop point
 - if runnable verification cannot be proven honestly, say why instead of inferring success from file presence
 - if plan/write were `irrelevant`, confirm the honest no-op instead of failing for missing scaffold
 - if write stayed `partial` or `blocked`, preserve those unresolved blockers instead of greenwashing them
-- if repo state drifted from the recorded write result, report inconsistency explicitly
+- if repo state drifted from the recorded write result, report inconsistency explicitly and let inconsistency dominate stop-point language
 - keep shared JSON and markdown redaction-first per `.oma/packs/oh-my-pactgpb/runtime/shared/data-handling-policy.json`; never persist secrets, credentials, tokens, raw auth headers, or machine-local values
 
-If validate succeeds, say the validate state is persisted and summarize the validation outcome, strongest evidence, remaining blockers, and whether runnable verification is proven, ready, blocked, or still unproven.
+If validate succeeds, say the validate state is persisted and summarize the validated coverage slice, technical validation outcome, remaining coverage, stop-point decision, strongest evidence, and whether runnable verification is proven, ready, blocked, or still unproven.
