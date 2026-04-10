@@ -112,6 +112,21 @@ describe('validate proof', () => {
     expect(persistedState.remainingBlockers).toEqual([]);
   });
 
+  it('treats a resolved provider-state write slice as ready-to-run even when later coverage remains', () => {
+    const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-partial' }));
+    installAndPrepareFixture(fixture);
+
+    const artifacts = writeProofValidateArtifacts(fixture.rootDir);
+    const persistedState = readJsonFile<PactProviderValidateState>(artifacts.statePath);
+
+    expect(persistedState.inputVerdicts.plan).toBe('needs-provider-state-work');
+    expect(persistedState.inputVerdicts.write).toBe('written');
+    expect(persistedState.stateConsistency.verdict).toBe('consistent');
+    expect(persistedState.validationOutcome).toBe('ready');
+    expect(persistedState.runnableVerificationCheck.verdict).toBe('ready');
+    expect(persistedState.remainingBlockers.join(' ')).not.toContain('Provider state names');
+  });
+
   it('reports partial when provider-state work is still unresolved after extending stale verification', () => {
     const fixture = trackFixture(createInstalledFixture({ template: 'spring-pact-provider-stale' }));
     installAndPrepareFixture(fixture);
