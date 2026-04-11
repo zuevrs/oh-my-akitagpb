@@ -1,6 +1,6 @@
 {
   "name": "oh-my-pactgpb",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Native-first OpenCode bootstrap pack for Pact provider verification workflows.",
   "license": "MIT",
   "author": "zuevrs",
